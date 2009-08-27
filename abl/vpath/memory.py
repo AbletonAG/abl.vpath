@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import mimetypes
+import md5
 from cStringIO import StringIO
 
 from .base import FileSystem, URI
@@ -32,17 +34,26 @@ class MemoryFile(object):
         pass
 
 
+    def __str__(self):
+        return self._data.getvalue()
+
+
 class MemoryFileSystem(FileSystem):
 
     def _initialize(self):
         self._fs = {}
 
 
-    def isdir(self, path):
-        p = self._path(path)
+    def _path(self, path):
+        p = super(MemoryFileSystem, self)._path(path)
         # cut off leading slash, that's our root
         assert p.startswith("/")
         p = p[1:]
+        return p
+
+
+    def isdir(self, path):
+        p = self._path(path)
         current = self._fs
         if p:
             for part in p.split("/"):
@@ -56,9 +67,6 @@ class MemoryFileSystem(FileSystem):
 
     def mkdir(self, path):
         p = self._path(path)
-        # cut off leading slash, that's our root
-        assert p.startswith("/")
-        p = p[1:]
         current = self._fs
         if p:
             existing_dirs = p.split("/")[:-1]
@@ -68,11 +76,23 @@ class MemoryFileSystem(FileSystem):
             current[dir_to_create] = {}
 
 
+    def exists(self, path):
+        p = self._path(path)
+        current = self._fs
+        if p:
+            for part in p.split("/"):
+                if part in current:
+                    current = current[part]
+                else:
+                    return False
+            return True
+        else:
+            # we are root, which always exists
+            return True
+
+
     def open(self, path, options):
         p = self._path(path)
-        # cut off leading slash, that's our root
-        assert p.startswith("/")
-        p = p[1:]
         existing_dirs = p.split("/")[:-1]
         file_to_create = p.split("/")[-1]
         current = self._fs
@@ -92,5 +112,28 @@ class MemoryFileSystem(FileSystem):
             f = current[file_to_create]
             f.seek(len(f))
             return f
+
+    BINARY_MIME_TYPES = ["image/png",
+                         "image/gif",
+                         ]
+
+    def dump(self, outf, no_binary=False):
+        def traverse(current, path="memory:///"):
+            for name, value in sorted(current.items()):
+                if not isinstance(value, dict):
+                    value = str(value)
+                    if no_binary:
+                        mt, _ = mimetypes.guess_type(name)
+                        if mt in self.BINARY_MIME_TYPES:
+                            hash = md5.md5()
+                            hash.update(value)
+                            value = "Binary: %s" % hash.hexdigest()[1:-1]
+                    outf.write("--- START %s%s ---\n" % (path, name))
+                    outf.write(value)
+                    outf.write("\n--- END %s%s ---\n\n" % (path, name))
+                else:
+                    traverse(value, (path[:-1] if path.endswith("/") else path) + "/" + name + "/")
+
+        traverse(self._fs)
 
 

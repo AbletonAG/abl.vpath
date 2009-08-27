@@ -1,7 +1,8 @@
 from __future__ import with_statement
 
-from unittest import TestCase
+from cStringIO import StringIO
 
+from unittest import TestCase
 
 from abl.vpath import URI
 
@@ -32,5 +33,8 @@ class MemoryFSTests(TestCase):
 
         assert subdir == root / "foo"
 
-
+        connection = subdir.connection
+        out = StringIO()
+        connection.dump(out)
+        print out.getvalue()
 

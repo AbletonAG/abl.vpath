@@ -330,6 +330,10 @@ class URI(object):
         return self.split()[1]
 
 
+    def splitext(self):
+        return os.path.splitext(self.basename())
+
+
     def last(self):
         """
         last: similar to 'basename', but makes sure that the last part is
@@ -575,6 +579,21 @@ class FileSystem(object):
             return uriobj
 
 
+    def copy(self, source, dest, options=None, ignore=None):
+        if source.connection is desct.connection:
+            return self.internal_copy(source, dest, options, ignore)
+
+        # TODO-std: what about options and ignore, ovewriting files
+        # directories and so forth
+        # copy over two different FileSystem-types
+        assert source.isfile()
+        with source.open() as inf:
+            content = inf.read()
+        with dest.open("w") as outf:
+            outf.write(content)
+
+
+
 #-- default implementations -------------------------------------------------
 
     def makedirs(self, path):
@@ -590,51 +609,6 @@ class FileSystem(object):
 #        if not pth.isdir() and tail:
 #            self.makedirs(pth)
 #        return path.mkdir()
-
-
-    def copy(self, source, dest, options=None, ignore=None):
-        if ignore is not None:
-            ignore = set(ignore)
-        else:
-            ignore = set()
-        if not source.exists():
-            raise FileDoesNotExistError(str(source))
-        if options is None:
-            assert source.isfile()
-            if dest.isdir():
-                dest = dest / source.last()
-            with nested(source.open('rb'), dest.open('wb')) as (infs, outfs):
-                shutil.copyfileobj(infs, outfs, 8192)
-        elif 'r' in options:
-            assert source.isdir()
-            if dest.exists():
-                droot = dest / source.last()
-            else:
-                droot = dest
-            droot.makedirs()
-            spth = source.path
-            spth_len = len(spth) + 1
-            for root, dirs, files in source.walk():
-                rpth = root.path
-                tojoin = rpth[spth_len:].strip()
-                if tojoin:
-                    dbase = droot / tojoin
-                else:
-                    dbase = droot
-                for folder in dirs[:]:
-                    if folder in ignore:
-                        dirs.remove(folder)
-                        continue
-                    ddir = dbase / folder
-                    ddir.makedirs()
-                for fname in files:
-                    source = root / fname
-                    dest = dbase / fname
-                    with nested(
-                        source.open('rb'),
-                        dest.open('wb')
-                        ) as (infs, outfs):
-                        shutil.copyfileobj(infs, outfs, 8192)
 
 
     def move(self, source, destination):
@@ -718,5 +692,8 @@ class FileSystem(object):
         raise NotImplementedError
 
     def log_by_time(self, path, start_time=None, stop_time=None):
+        raise NotImplementedError
+
+    def internal_copy(self, source, dest, options=None, ignore=None):
         raise NotImplementedError
 
