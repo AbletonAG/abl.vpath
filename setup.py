@@ -12,8 +12,9 @@ setup(
     license="MIT",
     download_url='',
     install_requires=[
-        "paramiko",
-        "pysvn",
+        "decorator",
+#        "paramiko",
+#        "pysvn",
         ],
     packages=find_packages(exclude=['ez_setup', 'tests']),
     namespace_packages = ['abl', ],
