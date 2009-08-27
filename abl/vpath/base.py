@@ -1,12 +1,13 @@
 from __future__ import with_statement
 
-import os
-import time
-import threading
+
 import atexit
 import fnmatch
-
+import os
 from Queue import Queue
+import shutil
+import threading
+import time
 
 from decorator import decorator
 
@@ -587,9 +588,6 @@ class FileSystem(object):
             return path.mkdir()
         else:
             return path
-#        if not pth.isdir() and tail:
-#            self.makedirs(pth)
-#        return path.mkdir()
 
 
     def copy(self, source, dest, options=None, ignore=None):
