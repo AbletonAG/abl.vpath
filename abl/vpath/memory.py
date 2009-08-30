@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import mimetypes
-import md5
+import hashlib
 from cStringIO import StringIO
 
 from .base import FileSystem, URI
@@ -125,7 +125,7 @@ class MemoryFileSystem(FileSystem):
                     if no_binary:
                         mt, _ = mimetypes.guess_type(name)
                         if mt in self.BINARY_MIME_TYPES:
-                            hash = md5.md5()
+                            hash = hashlib.md5()
                             hash.update(value)
                             value = "Binary: %s" % hash.hexdigest()[1:-1]
                     outf.write("--- START %s%s ---\n" % (path, name))
