@@ -40,7 +40,12 @@ import traceback
 
 from decorator import decorator
 
-from .base import URI, FileSystem, CONNECTION_REGISTRY
+from .base import (
+    URI,
+    FileSystem,
+    CONNECTION_REGISTRY,
+    PathError,
+    )
 
 
 
@@ -120,9 +125,6 @@ def binsearch(value, accessor, hi, lo):
 #============================================================================
 # Exceptions
 
-class PathError(Exception):
-    "PathError: base exception for path module."
-
 class NoSchemeError(PathError):
     "NoSchemeError is raised if scheme is used that has no backend"
 
@@ -137,9 +139,6 @@ class NoDefinedOperationError(PathError):
 
 class OptionsError(PathError):
     "OptionsError is raised if specific options need to be used"
-
-class RemoteConnectionTimeout(PathError):
-    "Remote connection could not be established"
 
 
 #----------------------------------------------------------------------------

@@ -151,3 +151,11 @@ class MemoryFileSystem(FileSystem):
 
         return current.mtime
 
+
+    def listdir(self, path, options):
+        p = self._path(path)
+        current = self._fs
+        for part in p.split("/"):
+            current = current[part]
+        return sorted(current.keys())
+

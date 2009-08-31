@@ -18,6 +18,14 @@ from decorator import decorator
 from .simpleuri import UriParse, uri_from_parts
 
 
+class PathError(Exception):
+    "PathError: base exception for path module."
+
+
+class RemoteConnectionTimeout(PathError):
+    "Remote connection could not be established"
+
+
 
 #============================================================================
 
