@@ -4,6 +4,9 @@ from __future__ import with_statement
 import atexit
 import fnmatch
 import os
+import md5
+
+
 from Queue import Queue
 import shutil
 import threading
@@ -543,6 +546,31 @@ class URI(object):
         return self.connection.glob(self, pattern)
 
 
+    @with_connection
+    def md5(self):
+        """
+        Returns the md5-sum of this file. This is of course potentially
+        expensive!
+        """
+        hash_ = md5.md5()
+        with self.open() as inf:
+            block = inf.read(4096)
+            while block:
+                hash_.update(block)
+                block = inf.read(4096)
+
+        return hash_.hexdigest()[1:-1]
+
+
+    @with_connection
+    def mtime(self):
+        """
+        Returns the modification-time in seconds since the epoch,
+        as returned by time.time()
+        """
+        self.connection.mtime(self)
+
+
 #============================================================================
 
 class FileSystem(object):
@@ -694,4 +722,8 @@ class FileSystem(object):
 
     def internal_copy(self, source, dest, options=None, ignore=None):
         raise NotImplementedError
+
+    def mtime(self, path):
+        raise NotImplementedError
+
 

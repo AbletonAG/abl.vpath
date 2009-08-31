@@ -2,6 +2,8 @@ from __future__ import absolute_import
 
 import mimetypes
 import hashlib
+import time
+
 from cStringIO import StringIO
 
 from .base import FileSystem, URI
@@ -12,10 +14,12 @@ class MemoryFile(object):
 
     def __init__(self):
         self._data = StringIO()
+        self.mtime = self.ctime = time.time()
 
 
     def write(self, d):
         self._data.write(d)
+        self.mtime = time.time()
 
 
     def read(self, size=-1):
@@ -136,4 +140,14 @@ class MemoryFileSystem(FileSystem):
 
         traverse(self._fs)
 
+
+    def mtime(self, path):
+        # TODO-dir: currently only defined
+        # for file-nodes!
+        p = self._path(path)
+        current = self._fs
+        for part in p.split("/"):
+            current = current[part]
+
+        return current.mtime
 

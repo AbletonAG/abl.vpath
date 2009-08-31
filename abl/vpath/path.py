@@ -251,8 +251,6 @@ class LocalFileSystem(FileSystem):
 
 
 
-
-
 #----------------------------------------------------------------------------
 
 class TempFileHandle(object):

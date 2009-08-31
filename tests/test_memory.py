@@ -1,5 +1,6 @@
 from __future__ import with_statement
 
+import time
 from cStringIO import StringIO
 
 from unittest import TestCase
@@ -33,8 +34,13 @@ class MemoryFSTests(TestCase):
 
         assert subdir == root / "foo"
 
+        time.sleep(.5)
+        assert out.mtime() < time.time()
+
         connection = subdir.connection
         out = StringIO()
         connection.dump(out)
         print out.getvalue()
+
+
 
