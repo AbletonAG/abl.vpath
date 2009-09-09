@@ -85,6 +85,14 @@ class TestURI(object):
         testpath /= 'path'
         assert URI('/a/path') == testpath
 
+    def test_adding_suffix(self):
+        testpath = URI("/a")
+        other = testpath + ".foo"
+        assert URI("/a.foo") == other
+        testpath += ".bar"
+        assert URI("/a.bar") == testpath
+
+
 class TestFileSystem(object):
     def __init__(self):
         self.local_setup()
@@ -115,7 +123,7 @@ class TestFileSystem(object):
         thisdir = os.path.split(os.path.abspath(__file__))[0]
         foo_dir = os.path.join(thisdir, 'foo')
         shutil.rmtree(foo_dir)
-        
+
     def test_file(self):
         if self.writable:
             path = URI(self.baseurl, **self.extras) / 'testfile.txt'

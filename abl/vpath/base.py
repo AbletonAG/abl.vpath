@@ -293,6 +293,19 @@ class URI(object):
     def __div__(self, other):
         return self.join(other)
 
+
+    def __add__(self, suffix):
+        path = self.uri + suffix
+        result = self.__class__(
+            path,
+            sep=self.sep,
+            connection=self.connection,
+            **self.extras
+            )
+        result.parse_result.query = self.query.copy()
+        return result
+
+
     @property
     def is_absolute(self):
         path = self.parse_result.path
