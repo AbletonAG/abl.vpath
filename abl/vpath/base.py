@@ -10,12 +10,13 @@ import hashlib
 from Queue import Queue
 import threading
 import time
+import traceback
 
 from decorator import decorator
 import pkg_resources
 
 from .simpleuri import UriParse, uri_from_parts
-from .exceptions import NoSchemeError
+from .exceptions import NoSchemeError, RemoteConnectionTimeout
 
 
 #============================================================================
@@ -744,7 +745,8 @@ class FileSystem(object):
 for entrypoint in pkg_resources.iter_entry_points('abl.vpath.plugins'):
     try:
         plugin_class = entrypoint.load()
-    except:
+    except Exception, exp:
         print "Could not load entrypoint", entrypoint
+        traceback.print_exp()
         continue
     CONNECTION_REGISTRY.register(plugin_class.scheme, plugin_class)
