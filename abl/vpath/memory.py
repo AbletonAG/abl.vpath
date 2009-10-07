@@ -44,6 +44,8 @@ class MemoryFile(object):
 
 class MemoryFileSystem(FileSystem):
 
+    scheme = 'memory'
+
     def _initialize(self):
         self._fs = {}
 

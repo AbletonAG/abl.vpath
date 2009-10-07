@@ -30,6 +30,7 @@ from contextlib import closing, nested
 import datetime
 import logging
 import os
+import pkg_resources
 import shutil
 
 from stat import S_ISDIR
@@ -144,6 +145,7 @@ class OptionsError(PathError):
 #----------------------------------------------------------------------------
 
 class LocalFileSystem(FileSystem):
+    scheme = 'file'
 
     def _initialize(self):
         pass
@@ -284,11 +286,6 @@ class TempFileHandle(object):
 
 #----------------------------------------------------------------------------
 
-CONNECTION_REGISTRY.register('file', LocalFileSystem)
-#CONNECTION_REGISTRY.register('ssh', SshFileSystem)
-#CONNECTION_REGISTRY.register('svn', SvnFileSystem)
-#CONNECTION_REGISTRY.register('svnlocal', SvnLocalFileSystem)
-
-from .memory import MemoryFileSystem
-CONNECTION_REGISTRY.register('memory', MemoryFileSystem)
-
+for entrypoint in pkg_resources.iter_entry_points('abl.vpath.plugins'):
+    plugin_class = entrypoint.load()
+    CONNECTION_REGISTRY.register(plugin_class.scheme, plugin_class)

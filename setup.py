@@ -13,8 +13,6 @@ setup(
     download_url='',
     install_requires=[
         "decorator",
-#        "paramiko",
-#        "pysvn",
         ],
     packages=find_packages(exclude=['ez_setup', 'tests']),
     namespace_packages = ['abl', ],
@@ -23,4 +21,9 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
     ],
+    entry_points="""
+    [abl.vpath.plugins]
+    localfilefs=abl.vpath.path:LocalFileSystem
+    memoryfs=abl.vpath.memory:MemoryFileSystem
+    """
 )

@@ -4,7 +4,7 @@ from __future__ import with_statement
 import atexit
 import fnmatch
 import os
-import md5
+import hashlib
 
 
 from Queue import Queue
@@ -573,7 +573,7 @@ class URI(object):
         Returns the md5-sum of this file. This is of course potentially
         expensive!
         """
-        hash_ = md5.md5()
+        hash_ = hashlib.md5()
         with self.open() as inf:
             block = inf.read(4096)
             while block:
@@ -601,6 +601,8 @@ class FileSystem(object):
     Some default implementations are provided for some higher functions like
     copy, makedirs, etc.
     """
+
+    scheme = None
 
     def __init__(
         self,
