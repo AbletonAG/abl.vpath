@@ -8,23 +8,14 @@ import hashlib
 
 
 from Queue import Queue
-import shutil
 import threading
 import time
 
 from decorator import decorator
-
+import pkg_resources
 
 from .simpleuri import UriParse, uri_from_parts
-
-
-class PathError(Exception):
-    "PathError: base exception for path module."
-
-
-class RemoteConnectionTimeout(PathError):
-    "Remote connection could not be established"
-
+from .exceptions import NoSchemeError
 
 
 #============================================================================
@@ -750,3 +741,10 @@ class FileSystem(object):
         raise NotImplementedError
 
 
+for entrypoint in pkg_resources.iter_entry_points('abl.vpath.plugins'):
+    try:
+        plugin_class = entrypoint.load()
+    except:
+        print "Could not load entrypoint", entrypoint
+        continue
+    CONNECTION_REGISTRY.register(plugin_class.scheme, plugin_class)
