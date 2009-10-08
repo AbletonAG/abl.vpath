@@ -6,7 +6,7 @@ import time
 
 from cStringIO import StringIO
 
-from .base import FileSystem, URI
+from .fs import FileSystem, URI
 
 
 class MemoryFile(object):

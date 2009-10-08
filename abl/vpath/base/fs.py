@@ -747,6 +747,6 @@ for entrypoint in pkg_resources.iter_entry_points('abl.vpath.plugins'):
         plugin_class = entrypoint.load()
     except Exception, exp:
         print "Could not load entrypoint", entrypoint
-        traceback.print_exp()
+        traceback.print_exc()
         continue
     CONNECTION_REGISTRY.register(plugin_class.scheme, plugin_class)

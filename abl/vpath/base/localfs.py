@@ -9,7 +9,7 @@ import logging
 import os
 import shutil
 
-from .base import FileSystem
+from .fs import FileSystem
 
 LOGGER = logging.getLogger(__name__)
 #----------------------------------------------------------------------------

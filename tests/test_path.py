@@ -9,7 +9,7 @@ import shutil
 import tempfile
 
 from nose import with_setup
-from abl.vpath import *
+from abl.vpath.base import *
 
 class KeepCurrentDir:
 

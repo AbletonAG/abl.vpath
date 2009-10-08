@@ -2,7 +2,7 @@
 # (C) 2008 Ableton AG
 #******************************************************************************
 
-from abl.vpath.simpleuri import UriParse
+from abl.vpath.base.simpleuri import UriParse
 
 def test_one():
     uri = UriParse('file:///tmp/this')

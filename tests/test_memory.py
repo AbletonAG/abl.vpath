@@ -5,7 +5,7 @@ from cStringIO import StringIO
 
 from unittest import TestCase
 
-from abl.vpath import URI
+from abl.vpath.base import URI
 
 
 class MemoryFSTests(TestCase):
