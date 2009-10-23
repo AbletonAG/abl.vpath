@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="AbletonVPath",
-    version="0.1",
+    version="0.2",
     description="A OO-abstraction of file-systems",
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
@@ -20,6 +20,10 @@ setup(
     classifiers = [
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Development Status :: 3 - Alpha',
+        'License :: OSI Approved :: MIT License',
+        'Topic :: Software Development :: Libraries :: Python Modules'
+        'Topic :: System :: Filesystems',
     ],
     entry_points="""
     [abl.vpath.plugins]
