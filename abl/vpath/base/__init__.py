@@ -20,4 +20,4 @@ Currently supported are:
 """
 from __future__ import absolute_import
 from .fs import URI, FileSystem
-from .exceptions import *
+from exceptions import *
