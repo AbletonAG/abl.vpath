@@ -7,6 +7,8 @@
 #============================================================================
 # Helper Classes
 
+import os
+
 class Bunch(dict):
     def __setattr__(self, key, item):
         self[key] = item
@@ -24,7 +26,7 @@ class Bunch(dict):
             raise AttributeError
 
     def copy(self):
-        return Bunch(**super(Bunch, self).copy())
+        return self.__class__(**super(Bunch, self).copy())
 
     def get_prefix(self, prefix):
         other = self.__class__()
