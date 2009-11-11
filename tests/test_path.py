@@ -103,6 +103,14 @@ class TestURI(object):
         assert pth_one != pth_two
         assert (pth_one / 'something') == (pth_two / 'something')
 
+    def test_extra_args(self):
+        pth = URI("scheme://some/path?extra=arg")
+        assert pth.extras == {'extra':'arg'}
+
+    def test_extra_args_and_kwargs(self):
+        pth = URI("scheme://some/path?extra=arg", something='different')
+        assert pth.extras == {'extra':'arg', 'something':'different'}
+
 
 class TestFileSystem(object):
     def __init__(self):
