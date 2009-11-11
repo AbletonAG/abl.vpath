@@ -92,6 +92,17 @@ class TestURI(object):
         testpath += ".bar"
         assert URI("/a.bar") == testpath
 
+    def test_path_equality(self):
+        pth_one = URI("/a")
+        pth_two = URI("file:///a")
+        assert pth_one == pth_two
+
+    def test_path_equals_path_with_trailing_slash(self):
+        pth_one = URI("/a")
+        pth_two = URI("/a/")
+        assert pth_one != pth_two
+        assert (pth_one / 'something') == (pth_two / 'something')
+
 
 class TestFileSystem(object):
     def __init__(self):

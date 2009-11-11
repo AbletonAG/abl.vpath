@@ -234,6 +234,10 @@ class URI(object):
             self.parse_result = UriParse(uri)
             self.connection = connection
             self.extras = extras
+        if self.scheme not in ('http','https'):
+            # for non http schemes, the query part might contain extra
+            # args for the path constructor
+            self.extras.update(self.query)
 
     @property
     def port(self):

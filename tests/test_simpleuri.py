@@ -4,6 +4,10 @@
 
 from abl.vpath.base.simpleuri import UriParse
 
+def test_non_http_uri_with_query_part():
+    uri = UriParse('scheme:///some/path?key_one=val_one&key_two=val_two')
+    assert uri.query == {'key_one':'val_one', 'key_two':'val_two'}
+
 def test_one():
     uri = UriParse('file:///tmp/this')
     assert uri.path == '/tmp/this'

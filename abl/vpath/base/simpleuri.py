@@ -8,6 +8,20 @@ urlparse module for non http urls
 
 from urlparse import urlparse
 
+def parse_query_string(query):
+    """
+    parse_query_string:
+    very simplistic. won't do the right thing with list values
+    """
+    result = {}
+    qparts = query.split('&')
+    for item in qparts:
+        key, value = item.split('=')
+        key = key.strip()
+        value = value.strip()
+        result[key] = value
+    return result
+
 class UriParse(object):
     """
     UriParse is a simplistic replacement for urlparse, in case the uri
@@ -71,15 +85,14 @@ class UriParse(object):
         if not self.port:
             self.port = 0
         if parsed.query:
-            qparts = parsed.query.split('&')
-            for item in qparts:
-                key, value = item.split('=')
-                key = key.strip()
-                value = value.strip()
-                self.query[key] = value
+            self.query = parse_query_string(parsed.query)
 
     def _init_other_uri(self):
         "init code for non http uri"
+        uri, querysep, rest = self.uri.partition('?')
+        if querysep:
+            self.uri = uri
+            self.query = parse_query_string(rest)
         parts = self.uri.split('://', 1)
         if len(parts) == 2:
             self.scheme, rest = parts
