@@ -8,7 +8,8 @@ from posixpath import join as ujoin
 import shutil
 import tempfile
 
-from nose import with_setup
+import nose
+
 from abl.vpath.base import *
 
 class KeepCurrentDir:
@@ -112,22 +113,21 @@ class TestURI(object):
         assert pth.extras == {'extra':'arg', 'something':'different'}
 
 
-class TestFileSystem(object):
-    def __init__(self):
-        self.local_setup()
-        self.existing_dir = ujoin(self.baseurl,'foo')
-        self.existing_file = ujoin(self.baseurl, 'foo','foo.txt')
-        self.non_existing_file = ujoin(self.baseurl, 'bar.txt')
+class TestFileSystem:
 
     def local_setup(self):
         self.writable = True
         self.walkable = True
         thisdir = os.path.split(os.path.abspath(__file__))[0]
         self.baseurl = 'file://' + thisdir
+        self.foo_path = URI(self.baseurl) / 'foo'
         self.extras = {}
 
-    @classmethod
-    def setup(cls):
+    def setup_method(self, method):
+        self.local_setup()
+        self.existing_dir = ujoin(self.baseurl,'foo')
+        self.existing_file = ujoin(self.baseurl, 'foo','foo.txt')
+        self.non_existing_file = ujoin(self.baseurl, 'bar.txt')
         thisdir = os.path.split(os.path.abspath(__file__))[0]
         foo_dir = os.path.join(thisdir, 'foo')
         bar_dir = os.path.join(foo_dir, 'bar')
@@ -137,8 +137,7 @@ class TestFileSystem(object):
         with open(some_file, 'w') as fd:
             fd.write('content')
 
-    @classmethod
-    def teardown(cls):
+    def teardown_method(self, method):
         thisdir = os.path.split(os.path.abspath(__file__))[0]
         foo_dir = os.path.join(thisdir, 'foo')
         shutil.rmtree(foo_dir)
@@ -254,3 +253,17 @@ class TestFileSystem(object):
         assert target_file.isfile()
         target.remove('r')
 
+    def test_move_folder(self):
+        folder = self.foo_path / 'folder'
+        content = folder / 'content_dir'
+        and_more = content / 'and_more'
+        and_more.makedirs()
+        target = self.foo_path / 'target'
+        target.makedirs()
+        folder.move(target)
+        assert not folder.exists()
+        assert target.exists()
+        assert 'folder' in target.listdir()
+        assert (target / 'folder').isdir()
+        assert (target / 'folder' / 'content_dir').isdir()
+        target.remove('r')

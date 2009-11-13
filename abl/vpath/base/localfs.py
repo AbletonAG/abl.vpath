@@ -64,13 +64,24 @@ class LocalFileSystem(FileSystem):
         return os.path.isdir(self._path(unc))
 
     def move(self, source, dest):
+        """
+        the semantic should be like unix 'mv' command.
+        Unfortunatelly, shutil.move does work differently!!!
+        Consider (all paths point to directories)
+        mv /a/b /a/c
+        expected outcome: 
+        case 1.: 'c' does not exist:
+          b moved over to /a such that /a/c is what was /a/b/ before
+        case 2.: 'c' does exist:
+          b is moved into '/a/c/' such that we have now '/a/c/b'
+
+        But shutil.move will use os.rename whenever possible which means that
+        '/a/b' is renamed to '/a/c'. The outcome is that the content from b
+        ends up in c.
+        """
         if dest.scheme == 'file':
-            if dest.isfile():
-                dest.remove()
-            elif dest.isdir():
-                dest.remove('r')
-            # had an os.rename here first, but that doesn't work
-            # across fs boundaries on windows.
+            if source.isdir() and dest.isdir():
+                dest /= source.basename()
             return shutil.move(source.path, dest.path)
         else:
             return super(LocalFileSystem, self).move(source, dest)

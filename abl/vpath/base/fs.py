@@ -657,6 +657,9 @@ class FileSystem(object):
 
 
     def move(self, source, destination):
+        """
+        the semantic should be like unix 'mv' command
+        """
         if source.isfile():
             source.copy(destination)
             source.remove()
