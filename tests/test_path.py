@@ -253,7 +253,12 @@ class TestFileSystem:
         assert target_file.isfile()
         target.remove('r')
 
-    def test_move_folder(self):
+    def test_move_folder_to_subfolder(self):
+        """
+        test moving a directory '/some/path/folder' to '/some/path/target'
+        '/some/path/target' does already exist. It is expected that after
+        the move '/some/path/target/folder' exists.
+        """
         folder = self.foo_path / 'folder'
         content = folder / 'content_dir'
         and_more = content / 'and_more'
@@ -266,4 +271,20 @@ class TestFileSystem:
         assert 'folder' in target.listdir()
         assert (target / 'folder').isdir()
         assert (target / 'folder' / 'content_dir').isdir()
-        target.remove('r')
+
+    def test_rename_folder(self):
+        """
+        test moving a directory '/some/path/folder' to '/some/path/target'
+        '/some/path/target' does NOT yet exist. It is expected that after
+        the move '/some/path/target' exists and is actually the former
+        '/some/path/folder'.
+        """
+        folder = self.foo_path / 'folder'
+        content = folder / 'content_dir'
+        and_more = content / 'and_more'
+        and_more.makedirs()
+        target = self.foo_path / 'target'
+        folder.move(target)
+        assert not folder.exists()
+        assert target.isdir()
+        assert 'content_dir' in target.listdir()
