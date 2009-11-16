@@ -30,4 +30,5 @@ setup(
     localfilefs=abl.vpath.base.localfs:LocalFileSystem
     memoryfs=abl.vpath.base.memory:MemoryFileSystem
     """,
+    zip_safe=False,
 )
