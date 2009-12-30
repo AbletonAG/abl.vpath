@@ -42,6 +42,12 @@ class TestHttpUri(object):
 
 class TestURI(object):
 
+    def test_rescheming(self):
+        some_path = URI('first:///scheme')
+        some_path.scheme = 'second'
+        joined_path = some_path / 'other'
+        assert joined_path.scheme == 'second'
+
     def test_creation(self):
         local_path = URI('/tmp/this')
         assert local_path.path.split(os.sep) == ['', 'tmp', 'this']
@@ -76,6 +82,12 @@ class TestURI(object):
         assert pth.path == r'C:\some\path\on'
         assert pth == URI(r'C:\some\path\on', sep='\\')
         assert tail == 'windows'
+
+    def test_join_windows(self):
+        path = URI('C:\\some', sep='\\')
+        assert path.uri == '/C/some'
+        new_path = path / 'other'
+        assert new_path.uri == 'file:///C/some/other', new_path.uri
 
     def test_join(self):
         long_path = URI('this/is/a/long/path')

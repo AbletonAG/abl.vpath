@@ -218,6 +218,7 @@ class URI(object):
     """
 
     def __init__(self, uri, sep=os.sep, connection=None, **extras):
+        self._scheme = ''
         if isinstance(uri, URI):
             self.uri = uri.uri
             self.sep = uri.sep
@@ -239,6 +240,18 @@ class URI(object):
             # args for the path constructor
             self.extras.update(self.query)
 
+    def _get_scheme(self):
+        if not self._scheme:
+            scheme = self.parse_result.scheme
+            self._scheme = scheme
+        return self._scheme
+
+    def _set_scheme(self, scheme):
+        self._scheme = scheme
+        self.parse_result.scheme = scheme
+
+    scheme = property(_get_scheme, _set_scheme)
+
     @property
     def port(self):
         try:
@@ -249,7 +262,7 @@ class URI(object):
     @property
     def path(self):
         path = self.parse_result.path
-        if self.scheme == 'file' and self.sep != '/':
+        if self.scheme in ('file', 'svnlocal') and self.sep != '/':
             if len(path) > 2 and path[0] == path[2] == '/':
                 return path[1]+':'+self.sep+path[3:].replace('/', self.sep)
             else:
@@ -269,7 +282,7 @@ class URI(object):
             )
 
     def __str__(self):
-        if self.scheme == 'file':
+        if self.scheme in ('file', 'svnlocal'):
             return self.path
         else:
             #return self.uri
@@ -387,7 +400,7 @@ class URI(object):
         if sep != '/':
             args = [x.replace(sep, '/') for x in args]
         args = (
-            [self.path.rstrip('/')] +
+            [self.parse_result.path.rstrip('/')] +
             [x.strip('/') for x in args[:-1]] +
             [args[-1]]
             )
