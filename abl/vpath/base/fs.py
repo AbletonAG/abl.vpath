@@ -539,11 +539,12 @@ class URI(object):
         @rtype: Bunch
         @return: backend specific information about self.
         """
+        print 'in info: %s' % self
         return self.connection.info(self)
 
     @with_connection
-    def update(self):
-        return self.connection.update(self)
+    def update(self, recursive=True):
+        return self.connection.update(self, recursive)
 
     @with_connection
     def sync(self, other, options=''):
