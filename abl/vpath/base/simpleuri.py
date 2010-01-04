@@ -7,6 +7,7 @@ urlparse module for non http urls
 #******************************************************************************
 
 from urlparse import urlparse
+from urllib import urlencode
 
 def parse_query_string(query):
     """
@@ -182,9 +183,12 @@ class UriParse(object):
 
     def as_list(self):
         "return some attributes as a list"
-        return [self.scheme, self.netloc, self.path, '', '']
+        return [self.scheme, self.netloc, self.path, self.query, '']
 
 def uri_from_parts(parts):
     "simple function to merge three parts into an uri"
     uri = "%s://%s%s" % (parts[0], parts[1], parts[2])
+    if parts[3]:
+        extra = '?'+urlencode(parts[3])
+        uri += extra
     return uri

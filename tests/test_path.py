@@ -89,6 +89,19 @@ class TestURI(object):
         new_path = path / 'other'
         assert new_path.uri == 'file:///C/some/other', new_path.uri
 
+    def test_unipath_windows(self):
+        path = URI('C:\\some?extra=arg', sep='\\')
+        assert path.path == 'C:\\some'
+        assert path.unipath == '/C/some', path.unipath
+        assert path.uri == '/C/some?extra=arg'
+        new_path = path / 'other'
+        assert new_path.unipath == '/C/some/other', new_path.unipath
+        assert new_path.uri == 'file:///C/some/other?extra=arg', new_path.uri
+
+    def test_relative_dir_and_unipath(self):
+        path = URI('somedir', sep='\\')
+        assert path.unipath == './somedir'
+
     def test_join(self):
         long_path = URI('this/is/a/long/path')
         assert long_path == URI('this') / 'is' / 'a' / 'long' / 'path'

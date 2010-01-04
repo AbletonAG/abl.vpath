@@ -272,6 +272,14 @@ class URI(object):
         else:
             return path
 
+    @property
+    def unipath(self):
+        pathstr = self.parse_result.path
+        if not (pathstr.startswith('.') or pathstr.startswith('/')):
+            return './'+pathstr
+        else:
+            return pathstr
+
     def _key(self):
         return (
             self.scheme,
