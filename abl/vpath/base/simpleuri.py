@@ -7,7 +7,7 @@ urlparse module for non http urls
 #******************************************************************************
 
 from urlparse import urlparse
-from urllib import urlencode
+from urllib import urlencode, unquote_plus
 
 def parse_query_string(query):
     """
@@ -20,7 +20,7 @@ def parse_query_string(query):
         key, value = item.split('=')
         key = key.strip()
         value = value.strip()
-        result[key] = value
+        result[key] = unquote_plus(value)
     return result
 
 class UriParse(object):

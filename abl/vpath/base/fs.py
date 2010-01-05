@@ -181,6 +181,13 @@ CONNECTION_REGISTRY = ConnectionRegistry()
 
 atexit.register(CONNECTION_REGISTRY.shutdown)
 
+def normalize_uri(uri, sep='/'):
+    if sep != '/':
+        uri = uri.replace(sep, '/')
+        if len(uri) > 1 and uri[1] == ':':
+            uri = '/'+uri[0]+uri[2:]
+    return uri
+
 
 #============================================================================
 
@@ -226,10 +233,13 @@ class URI(object):
             self.connection = uri.connection
             self.extras = uri.extras
         else:
-            if sep != '/':
-                uri = uri.replace(sep,'/')
-                if len(uri) > 1 and uri[1] == ':':
-                    uri = '/'+uri[0]+uri[2:]
+            if uri.startswith('file://'):
+                uri = uri[7:]
+            uri = normalize_uri(uri, '\\')
+            if not '://' in uri and not (uri.startswith('/') or uri.startswith('.')):
+                uri = './'+uri
+            if not '://' in uri:
+                uri = 'file://'+uri
             self.uri = uri
             self.sep = sep
             self.parse_result = UriParse(uri)
@@ -351,7 +361,7 @@ class URI(object):
             connection=self.connection,
             **self.extras
             ),
-            second
+            second.partition('?')[0]
             )
 
     def directory(self):

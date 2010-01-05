@@ -53,11 +53,11 @@ class TestURI(object):
         assert local_path.path.split(os.sep) == ['', 'tmp', 'this']
         assert local_path.scheme == 'file'
 
-        path = URI('localpath')
-        assert path.path == 'localpath'
+        path = URI('localpath', sep='/')
+        assert path.path == './localpath', path.path
 
-        path = URI('trailing/slash/')
-        assert path.path == 'trailing/slash/'
+        path = URI('trailing/slash/', sep='/')
+        assert path.path == './trailing/slash/'
 
     def test_split(self):
         local_path = URI('/some/long/dir/structure')
@@ -67,25 +67,36 @@ class TestURI(object):
 
         local_path = URI('somedir')
         pth, tail = local_path.split()
-        assert pth == URI('.')
+        assert pth == URI('.'), pth
         assert tail == 'somedir'
+
+    def test_split_with_args(self):
+        local_path = URI('file:///some/long?extra=arg')
+        pth, tail = local_path.split()
+        assert tail == 'long', tail
+
+    def test_win_somehow_broken_on_windows(self):
+        path = URI("file://C:\\some\\windows\\path", sep='\\')
+        assert path.path == r'C:\some\windows\path', path.path
+        assert path.uri == 'file:///C/some/windows/path', path.uri
+        assert path.unipath == '/C/some/windows/path', path.unipath
 
     def test_windows_repr(self):
         path = URI(r'C:\some\path\on\windows', sep='\\')
         assert path.path == r'C:\some\path\on\windows'
-        assert path.uri == '/C/some/path/on/windows'
+        assert path.uri == 'file:///C/some/path/on/windows'
 
     def test_split_windows(self):
         path = URI(r'C:\some\path\on\windows', sep='\\')
         pth, tail = path.split()
-        assert pth.uri == '/C/some/path/on'
+        assert pth.uri == 'file:///C/some/path/on'
         assert pth.path == r'C:\some\path\on'
         assert pth == URI(r'C:\some\path\on', sep='\\')
         assert tail == 'windows'
 
     def test_join_windows(self):
         path = URI('C:\\some', sep='\\')
-        assert path.uri == '/C/some'
+        assert path.uri == 'file:///C/some', path.uri
         new_path = path / 'other'
         assert new_path.uri == 'file:///C/some/other', new_path.uri
 
@@ -93,10 +104,11 @@ class TestURI(object):
         path = URI('C:\\some?extra=arg', sep='\\')
         assert path.path == 'C:\\some'
         assert path.unipath == '/C/some', path.unipath
-        assert path.uri == '/C/some?extra=arg'
+        assert path.uri == 'file:///C/some?extra=arg'
         new_path = path / 'other'
         assert new_path.unipath == '/C/some/other', new_path.unipath
         assert new_path.uri == 'file:///C/some/other?extra=arg', new_path.uri
+
 
     def test_relative_dir_and_unipath(self):
         path = URI('somedir', sep='\\')

@@ -61,3 +61,4 @@ def test_absolute_url():
 def test_relative_url():
     uri = UriParse('http://./local/path')
     assert str(uri) == 'local/path'
+
