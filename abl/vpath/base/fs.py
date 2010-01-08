@@ -574,8 +574,8 @@ class URI(object):
         return self.connection.info(self)
 
     @with_connection
-    def update(self, recursive=True):
-        return self.connection.update(self, recursive)
+    def update(self, recursive=True, clean=False):
+        return self.connection.update(self, recursive, clean)
 
     @with_connection
     def sync(self, other, options=''):
