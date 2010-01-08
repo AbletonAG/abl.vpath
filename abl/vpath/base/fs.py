@@ -570,7 +570,6 @@ class URI(object):
         @rtype: Bunch
         @return: backend specific information about self.
         """
-        print 'in info: %s' % self
         return self.connection.info(self)
 
     @with_connection
