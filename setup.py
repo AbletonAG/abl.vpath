@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="AbletonVPath",
-    version="0.3.5",
+    version="0.3.6",
     description="A OO-abstraction of file-systems",
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
