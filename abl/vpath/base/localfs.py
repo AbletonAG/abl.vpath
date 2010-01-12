@@ -5,11 +5,14 @@
 from __future__ import with_statement, absolute_import
 
 from contextlib import nested
+import datetime
 import logging
 import os
 import shutil
+import stat
 
 from .fs import FileSystem
+from .misc import Bunch
 
 LOGGER = logging.getLogger(__name__)
 #----------------------------------------------------------------------------
@@ -20,6 +23,21 @@ class LocalFileSystem(FileSystem):
     def _initialize(self):
         pass
 
+    def info(self, unc):
+        p = self._path(unc)
+        stats = os.stat(p)
+        ctime = stats[stat.ST_CTIME]
+        mtime = stats[stat.ST_MTIME]
+        atime = stats[stat.ST_ATIME]
+        size = stats[stat.ST_SIZE]
+        mode = stats[stat.ST_MODE]
+        return Bunch(
+            ctime = datetime.datetime.fromtimestamp(ctime),
+            mtime = datetime.datetime.fromtimestamp(mtime),
+            atime = datetime.datetime.fromtimestamp(atime),
+            size = size,
+            mode = mode,
+            )
     def open(self, unc, options=None):
         if options is not None:
             return open(self._path(unc), options)
