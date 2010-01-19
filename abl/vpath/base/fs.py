@@ -476,7 +476,7 @@ class URI(object):
         if self.connection.isfile(self):
             return self.connection.removefile(self)
         elif self.connection.isdir(self):
-            if 'r' in options:
+            if options and 'r' in options:
                 for root, dirs, files in self.connection.walk(
                     self,
                     topdown=False
