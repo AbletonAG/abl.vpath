@@ -203,7 +203,12 @@ def with_connection(func, self, *args, **argd):
             **self.extras
             )
     self.connection.last_used = time.time()
-    return func(self, *args, **argd)
+    try:
+        return func(self, *args, **argd)
+    except BaseException, exp:
+        print "Got Exception:", exp
+        print "Connection:", self.connection
+        raise
 
 
 #============================================================================
