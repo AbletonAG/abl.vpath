@@ -441,7 +441,7 @@ class URI(object):
         return result
 
     @with_connection
-    def copy(self, other, options=None, **argd):
+    def copy(self, other, options=None, ignore=None):
         """
         copy: copy self to other
 
@@ -450,7 +450,7 @@ class URI(object):
 
         What will really happen depends on the backend.
         """
-        return self.connection.copy(self, other, options, **argd)
+        return self.connection.copy(self, other, options, ignore)
 
     @with_connection
     def move(self, other):
@@ -664,7 +664,7 @@ class FileSystem(object):
 
 
     def copy(self, source, dest, options=None, ignore=None):
-        if source.connection is desct.connection:
+        if source.connection is dest.connection:
             return self.internal_copy(source, dest, options, ignore)
 
         # TODO-std: what about options and ignore, ovewriting files
