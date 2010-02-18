@@ -8,6 +8,7 @@
 # Helper Classes
 
 import os
+import traceback
 
 class Bunch(dict):
     def __setattr__(self, key, item):
@@ -53,8 +54,8 @@ class TempFileHandle(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        return self.close()
+    def __exit__(self, exc_type, exc_value, tb):
+        self.close()
 
     def read(self, limit=-1):
         return self.handle.read(limit)

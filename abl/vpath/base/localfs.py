@@ -38,6 +38,7 @@ class LocalFileSystem(FileSystem):
             size = size,
             mode = mode,
             )
+
     def open(self, unc, options=None):
         if options is not None:
             return open(self._path(unc), options)
