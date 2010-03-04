@@ -325,3 +325,10 @@ class TestFileSystem:
         assert not folder.exists()
         assert target.isdir()
         assert 'content_dir' in target.listdir()
+
+def test_eq():
+    """
+    test for bugfix: __eq__ didn't check that 'other' is of URI type
+    """
+    p = URI('/some/path')
+    assert p != None

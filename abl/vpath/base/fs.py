@@ -320,7 +320,10 @@ class URI(object):
         return getattr(self.parse_result, attr)
 
     def __eq__(self, other):
-        return self.parse_result == other.parse_result
+        if isinstance(other, URI):
+            return self.parse_result == other.parse_result
+        else:
+            return False
 
     def __div__(self, other):
         return self.join(other)
