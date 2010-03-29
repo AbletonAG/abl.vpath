@@ -133,7 +133,7 @@ class MemoryFileSystem(FileSystem):
                         if mt in self.BINARY_MIME_TYPES:
                             hash = hashlib.md5()
                             hash.update(value)
-                            value = "Binary: %s" % hash.hexdigest()[1:-1]
+                            value = "Binary: %s" % hash.hexdigest()
                     outf.write("--- START %s%s ---\n" % (path, name))
                     outf.write(value)
                     outf.write("\n--- END %s%s ---\n\n" % (path, name))

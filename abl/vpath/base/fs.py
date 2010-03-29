@@ -615,7 +615,7 @@ class URI(object):
                 hash_.update(block)
                 block = inf.read(4096)
 
-        return hash_.hexdigest()[1:-1]
+        return hash_.hexdigest()
 
 
     @with_connection
