@@ -13,6 +13,7 @@ import stat
 
 from .fs import FileSystem
 from .misc import Bunch
+from .exceptions import FileDoesNotExistError
 
 LOGGER = logging.getLogger(__name__)
 #----------------------------------------------------------------------------
