@@ -311,7 +311,6 @@ class BaseUri(object):
         if self.scheme in ('file', 'svnlocal'):
             return self.path
         else:
-            #return self.uri
             return str(self.parse_result)
 
 
