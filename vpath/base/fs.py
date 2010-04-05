@@ -638,17 +638,6 @@ class BaseUri(object):
         return hash_.hexdigest()
 
 
-    @with_connection
-    def mtime(self):
-        """
-        Returns the modification-time in seconds since the epoch,
-        as returned by time.time()
-        """
-        self.connection.mtime(self)
-
-
-#============================================================================
-
 class FileSystem(object):
     """
     FileSystem is the base class for any file system.
