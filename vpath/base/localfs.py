@@ -11,15 +11,18 @@ import os
 import shutil
 import stat
 
-from .fs import FileSystem
+from .fs import FileSystem, BaseUri
 from .misc import Bunch
 from .exceptions import FileDoesNotExistError
 
 LOGGER = logging.getLogger(__name__)
 #----------------------------------------------------------------------------
 
+class LocalFileSystemUri(BaseUri):pass
+
 class LocalFileSystem(FileSystem):
     scheme = 'file'
+    uri = LocalFileSystemUri
 
     def _initialize(self):
         pass

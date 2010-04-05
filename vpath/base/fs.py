@@ -1,13 +1,14 @@
 from __future__ import with_statement
 
 
+
+
 import atexit
 import fnmatch
-import os
 import hashlib
-
-
+import os
 from Queue import Queue
+import re
 import threading
 import time
 import traceback
@@ -139,6 +140,7 @@ class ConnectionRegistry(object):
         return self.connections[key]
 
     def cleanup(self, force=False):
+        import time
         now = time.time()
         for key, conn in self.connections.items():
             if ((now - conn.last_used) > self.clean_timeout) or force:
@@ -178,6 +180,7 @@ class ConnectionRegistry(object):
             self.cleaner_thread.join()
 
 CONNECTION_REGISTRY = ConnectionRegistry()
+SCHEME_REGISTRY = {}
 
 atexit.register(CONNECTION_REGISTRY.shutdown)
 
@@ -213,8 +216,23 @@ def with_connection(func, self, *args, **argd):
 
 #============================================================================
 
+scheme_re = re.compile("([a-z+]+)://")
+
 def URI(uri, sep=os.sep, connection=None, **extras):
-    return BaseUri(uri, sep=sep, connection=connection, **extras)
+    scheme = 'file'
+    if isinstance(uri, BaseUri):
+        scheme = uri.scheme
+    else:
+        m = scheme_re.match(uri)
+        if m is not None:
+            scheme = m.group(1)
+
+    return SCHEME_REGISTRY.get(scheme, BaseUri)(
+        uri,
+        sep=sep,
+        connection=connection,
+        **extras
+        )
 
 class BaseUri(object):
     """
@@ -798,3 +816,4 @@ for entrypoint in pkg_resources.iter_entry_points('vpath.plugins'):
         traceback.print_exc()
         continue
     CONNECTION_REGISTRY.register(plugin_class.scheme, plugin_class)
+    SCHEME_REGISTRY[plugin_class.scheme] = plugin_class.uri

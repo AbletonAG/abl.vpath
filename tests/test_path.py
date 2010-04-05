@@ -9,6 +9,7 @@ import shutil
 import tempfile
 
 from vpath.base import *
+from vpath.base.fs import scheme_re
 
 class KeepCurrentDir:
 
@@ -23,6 +24,20 @@ class KeepCurrentDir:
     def __exit__(self, *exc_args):
         os.chdir(self._currentdir)
 
+class TestSchemeRe(object):
+    def test_file(self):
+        m = scheme_re.match("file://something")
+        assert m is not None
+        assert m.group(1) == 'file'
+
+    def test_with_plus(self):
+        m = scheme_re.match("svn+ssh://something")
+        assert m is not None
+        assert m.group(1) == 'svn+ssh'
+
+    def test_no_scheme(self):
+        m = scheme_re.match("some/path")
+        assert m is None
 
 class TestHttpUri(object):
     def test_query(self):
@@ -330,3 +345,5 @@ def test_eq():
     """
     p = URI('/some/path')
     assert p != None
+
+

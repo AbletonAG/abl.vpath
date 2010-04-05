@@ -6,7 +6,7 @@ import time
 
 from cStringIO import StringIO
 
-from .fs import FileSystem, URI
+from .fs import FileSystem, BaseUri, URI
 
 
 class MemoryFile(object):
@@ -41,10 +41,13 @@ class MemoryFile(object):
     def __str__(self):
         return self._data.getvalue()
 
+class MemoryFileSystemUri(BaseUri):pass
 
 class MemoryFileSystem(FileSystem):
 
     scheme = 'memory'
+    
+    uri = MemoryFileSystemUri
 
     def _initialize(self):
         self._fs = {}
