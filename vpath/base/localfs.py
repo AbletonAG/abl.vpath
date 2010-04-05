@@ -11,14 +11,24 @@ import os
 import shutil
 import stat
 
-from .fs import FileSystem, BaseUri
+from .fs import FileSystem, BaseUri, denormalize_path
 from .misc import Bunch
 from .exceptions import FileDoesNotExistError
 
 LOGGER = logging.getLogger(__name__)
 #----------------------------------------------------------------------------
 
-class LocalFileSystemUri(BaseUri):pass
+class LocalFileSystemUri(BaseUri):
+    def __str__(self):
+        return self.path
+
+    @property
+    def path(self):
+        path = self.parse_result.path
+        if self.sep != '/':
+            return denormalize_path(path, self.sep)
+        else:
+            return super(LocalFileSystemUri, self).path
 
 class LocalFileSystem(FileSystem):
     scheme = 'file'

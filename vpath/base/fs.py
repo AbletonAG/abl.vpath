@@ -191,6 +191,12 @@ def normalize_uri(uri, sep='/'):
             uri = '/'+uri[0]+uri[2:]
     return uri
 
+def denormalize_path(path, sep='\\'):
+    if len(path) > 2 and path[0] == path[2] == '/':
+        return path[1]+':'+sep+path[3:].replace('/', sep)
+    else:
+        return path.replace('/', sep)
+
 
 #============================================================================
 
@@ -298,11 +304,6 @@ class BaseUri(object):
     @property
     def path(self):
         path = self.parse_result.path
-        if self.scheme in ('file', 'svnlocal') and self.sep != '/':
-            if len(path) > 2 and path[0] == path[2] == '/':
-                return path[1]+':'+self.sep+path[3:].replace('/', self.sep)
-            else:
-                return path.replace('/', self.sep)
         if path.startswith('/.'):
             return path[1:]
         else:
@@ -326,10 +327,7 @@ class BaseUri(object):
             )
 
     def __str__(self):
-        if self.scheme in ('file', 'svnlocal'):
-            return self.path
-        else:
-            return str(self.parse_result)
+        return str(self.parse_result)
 
 
     def __repr__(self):

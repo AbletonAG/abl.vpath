@@ -7,6 +7,7 @@ import time
 from cStringIO import StringIO
 
 from .fs import FileSystem, BaseUri, URI
+from .misc import Bunch
 
 
 class MemoryFile(object):
@@ -146,16 +147,15 @@ class MemoryFileSystem(FileSystem):
         traverse(self._fs)
 
 
-    def mtime(self, path):
+    def info(self, unc):
         # TODO-dir: currently only defined
         # for file-nodes!
-        p = self._path(path)
+        p = self._path(unc)
         current = self._fs
+
         for part in p.split("/"):
             current = current[part]
-
-        return current.mtime
-
+        return Bunch(mtime=current.mtime)
 
     def listdir(self, path, options):
         p = self._path(path)
