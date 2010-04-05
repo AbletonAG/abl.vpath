@@ -213,7 +213,10 @@ def with_connection(func, self, *args, **argd):
 
 #============================================================================
 
-class URI(object):
+def URI(uri, sep=os.sep, connection=None, **extras):
+    return BaseUri(uri, sep=sep, connection=connection, **extras)
+
+class BaseUri(object):
     """
     An URI object represents a path, either on the local filesystem or on a
     remote server. On creation, the path is represented by an (more or less
@@ -231,7 +234,7 @@ class URI(object):
 
     def __init__(self, uri, sep=os.sep, connection=None, **extras):
         self._scheme = ''
-        if isinstance(uri, URI):
+        if isinstance(uri, BaseUri):
             self.uri = uri.uri
             self.sep = uri.sep
             self.parse_result = uri.parse_result
@@ -320,7 +323,7 @@ class URI(object):
         return getattr(self.parse_result, attr)
 
     def __eq__(self, other):
-        if isinstance(other, URI):
+        if isinstance(other, BaseUri):
             return self.parse_result == other.parse_result
         else:
             return False
@@ -660,7 +663,7 @@ class FileSystem(object):
         pass
 
     def _path(self, uriobj):
-        if isinstance(uriobj, URI):
+        if isinstance(uriobj, BaseUri):
             return uriobj.path
         else:
             return uriobj
