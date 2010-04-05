@@ -8,9 +8,7 @@ from posixpath import join as ujoin
 import shutil
 import tempfile
 
-import nose
-
-from abl.vpath.base import *
+from vpath.base import *
 
 class KeepCurrentDir:
 

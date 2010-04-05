@@ -3,8 +3,8 @@ import sys
 from setuptools import setup, find_packages
 
 setup(
-    name="AbletonVPath",
-    version="0.4.0",
+    name="vpath",
+    version="0.1",
     description="A OO-abstraction of file-systems",
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
@@ -15,7 +15,7 @@ setup(
         "decorator",
         ],
     packages=find_packages(exclude=['ez_setup', 'tests']),
-    namespace_packages = ['abl'],
+    namespace_packages = ['vpath'],
     # TODO-std: add the classifiers
     classifiers = [
         'Operating System :: OS Independent',
@@ -26,9 +26,9 @@ setup(
         'Topic :: System :: Filesystems',
     ],
     entry_points="""
-    [abl.vpath.plugins]
-    localfilefs=abl.vpath.base.localfs:LocalFileSystem
-    memoryfs=abl.vpath.base.memory:MemoryFileSystem
+    [vpath.plugins]
+    localfilefs=vpath.base.localfs:LocalFileSystem
+    memoryfs=vpath.base.memory:MemoryFileSystem
     """,
     zip_safe=False,
 )

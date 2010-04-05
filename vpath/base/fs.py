@@ -788,7 +788,7 @@ class FileSystem(object):
         raise NotImplementedError
 
 
-for entrypoint in pkg_resources.iter_entry_points('abl.vpath.plugins'):
+for entrypoint in pkg_resources.iter_entry_points('vpath.plugins'):
     try:
         plugin_class = entrypoint.load()
     except Exception, exp:

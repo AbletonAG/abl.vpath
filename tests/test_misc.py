@@ -6,7 +6,7 @@
 from __future__ import with_statement
 import os
 
-from abl.vpath.base.misc import Bunch, TempFileHandle
+from vpath.base.misc import Bunch, TempFileHandle
 
 
 class TestBunch:
