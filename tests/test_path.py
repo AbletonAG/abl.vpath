@@ -229,6 +229,19 @@ class TestFileSystem:
                 assert 'foo.txt' in files
                 assert 'bar' in dirs
 
+    def test_relative_walk(self):
+        if not self.walkable:
+            return
+        path = URI(self.existing_dir, **self.extras)
+        for root, relative, dirs, files in path.relative_walk():
+            if path == root:
+                assert 'foo.txt' in files
+                assert 'bar' in dirs
+                assert relative == ''
+            if relative == 'bar':
+                assert not dirs
+                assert not files
+
     def test_copy_and_move_file(self):
         if not self.writable:
             return
