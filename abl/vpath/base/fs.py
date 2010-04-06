@@ -738,10 +738,10 @@ class FileSystem(object):
         for name in dirs:
             path = top / name
             if not relative:
-                relative = name
+                relpart = name
             else:
-                relative += '/%s' % name
-            for x in self.relative_walk(path, relative, topdown):
+                relpart = relative + '/%s' % name
+            for x in self.relative_walk(path, relpart, topdown):
                 yield x
         if not topdown:
             yield top, relative, dirs, nondirs
