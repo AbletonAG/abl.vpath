@@ -15,7 +15,7 @@ setup(
         "decorator",
         ],
     packages=find_packages(exclude=['ez_setup', 'tests']),
-    namespace_packages = ['vpath'],
+    namespace_packages = ['abl', 'abl.vpath'],
     # TODO-std: add the classifiers
     classifiers = [
         'Operating System :: OS Independent',
@@ -26,9 +26,9 @@ setup(
         'Topic :: System :: Filesystems',
     ],
     entry_points="""
-    [vpath.plugins]
-    localfilefs=vpath.base.localfs:LocalFileSystem
-    memoryfs=vpath.base.memory:MemoryFileSystem
+    [abl.vpath.plugins]
+    localfilefs=abl.vpath.base.localfs:LocalFileSystem
+    memoryfs=abl.vpath.base.memory:MemoryFileSystem
     """,
     zip_safe=False,
 )
