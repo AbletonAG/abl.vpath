@@ -7,7 +7,7 @@ from __future__ import with_statement
 import datetime
 import os
 import time
-from vpath.base import *
+from abl.vpath.base import *
 
 class TestLocalFSInfo:
 

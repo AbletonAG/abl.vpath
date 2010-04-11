@@ -3,7 +3,7 @@ import sys
 from setuptools import setup, find_packages
 
 setup(
-    name="vpath",
+    name="abl.vpath",
     version="0.1",
     description="A OO-abstraction of file-systems",
     author="Stephan Diehl",

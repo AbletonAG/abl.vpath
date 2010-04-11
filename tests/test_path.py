@@ -8,8 +8,8 @@ from posixpath import join as ujoin
 import shutil
 import tempfile
 
-from vpath.base import *
-from vpath.base.fs import scheme_re
+from abl.vpath.base import *
+from abl.vpath.base.fs import scheme_re
 
 class KeepCurrentDir:
 
