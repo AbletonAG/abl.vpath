@@ -8,6 +8,7 @@ from contextlib import nested
 import datetime
 import logging
 import os
+import platform
 import shutil
 import stat
 import subprocess
@@ -23,6 +24,13 @@ except NameError:
     WindowsError = None
 except:
     pass
+
+if platform.system() == 'Windows':
+    import pywintypes
+    pywinerror = pywintypes.error
+else:
+    pywinerror = None
+
 
 LOGGER = logging.getLogger(__name__)
 #----------------------------------------------------------------------------
@@ -72,7 +80,7 @@ class LocalFileSystem(FileSystem):
         pth = self._path(unc)
         try:
             return shutil.rmtree(pth)
-        except WindowsError:
+        except (WindowsError, pywinerror), exp:
             subprocess.call(['cmd','/C', 'rmdir', '/Q', '/S', pth])
 
     def removedir(self, unc):
