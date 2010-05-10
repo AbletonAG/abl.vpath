@@ -476,19 +476,24 @@ class URI(object):
         the options string contains 'r'. Otherwise, the backends 'removedir'
         method is used.
         """
-        if self.connection.isfile(self):
-            return self.connection.removefile(self)
-        elif self.connection.isdir(self):
+        if self.connection.isdir(self):
             if options and 'r' in options:
-                for root, dirs, files in self.connection.walk(
-                    self,
-                    topdown=False
-                    ):
-                    for fname in files:
-                        self.connection.removefile(root / fname)
-                    for dname in dirs:
-                        self.connection.removedir(root / dname)
-            return self.connection.removedir(self)
+                try:
+                    self.connection.rmtree(self)
+                except NotImplementedError:
+                    for root, dirs, files in self.connection.walk(
+                        self,
+                        topdown=False
+                        ):
+                        for fname in files:
+                            self.connection.removefile(root / fname)
+                        for dname in dirs:
+                            self.connection.removedir(root / dname)
+                    return self.connection.removedir(self)
+            else:
+                return self.connection.removedir(self)
+        elif self.connection.isfile(self):
+            return self.connection.removefile(self)
 
     @with_connection
     def open(self, options=None):
@@ -791,6 +796,9 @@ class FileSystem(object):
         raise NotImplementedError
 
     def removedir(self, path):
+        raise NotImplementedError
+
+    def rmtree(self, path):
         raise NotImplementedError
 
     def mkdir(self, path):

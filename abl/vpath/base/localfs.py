@@ -10,10 +10,19 @@ import logging
 import os
 import shutil
 import stat
+import subprocess
 
 from .fs import FileSystem
 from .misc import Bunch
 from .exceptions import FileDoesNotExistError
+
+# check for WindowsError
+try:
+    raise WindowsError()
+except NameError:
+    WindowsError = None
+except:
+    pass
 
 LOGGER = logging.getLogger(__name__)
 #----------------------------------------------------------------------------
@@ -58,6 +67,13 @@ class LocalFileSystem(FileSystem):
             import win32con
             win32api.SetFileAttributes(pth, win32con.FILE_ATTRIBUTE_NORMAL)
             return os.unlink(pth)
+
+    def rmtree(self, unc):
+        pth = self._path(unc)
+        try:
+            return shutil.rmtree(pth)
+        except WindowsError:
+            subprocess.call(['cmd','/C', 'rmdir', '/Q', '/S', pth])
 
     def removedir(self, unc):
         pth = self._path(unc)
