@@ -20,12 +20,16 @@ class MemoryFSTests(TestCase):
         subdir.mkdir()
 
         assert subdir.isdir()
-
+        assert not subdir.isfile()
+        
         out = subdir / "bar"
 
+        
         with out.open("w") as outf:
             outf.write("foobar")
 
+        assert not out.isdir()
+        assert out.isfile()
 
         with out.open() as inf:
             content = inf.read()

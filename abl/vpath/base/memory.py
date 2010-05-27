@@ -72,8 +72,25 @@ class MemoryFileSystem(FileSystem):
                 else:
                     return False
 
+            return isinstance(current, dict)
         return True
+    
 
+    def isfile(self, path):
+        p = self._path(path)
+        current = self._fs
+        if p:
+            for part in p.split("/"):
+                if part in current:
+                    current = current[part]
+                else:
+                    return False
+                
+            return isinstance(current, MemoryFile)
+        return False
+            
+
+    
 
     def mkdir(self, path):
         p = self._path(path)
