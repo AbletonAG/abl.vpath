@@ -21,3 +21,8 @@ Currently supported are:
 from __future__ import absolute_import
 from .fs import URI, FileSystem
 from exceptions import *
+
+import logging
+from abl.util import NullHandler
+
+logging.getLogger("abl.vpath").addHandler(NullHandler())

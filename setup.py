@@ -13,6 +13,7 @@ setup(
     download_url='',
     install_requires=[
         "decorator",
+        "AbletonUtil",
         ],
     packages=find_packages(exclude=['ez_setup', 'tests']),
     namespace_packages = ['abl', 'abl.vpath'],
