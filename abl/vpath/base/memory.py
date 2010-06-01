@@ -154,7 +154,7 @@ class MemoryFileSystem(FileSystem):
         return current.mtime
 
 
-    def listdir(self, path, options):
+    def listdir(self, path, options=None):
         p = self._path(path)
         current = self._fs
         for part in p.split("/"):
