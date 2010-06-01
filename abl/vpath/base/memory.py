@@ -174,7 +174,7 @@ class MemoryFileSystem(FileSystem):
             current = current[part]
         return Bunch(mtime=current.mtime)
 
-    def listdir(self, path, options):
+    def listdir(self, path, options=None):
         p = self._path(path)
         current = self._fs
         for part in p.split("/"):

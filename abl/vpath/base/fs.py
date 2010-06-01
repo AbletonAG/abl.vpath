@@ -494,19 +494,24 @@ class BaseUri(object):
         the options string contains 'r'. Otherwise, the backends 'removedir'
         method is used.
         """
-        if self.connection.isfile(self):
-            return self.connection.removefile(self)
-        elif self.connection.isdir(self):
+        if self.connection.isdir(self):
             if options and 'r' in options:
-                for root, dirs, files in self.connection.walk(
-                    self,
-                    topdown=False
-                    ):
-                    for fname in files:
-                        self.connection.removefile(root / fname)
-                    for dname in dirs:
-                        self.connection.removedir(root / dname)
-            return self.connection.removedir(self)
+                try:
+                    self.connection.rmtree(self)
+                except NotImplementedError:
+                    for root, dirs, files in self.connection.walk(
+                        self,
+                        topdown=False
+                        ):
+                        for fname in files:
+                            self.connection.removefile(root / fname)
+                        for dname in dirs:
+                            self.connection.removedir(root / dname)
+                    return self.connection.removedir(self)
+            else:
+                return self.connection.removedir(self)
+        elif self.connection.isfile(self):
+            return self.connection.removefile(self)
 
     @with_connection
     def open(self, options=None):
@@ -574,6 +579,22 @@ class BaseUri(object):
         root will be an URI object.
         """
         return self.connection.walk(self)
+
+    @with_connection
+    def relative_walk(self):
+        """
+        similar to "walk", but give as well the
+        directory part relative to the initial directory to walk.
+        Use like:
+
+        path = URI('/some/dir')
+        for root, relative, dirs, files in path.relative_walk():
+            do_something()
+
+        root will be an URI object.
+        relative is a string like "part" or "sub/part"
+        """
+        return self.connection.relative_walk(self)
 
     @with_connection
     def listdir(self, options=None):
@@ -714,6 +735,29 @@ class FileSystem(object):
             source.remove('r')
 
 
+    def relative_walk(self, top, relative="", topdown=True):
+        names = self.listdir(top)
+
+        dirs, nondirs = [], []
+        for name in names:
+            if self.isdir(top / name):
+                dirs.append(name)
+            else:
+                nondirs.append(name)
+
+        if topdown:
+            yield top, relative, dirs, nondirs
+        for name in dirs:
+            path = top / name
+            if not relative:
+                relpart = name
+            else:
+                relpart = relative + '/%s' % name
+            for x in self.relative_walk(path, relpart, topdown):
+                yield x
+        if not topdown:
+            yield top, relative, dirs, nondirs
+
     def walk(self, top, topdown=True):
         names = self.listdir(top)
 
@@ -759,6 +803,9 @@ class FileSystem(object):
         raise NotImplementedError
 
     def removedir(self, path):
+        raise NotImplementedError
+
+    def rmtree(self, path):
         raise NotImplementedError
 
     def mkdir(self, path):
