@@ -628,8 +628,8 @@ class BaseUri(object):
         return self.connection.sync(self, other, options)
 
     @with_connection
-    def log(self, limit=0):
-        return self.connection.log(self, limit)
+    def log(self, limit=0, **kwargs):
+        return self.connection.log(self, limit, **kwargs)
 
     @with_connection
     def log_by_time(self, start_time=None, stop_time=None):
