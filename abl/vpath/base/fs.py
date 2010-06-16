@@ -566,6 +566,18 @@ class BaseUri(object):
         """
         return self.connection.isdir(self)
 
+
+    @with_connection
+    def mtime(self):
+        """
+        mtime:
+
+        @rtype: float
+        @return: the last time of modification is seconds since the epoch.
+        """
+        return self.connection.mtime(self)
+    
+
     @with_connection
     def walk(self):
         """

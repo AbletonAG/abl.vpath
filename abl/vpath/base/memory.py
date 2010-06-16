@@ -88,8 +88,6 @@ class MemoryFileSystem(FileSystem):
                 
             return isinstance(current, MemoryFile)
         return False
-            
-
     
 
     def mkdir(self, path):
@@ -181,3 +179,11 @@ class MemoryFileSystem(FileSystem):
             current = current[part]
         return sorted(current.keys())
 
+
+    def mtime(self, path):
+        p = self._path(path)
+        current = self._fs
+        for part in p.split("/"):
+            current = current[part]
+        return current.mtime
+        
