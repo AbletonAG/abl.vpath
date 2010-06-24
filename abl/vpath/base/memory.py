@@ -15,6 +15,7 @@ class MemoryFile(object):
 
     def __init__(self):
         self._data = StringIO()
+        self._line_reader = None
         self.mtime = self.ctime = time.time()
 
 
@@ -31,6 +32,10 @@ class MemoryFile(object):
         self._data.seek(to)
 
 
+    def tell(self):
+        return self._data.tell()
+    
+
     def __enter__(self):
         return self
 
@@ -41,6 +46,16 @@ class MemoryFile(object):
 
     def __str__(self):
         return self._data.getvalue()
+
+
+    def close(self):
+        self._line_reader = None
+        self._data.seek(0)
+        
+
+    def readline(self):
+        return self._data.readline()
+        
 
 class MemoryFileSystemUri(BaseUri):pass
 
@@ -170,7 +185,11 @@ class MemoryFileSystem(FileSystem):
 
         for part in p.split("/"):
             current = current[part]
-        return Bunch(mtime=current.mtime)
+        return Bunch(mtime=current.mtime,
+                     size=len(current._data.getvalue())
+                     )
+                     
+    
 
     def listdir(self, path, options=None):
         p = self._path(path)
