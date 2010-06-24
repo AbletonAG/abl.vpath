@@ -19,7 +19,7 @@ Currently supported are:
   * ssh
 """
 from __future__ import absolute_import
-from .fs import URI, FileSystem
+from .fs import URI, FileSystem, BaseUri
 from exceptions import *
 
 import logging

@@ -3,8 +3,8 @@ import sys
 from setuptools import setup, find_packages
 
 setup(
-    name="abl.vpath",
-    version="0.4.3",
+    name="AbletonVPath",
+    version="0.4.4",
     description="A OO-abstraction of file-systems",
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
