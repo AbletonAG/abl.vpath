@@ -194,7 +194,7 @@ class MemoryFileSystem(FileSystem):
     def listdir(self, path, options=None):
         p = self._path(path)
         current = self._fs
-        for part in p.split("/"):
+        for part in [x for x in p.split("/") if x]:
             current = current[part]
         return sorted(current.keys())
 

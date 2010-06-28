@@ -6,9 +6,14 @@ from cStringIO import StringIO
 from unittest import TestCase
 
 from abl.vpath.base import URI
+from abl.vpath.base.fs import CONNECTION_REGISTRY
 
 
 class MemoryFSTests(TestCase):
+
+
+    def setUp(self):
+        CONNECTION_REGISTRY.connections = {}
 
 
     def test_all(self):
@@ -45,6 +50,34 @@ class MemoryFSTests(TestCase):
         out = StringIO()
         connection.dump(out)
         print out.getvalue()
+
+    def test_listdir_empty_root(self):
+        root = URI("memory:///")
+        files = root.listdir()
+        assert not files
+
+    def test_listdir_empty_dir(self):
+        root = URI("memory:///")
+        foo = root / 'foo'
+        foo.mkdir()
+        rootfiles = root.listdir()
+        assert 'foo' in rootfiles
+        foofiles = foo.listdir()
+        assert not foofiles
+
+    def test_walk(self):
+        root = URI("memory:///")
+        foo = root / 'foo'
+        foo.mkdir()
+        bar = root / 'bar'
+        bar.mkdir()
+        foofile =  foo / 'foocontent.txt'
+        with foofile.open('w') as fd:
+            fd.write('foocontent')
+        results = []
+        for root, dirs, files in root.walk():
+            results.append((root, dirs, files))
+        assert len(results) == 3
 
 
 
