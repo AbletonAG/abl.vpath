@@ -21,10 +21,10 @@ class MemoryFSTests(TestCase):
 
         assert subdir.isdir()
         assert not subdir.isfile()
-        
+
         out = subdir / "bar"
 
-        
+
         with out.open("w") as outf:
             outf.write("foobar")
 
