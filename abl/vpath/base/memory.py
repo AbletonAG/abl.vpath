@@ -7,7 +7,8 @@ import time
 from cStringIO import StringIO
 
 from .fs import FileSystem, BaseUri, URI
-from .misc import Bunch
+
+from abl.util import Bunch
 
 
 class MemoryFile(object):

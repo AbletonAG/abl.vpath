@@ -14,8 +14,9 @@ import stat
 import subprocess
 
 from .fs import FileSystem, BaseUri, denormalize_path
-from .misc import Bunch
 from .exceptions import FileDoesNotExistError
+
+from abl.util import Bunch
 
 # check for WindowsError
 try:

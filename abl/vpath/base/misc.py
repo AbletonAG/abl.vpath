@@ -10,33 +10,6 @@
 import os
 import traceback
 
-class Bunch(dict):
-    def __setattr__(self, key, item):
-        self[key] = item
-
-    def __getattr__(self, key):
-        try:
-            return self[key]
-        except KeyError:
-            raise AttributeError
-
-    def __delattr__(self, key):
-        try:
-            del self[key]
-        except KeyError:
-            raise AttributeError
-
-    def copy(self):
-        return self.__class__(**super(Bunch, self).copy())
-
-    def get_prefix(self, prefix):
-        other = self.__class__()
-        keys = [x for x in self.keys() if x.startswith(prefix)]
-        for key in keys:
-            other[key] = self[key]
-        return other
-
-
 class TempFileHandle(object):
     """
     TempFileHandle
