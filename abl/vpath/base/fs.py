@@ -632,21 +632,8 @@ class BaseUri(object):
         return self.connection.info(self)
 
     @with_connection
-    def update(self, recursive=True, clean=False):
-        return self.connection.update(self, recursive, clean)
-
-    @with_connection
     def sync(self, other, options=''):
         return self.connection.sync(self, other, options)
-
-    @with_connection
-    def log(self, limit=0, **kwargs):
-        return self.connection.log(self, limit, **kwargs)
-
-    @with_connection
-    def log_by_time(self, start_time=None, stop_time=None):
-        return self.connection.log_by_time(self, start_time, stop_time)
-
 
     @with_connection
     def glob(self, pattern):
@@ -667,6 +654,21 @@ class BaseUri(object):
                 block = inf.read(4096)
 
         return hash_.hexdigest()
+
+
+class RevisionedUri(BaseUri):
+    @with_connection
+    def update(self, recursive=True, clean=False):
+        return self.connection.update(self, recursive, clean)
+
+    @with_connection
+    def log(self, limit=0, **kwargs):
+        return self.connection.log(self, limit, **kwargs)
+
+    @with_connection
+    def log_by_time(self, start_time=None, stop_time=None):
+        return self.connection.log_by_time(self, start_time, stop_time)
+
 
 
 class FileSystem(object):
@@ -835,22 +837,23 @@ class FileSystem(object):
     def info(self,  path):
         raise NotImplementedError
 
-    def update(self,  path):
-        raise NotImplementedError
-
     def sync(self, source, dest, options):
-        raise NotImplementedError
-
-    def log(self, path, limit=0):
-        raise NotImplementedError
-
-    def log_by_time(self, path, start_time=None, stop_time=None):
         raise NotImplementedError
 
     def internal_copy(self, source, dest, options=None, ignore=None):
         raise NotImplementedError
 
     def mtime(self, path):
+        raise NotImplementedError
+
+class RevisionedFileSystem(FileSystem):
+    def update(self,  path):
+        raise NotImplementedError
+
+    def log(self, path, limit=0):
+        raise NotImplementedError
+
+    def log_by_time(self, path, start_time=None, stop_time=None):
         raise NotImplementedError
 
 

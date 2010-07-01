@@ -62,3 +62,11 @@ def test_relative_url():
     uri = UriParse('http://./local/path')
     assert str(uri) == 'local/path'
 
+def xtest_suburi_as_serverpart():
+    """
+    functionality not yet implemented
+    """
+    uri = UriParse('zip://((/path/to/local/file.zip))/content.txt')
+    assert uri.hostname == '/path/to/local/file.zip'
+    assert uri.path == '/content.txt'
+
