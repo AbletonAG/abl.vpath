@@ -144,7 +144,7 @@ class LocalFileSystem(FileSystem):
         else:
             return super(LocalFileSystem, self).move(source, dest)
 
-    def copy(self, source, dest, options=None, ignore=None):
+    def copy(self, source, dest, recursive=False, ignore=None):
 
         if ignore is not None:
             ignore = set(ignore)
@@ -152,13 +152,13 @@ class LocalFileSystem(FileSystem):
             ignore = set()
         if not source.exists():
             raise FileDoesNotExistError(str(source))
-        if options is None:
+        if not recursive:
             assert source.isfile()
             if dest.isdir():
                 dest = dest / source.last()
             with nested(source.open('rb'), dest.open('wb')) as (infs, outfs):
                 shutil.copyfileobj(infs, outfs, 8192)
-        elif 'r' in options:
+        else:
             assert source.isdir()
             if dest.exists():
                 droot = dest / source.last()

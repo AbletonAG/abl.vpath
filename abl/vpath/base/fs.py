@@ -462,7 +462,7 @@ class BaseUri(object):
         return result
 
     @with_connection
-    def copy(self, other, options=None, ignore=None):
+    def copy(self, other, recursive=False, ignore=None):
         """
         copy: copy self to other
 
@@ -471,7 +471,7 @@ class BaseUri(object):
 
         What will really happen depends on the backend.
         """
-        return self.connection.copy(self, other, options, ignore)
+        return self.connection.copy(self, other, recursive, ignore)
 
     @with_connection
     def move(self, other):
@@ -708,9 +708,9 @@ class FileSystem(object):
             return uriobj
 
 
-    def copy(self, source, dest, options=None, ignore=None):
+    def copy(self, source, dest, recursive=False, ignore=None):
         if source.connection is dest.connection:
-            return self.internal_copy(source, dest, options, ignore)
+            return self.internal_copy(source, dest, recursive, ignore)
 
         # TODO-std: what about options and ignore, ovewriting files
         # directories and so forth
@@ -745,7 +745,7 @@ class FileSystem(object):
             source.copy(destination)
             source.remove()
         else:
-            source.copy(destination, 'r')
+            source.copy(destination, recursive=True)
             source.remove('r')
 
 
@@ -840,7 +840,7 @@ class FileSystem(object):
     def sync(self, source, dest, options):
         raise NotImplementedError
 
-    def internal_copy(self, source, dest, options=None, ignore=None):
+    def internal_copy(self, source, dest, recursive=False, ignore=None):
         raise NotImplementedError
 
     def mtime(self, path):
