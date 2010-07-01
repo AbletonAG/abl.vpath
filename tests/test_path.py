@@ -191,6 +191,12 @@ class TestFileSystem:
         thisdir = os.path.split(os.path.abspath(__file__))[0]
         foo_dir = os.path.join(thisdir, 'foo')
         shutil.rmtree(foo_dir)
+        folder_dir = os.path.join(thisdir, 'folder')
+        if os.path.isdir(folder_dir):
+            shutil.rmtree(folder_dir)
+        target_dir = os.path.join(thisdir, 'target')
+        if os.path.isdir(target_dir):
+            shutil.rmtree(target_dir)
 
     def test_file(self):
         if self.writable:
@@ -221,7 +227,7 @@ class TestFileSystem:
             testfile = URI('testdir/somefile', **self.extras)
             with testfile.open('w') as fd:
                 fd.write('test')
-            testdir.remove('r')
+            testdir.remove(recursive=True)
             assert not testdir.exists()
             assert not testfile.exists()
         testdir = URI(self.existing_dir, **self.extras)
@@ -289,24 +295,24 @@ class TestFileSystem:
             fs.write('content')
         target = URI(self.baseurl, **self.extras) / 'target'
         assert not target.exists()
-        folder.copy(target, 'r')
+        folder.copy(target, recursive=True)
         assert target.exists()
         target_file = target / 'afile.txt'
         assert target_file.exists()
         with target_file.open() as fs:
             content = fs.read()
             assert content == 'content'
-        target.remove('r')
+        target.remove(recursive=True)
         assert not target.exists()
         target.makedirs()
-        folder.copy(target, 'r')
+        folder.copy(target, recursive=True)
         newtarget = target / 'folder'
         assert newtarget.exists()
         assert newtarget.isdir()
         newtarget_file = newtarget / 'afile.txt'
         assert newtarget_file.exists()
         assert newtarget_file.isfile()
-        target.remove('r')
+        target.remove(recursive=True)
 
         folder.move(target)
         assert not folder.exists()
@@ -314,7 +320,7 @@ class TestFileSystem:
         assert target.isdir()
         assert target_file.exists()
         assert target_file.isfile()
-        target.remove('r')
+        target.remove(recursive=True)
 
     def test_move_folder_to_subfolder(self):
         """

@@ -486,7 +486,7 @@ class BaseUri(object):
         return self.connection.move(self, other)
 
     @with_connection
-    def remove(self, options=None):
+    def remove(self, recursive=False):
         """
         remove: shortcut method to remove self.
         if 'self' represents a file, the backends 'removefile' method id used.
@@ -495,7 +495,7 @@ class BaseUri(object):
         method is used.
         """
         if self.connection.isdir(self):
-            if options and 'r' in options:
+            if recursive:
                 try:
                     self.connection.rmtree(self)
                 except NotImplementedError:
