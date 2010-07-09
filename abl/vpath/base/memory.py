@@ -192,7 +192,7 @@ class MemoryFileSystem(FileSystem):
                      
     
 
-    def listdir(self, path, options=None):
+    def listdir(self, path, recursive=False):
         p = self._path(path)
         current = self._fs
         for part in [x for x in p.split("/") if x]:

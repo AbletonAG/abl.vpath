@@ -77,7 +77,7 @@ class LocalFileSystem(FileSystem):
         else:
             return open(self._path(unc))
 
-    def listdir(self, unc, options=None):
+    def listdir(self, unc, recursive=False):
         return os.listdir(self._path(unc))
 
     def removefile(self, unc):

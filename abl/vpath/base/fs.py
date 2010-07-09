@@ -609,15 +609,15 @@ class BaseUri(object):
         return self.connection.relative_walk(self)
 
     @with_connection
-    def listdir(self, options=None):
+    def listdir(self, recursive=False):
         """
         listdir: list contents of directory self.
-        if options == 'r', return the content of this
+        if recursive==True, return the content of this
         directory recursivly. The pathpart of 'self' will
         not be returned.
         """
         # TODO-std: shouldn't this return URIs?
-        return self.connection.listdir(self, options)
+        return self.connection.listdir(self, recursive)
 
     @property
     @with_connection
@@ -810,7 +810,7 @@ class FileSystem(object):
     def open(self, path, options):
         raise NotImplementedError
 
-    def listdir(self, path, options=None):
+    def listdir(self, path, recursive=False):
         raise NotImplementedError
 
     def removefile(self, path):
