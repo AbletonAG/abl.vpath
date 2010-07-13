@@ -178,7 +178,7 @@ class MemoryFileSystem(FileSystem):
         traverse(self._fs)
 
 
-    def info(self, unc):
+    def info(self, unc, verbosity=0):
         # TODO-dir: currently only defined
         # for file-nodes!
         p = self._path(unc)

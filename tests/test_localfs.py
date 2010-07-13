@@ -24,17 +24,17 @@ class TestLocalFSInfo:
 
     def test_info_ctime(self):
         p = URI("test.txt")
-        assert p.info.ctime <= datetime.datetime.now()
-        assert p.info.ctime == p.info.mtime
+        assert p.info().ctime <= datetime.datetime.now()
+        assert p.info().ctime == p.info().mtime
 
     def test_info_mtime(self):
         p = URI("test.txt")
         now = datetime.datetime.now()
-        size = p.info.size
+        size = p.info().size
         with p.open('a') as fs:
             fs.write(' again')
-        assert p.info.mtime >= p.info.ctime, (p.info.mtime, p.info.ctime)
-        assert p.info.size > size
+        assert p.info().mtime >= p.info().ctime, (p.info().mtime, p.info().ctime)
+        assert p.info().size > size
         # due to now's millisecond resolution, we must ignore milliseconds
-        assert p.info.mtime.timetuple()[:6] >= now.timetuple()[:6], (p.info.mtime, now)
+        assert p.info().mtime.timetuple()[:6] >= now.timetuple()[:6], (p.info().mtime, now)
 

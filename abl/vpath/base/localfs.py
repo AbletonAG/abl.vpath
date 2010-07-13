@@ -55,7 +55,7 @@ class LocalFileSystem(FileSystem):
     def _initialize(self):
         pass
 
-    def info(self, unc):
+    def info(self, unc, verbosity=0):
         p = self._path(unc)
         stats = os.stat(p)
         ctime = stats[stat.ST_CTIME]

@@ -619,9 +619,8 @@ class BaseUri(object):
         # TODO-std: shouldn't this return URIs?
         return self.connection.listdir(self, recursive)
 
-    @property
     @with_connection
-    def info(self):
+    def info(self, verbosity=0):
         """
         info: backend info about self (probably not implemented for
               all backends. The result will be backend specific
@@ -629,7 +628,7 @@ class BaseUri(object):
         @rtype: Bunch
         @return: backend specific information about self.
         """
-        return self.connection.info(self)
+        return self.connection.info(self, verbosity)
 
     @with_connection
     def sync(self, other, options=''):
@@ -834,7 +833,7 @@ class FileSystem(object):
     def isdir(self, path):
         raise NotImplementedError
 
-    def info(self,  path):
+    def info(self,  path, verbosity=0):
         raise NotImplementedError
 
     def sync(self, source, dest, options):

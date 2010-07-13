@@ -44,7 +44,7 @@ class MemoryFSTests(TestCase):
         assert subdir == root / "foo"
 
         time.sleep(.5)
-        assert out.info.mtime < time.time()
+        assert out.info().mtime < time.time()
 
         connection = subdir.connection
         out = StringIO()
