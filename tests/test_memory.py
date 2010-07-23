@@ -80,4 +80,19 @@ class MemoryFSTests(TestCase):
         assert len(results) == 3
 
 
+    def test_next(self):
+        root = URI("memory:///")
+        subdir = root / "foo"
+        with subdir.open("w") as outf:
+            outf.write("foo\nbar")
+
+        with subdir.open() as inf:
+            content = inf.next()
+            assert content == "foo\n"
+            content = inf.next()
+            assert content == "bar"
+
+        with subdir.open() as inf:
+            for l in inf:
+                assert l in ["foo\n", "bar"]
 

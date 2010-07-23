@@ -35,7 +35,7 @@ class MemoryFile(object):
 
     def tell(self):
         return self._data.tell()
-    
+
 
     def __enter__(self):
         return self
@@ -52,18 +52,29 @@ class MemoryFile(object):
     def close(self):
         self._line_reader = None
         self._data.seek(0)
-        
+
 
     def readline(self):
         return self._data.readline()
-        
+
+
+    def next(self):
+        line =self.readline()
+        if line:
+            return line
+        else:
+            raise StopIteration
+
+    def __iter__(self):
+        return self
+
 
 class MemoryFileSystemUri(BaseUri):pass
 
 class MemoryFileSystem(FileSystem):
 
     scheme = 'memory'
-    
+
     uri = MemoryFileSystemUri
 
     def _initialize(self):
@@ -90,7 +101,7 @@ class MemoryFileSystem(FileSystem):
 
             return isinstance(current, dict)
         return True
-    
+
 
     def isfile(self, path):
         p = self._path(path)
@@ -101,10 +112,10 @@ class MemoryFileSystem(FileSystem):
                     current = current[part]
                 else:
                     return False
-                
+
             return isinstance(current, MemoryFile)
         return False
-    
+
 
     def mkdir(self, path):
         p = self._path(path)
@@ -189,8 +200,8 @@ class MemoryFileSystem(FileSystem):
         return Bunch(mtime=current.mtime,
                      size=len(current._data.getvalue())
                      )
-                     
-    
+
+
 
     def listdir(self, path, recursive=False):
         p = self._path(path)
@@ -206,4 +217,4 @@ class MemoryFileSystem(FileSystem):
         for part in p.split("/"):
             current = current[part]
         return current.mtime
-        
+
