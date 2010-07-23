@@ -59,7 +59,7 @@ class MemoryFile(object):
 
 
     def next(self):
-        line =self.readline()
+        line = self.readline()
         if line:
             return line
         else:
