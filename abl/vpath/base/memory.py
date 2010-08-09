@@ -58,6 +58,11 @@ class MemoryFile(object):
         return self._data.readline()
 
 
+    def readlines(self):
+        for line in self:
+            yield line
+
+
     def next(self):
         line = self.readline()
         if line:
