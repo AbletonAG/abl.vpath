@@ -62,13 +62,13 @@ class TestSimpleUri(unittest.TestCase):
         uri = UriParse('file://./local/path')
         self.assertEqual(uri.path, './local/path')
 
-    def xtest_suburi_as_serverpart(self):
+    def test_suburi_as_serverpart(self):
         """
         functionality not yet implemented
         """
-        uri = UriParse('zip://((/path/to/local/file.zip))/content.txt')
-        assert uri.hostname == '/path/to/local/file.zip'
-        assert uri.path == '/content.txt'
+        uri = UriParse('scheme://((/path/to/local/file.zip))/content.txt')
+        self.assertEqual(uri.hostname, '/path/to/local/file.zip')
+        self.assertEqual(uri.path, '/content.txt')
 
 if __name__ == '__main__':
     unittest.main()

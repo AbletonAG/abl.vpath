@@ -6,8 +6,28 @@ urlparse module for non http urls
 # (C) 2008 Ableton AG
 #******************************************************************************
 
+import re
 from urlparse import urlparse
 from urllib import urlencode, unquote_plus
+
+uri_parser = re.compile(r'''
+                            (?P<scheme>.*?)
+                            ://
+                            (
+                                (?P<username>.*?)
+                                (
+                                    :(?P<password>.*?)
+                                )?
+                                @
+                            )?
+                            (
+                                (?P<hostname>[^?]*)
+                            )
+                            (
+                                [?]
+                                (?P<attribs>.*)
+                            )?
+                         ''')
 
 def parse_query_string(query):
     """
@@ -91,6 +111,8 @@ class UriParse(object):
     def _init_other_uri(self):
         "init code for non http uri"
         uri, querysep, rest = self.uri.partition('?')
+        if '((' in uri:
+            import pdb; pdb.set_trace()
         if querysep and '=' in rest:
             self.uri = uri
             self.query = parse_query_string(rest)
