@@ -111,8 +111,6 @@ class UriParse(object):
     def _init_other_uri(self):
         "init code for non http uri"
         uri, querysep, rest = self.uri.partition('?')
-        if '((' in uri:
-            import pdb; pdb.set_trace()
         if querysep and '=' in rest:
             self.uri = uri
             self.query = parse_query_string(rest)
