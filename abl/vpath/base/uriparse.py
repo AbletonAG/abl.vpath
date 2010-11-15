@@ -52,6 +52,7 @@ Author: Paul Jiminez (?)
 License: ?, see bugs.python.org/issue1462525, so it's probably usable
 """
 
+# TODO-std: define generic parser for unknown scheme
 
 def urisplit(uri):
     """
@@ -217,6 +218,10 @@ class TelnetURLParser(URLParser):
     """Internal class to hold the defaults of telnet URLs"""
     _defaults=(None, None, None, 23, '/', None, None)
 
+class DefaultURIParser(URLParser):
+    """Internal class to hold the defaults of generic URIs"""
+    _defaults=(None, None, None, None, '/', None, None)
+
 class MailtoURIParser(URLParser):
     """Internal mailto URI parser
 
@@ -248,11 +253,11 @@ class URIParser(object):
 
     Schemes = {'http': HttpURLParser,
                'https': HttpsURLParser,
-	       'imap': ImapURLParser,
-	       'imaps': ImapsURLParser,
-	       'ftp': FtpURLParser,
-	       'tftp': TftpURLParser,
-	       'file': FileURLParser,
+               'imap': ImapURLParser,
+               'imaps': ImapsURLParser,
+               'ftp': FtpURLParser,
+               'tftp': TftpURLParser,
+               'file': FileURLParser,
                'telnet': TelnetURLParser,
                'mailto': MailtoURIParser,
 	      }
@@ -307,7 +312,7 @@ class URIParser(object):
 	Parser objects are required to have only 'parse' and 'unparse' methods.
 
 	"""
-        return self._parsers[self.scheme_of(uri)]
+        return self._parsers.get(self.scheme_of(uri), DefaultURIParser)
 
 def _dirname(p):
     q = p
