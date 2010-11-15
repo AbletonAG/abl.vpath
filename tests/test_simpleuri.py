@@ -2,71 +2,73 @@
 # (C) 2008 Ableton AG
 #******************************************************************************
 
+import unittest
+
 from abl.vpath.base.simpleuri import UriParse
 
-def test_non_http_uri_with_query_part():
-    uri = UriParse('scheme:///some/path?key_one=val_one&key_two=val_two')
-    assert uri.query == {'key_one':'val_one', 'key_two':'val_two'}
+class TestSimpleUri(unittest.TestCase):
+    def test_one(self):
+        uri = UriParse('file:///tmp/this')
+        self.assertEqual(uri.path, '/tmp/this')
 
-def test_one():
-    uri = UriParse('file:///tmp/this')
-    assert uri.path == '/tmp/this'
+    def test_two(self):
+        uri = UriParse('scheme:///some/path')
+        self.assertEqual(uri.scheme, 'scheme')
+        self.assertEqual(uri.path, '/some/path')
 
-def test_two():
-    uri = UriParse('scheme:///some/path')
-    assert uri.scheme == 'scheme'
-    assert uri.path == '/some/path'
+    def test_three(self):
+        uri = UriParse('svn://user@host:/some/path')
+        self.assertEqual(uri.scheme, 'svn')
+        self.assertEqual(uri.path, '/some/path')
+        self.assertEqual(uri.hostname, 'host')
+        self.assertEqual(uri.username, 'user')
 
-def test_three():
-    uri = UriParse('svn://user@host:/some/path')
-    assert uri.scheme == 'svn'
-    assert uri.path == '/some/path'
-    assert uri.hostname == 'host'
-    assert uri.username == 'user'
+    def test_non_http_scheme(self):
+        uri = UriParse('scheme://user:password@host:/some/path')
+        self.assertEqual(uri.scheme, 'scheme')
+        self.assertEqual(uri.path, '/some/path')
+        self.assertEqual(uri.hostname, 'host')
+        self.assertEqual(uri.username, 'user')
+        self.assertEqual(uri.password, 'password')
 
-def test_four():
-    uri = UriParse('svn://user:passwd@host:/some/path')
-    assert uri.scheme == 'svn'
-    assert uri.path == '/some/path'
-    assert uri.hostname == 'host'
-    assert uri.username == 'user'
-    assert uri.password == 'passwd'
+    def test_non_http_uri_with_query_part(self):
+        uri = UriParse('scheme:///some/path?key_one=val_one&key_two=val_two')
+        self.assertEqual(uri.query,
+                            {'key_one':'val_one', 'key_two':'val_two'}
+                            )
 
-def test_five():
-    uri = UriParse('file://tmp/this')
-    assert uri.scheme == 'file'
-    assert uri.path == 'tmp/this'
+    def test_query(self):
+        uri = UriParse('http://heinz/?a=1')
+        self.assertEqual(uri.query['a'], '1')
+        uri = UriParse('http://heinz/?a=1&b=2')
+        self.assertEqual(uri.query['a'], '1')
+        self.assertEqual(uri.query['b'], '2')
 
-def test_six():
-    uri = UriParse('svn://versonator:+UPa&U)n_r+:3fk@heinz/Build/trunk/IntegrationTools')
-    assert uri.username == 'versonator'
-    assert uri.password == '+UPa&U)n_r+:3fk'
+    def test_query_unsplit(self):
+        uri = UriParse('http://heinz/')
+        uri.query = dict(a='1', b='2')
+        self.assertEqual(uri, UriParse(str(uri)))
 
-def test_query():
-    uri = UriParse('http://heinz/?a=1')
-    assert uri.query['a'] == '1'
-    uri = UriParse('http://heinz/?a=1&b=2')
-    assert uri.query['a'] == '1'
-    assert uri.query['b'] == '2'
+    def test_absolute_url(self):
+        uri = UriParse('http:///local/path')
+        self.assertEqual(str(uri), '/local/path')
 
-def test_query_unsplit():
-    uri = UriParse('http://heinz/')
-    uri.query = dict(a='1', b='2')
-    assert uri == UriParse(str(uri))
+    def test_relative_url(self):
+        uri = UriParse('http://tmp/this')
+        self.assertEqual(uri.scheme, 'http')
+        self.assertEqual(uri.path, '/this')
 
-def test_absolute_url():
-    uri = UriParse('http:///local/path')
-    assert str(uri) == '/local/path'
+    def test_relative_uri(self):
+        uri = UriParse('file://./local/path')
+        self.assertEqual(uri.path, './local/path')
 
-def test_relative_url():
-    uri = UriParse('http://./local/path')
-    assert str(uri) == 'local/path'
+    def xtest_suburi_as_serverpart(self):
+        """
+        functionality not yet implemented
+        """
+        uri = UriParse('zip://((/path/to/local/file.zip))/content.txt')
+        assert uri.hostname == '/path/to/local/file.zip'
+        assert uri.path == '/content.txt'
 
-def xtest_suburi_as_serverpart():
-    """
-    functionality not yet implemented
-    """
-    uri = UriParse('zip://((/path/to/local/file.zip))/content.txt')
-    assert uri.hostname == '/path/to/local/file.zip'
-    assert uri.path == '/content.txt'
-
+if __name__ == '__main__':
+    unittest.main()
