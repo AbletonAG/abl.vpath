@@ -7,6 +7,7 @@ import os
 from posixpath import join as ujoin
 import shutil
 import tempfile
+from unittest import TestCase
 
 from abl.vpath.base import *
 from abl.vpath.base.fs import scheme_re
@@ -24,146 +25,146 @@ class KeepCurrentDir:
     def __exit__(self, *exc_args):
         os.chdir(self._currentdir)
 
-class TestSchemeRe(object):
+class TestSchemeRe(TestCase):
     def test_file(self):
         m = scheme_re.match("file://something")
-        assert m is not None
-        assert m.group(1) == 'file'
+        self.assert_(m is not None)
+        self.assertEqual(m.group(1), 'file')
 
     def test_with_plus(self):
         m = scheme_re.match("svn+ssh://something")
-        assert m is not None
-        assert m.group(1) == 'svn+ssh'
+        self.assert_(m is not None)
+        self.assertEqual(m.group(1), 'svn+ssh')
 
     def test_no_scheme(self):
         m = scheme_re.match("some/path")
-        assert m is None
+        self.assertEqual(m, None)
 
-class TestHttpUri(object):
+class TestHttpUri(TestCase):
     def test_query(self):
         p = URI('http://storm/this')
         p.query['a'] = 'b'
-        assert URI(str(p)) == URI('http://storm/this?a=b')
+        self.assertEqual(URI(str(p)), URI('http://storm/this?a=b'))
 
     def test_query_after_join(self):
         p = URI('http://storm/this')
         p /= 'other'
-        assert URI(str(p)) == URI('http://storm/this/other')
+        self.assertEqual(URI(str(p)), URI('http://storm/this/other'))
         p.query['a'] = 'b'
-        assert URI(str(p)) == URI('http://storm/this/other?a=b')
+        self.assertEqual(URI(str(p)), URI('http://storm/this/other?a=b'))
 
 
-class TestURI(object):
+class TestURI(TestCase):
 
     def test_rescheming(self):
         some_path = URI('first:///scheme')
         some_path.scheme = 'second'
         joined_path = some_path / 'other'
-        assert joined_path.scheme == 'second'
+        self.assertEqual(joined_path.scheme, 'second')
 
     def test_creation(self):
         local_path = URI('/tmp/this')
-        assert local_path.path.split(os.sep) == ['', 'tmp', 'this']
-        assert local_path.scheme == 'file'
+        self.assertEqual(local_path.path.split(os.sep), ['', 'tmp', 'this'])
+        self.assertEqual(local_path.scheme, 'file')
 
         path = URI('localpath', sep='/')
-        assert path.path == './localpath', path.path
+        self.assertEqual(path.path, './localpath', path.path)
 
         path = URI('trailing/slash/', sep='/')
-        assert path.path == './trailing/slash/'
+        self.assertEqual(path.path, './trailing/slash/')
 
     def test_split(self):
         local_path = URI('/some/long/dir/structure')
         pth, tail = local_path.split()
-        assert pth == URI('/some/long/dir')
-        assert tail == 'structure'
+        self.assertEqual(pth, URI('/some/long/dir'))
+        self.assertEqual(tail, 'structure')
 
         local_path = URI('somedir')
         pth, tail = local_path.split()
-        assert pth == URI('.'), pth
-        assert tail == 'somedir'
+        self.assertEqual(pth, URI('.'))
+        self.assertEqual(tail, 'somedir')
 
     def test_split_with_args(self):
         local_path = URI('file:///some/long?extra=arg')
         pth, tail = local_path.split()
-        assert tail == 'long', tail
+        self.assertEqual(tail, 'long')
 
     def test_win_somehow_broken_on_windows(self):
         path = URI("file://C:\\some\\windows\\path", sep='\\')
-        assert path.path == r'C:\some\windows\path', path.path
-        assert path.uri == 'file:///C/some/windows/path', path.uri
-        assert path.unipath == '/C/some/windows/path', path.unipath
+        self.assertEqual(path.path, r'C:\some\windows\path')
+        self.assertEqual(path.uri, 'file:///C/some/windows/path')
+        self.assertEqual(path.unipath, '/C/some/windows/path')
 
     def test_windows_repr(self):
         path = URI(r'C:\some\path\on\windows', sep='\\')
-        assert path.path == r'C:\some\path\on\windows'
-        assert path.uri == 'file:///C/some/path/on/windows'
+        self.assertEqual(path.path, r'C:\some\path\on\windows')
+        self.assertEqual(path.uri, 'file:///C/some/path/on/windows')
 
     def test_split_windows(self):
         path = URI(r'C:\some\path\on\windows', sep='\\')
         pth, tail = path.split()
-        assert pth.uri == 'file:///C/some/path/on'
-        assert pth.path == r'C:\some\path\on'
-        assert pth == URI(r'C:\some\path\on', sep='\\')
-        assert tail == 'windows'
+        self.assertEqual(pth.uri, 'file:///C/some/path/on')
+        self.assertEqual(pth.path, r'C:\some\path\on')
+        self.assertEqual(pth, URI(r'C:\some\path\on', sep='\\'))
+        self.assertEqual(tail, 'windows')
 
     def test_join_windows(self):
         path = URI('C:\\some', sep='\\')
-        assert path.uri == 'file:///C/some', path.uri
+        self.assertEqual(path.uri, 'file:///C/some')
         new_path = path / 'other'
-        assert new_path.uri == 'file:///C/some/other', new_path.uri
+        self.assertEqual(new_path.uri, 'file:///C/some/other')
 
     def test_unipath_windows(self):
         path = URI('C:\\some?extra=arg', sep='\\')
-        assert path.path == 'C:\\some'
-        assert path.unipath == '/C/some', path.unipath
-        assert path.uri == 'file:///C/some?extra=arg'
+        self.assertEqual(path.path, 'C:\\some')
+        self.assertEqual(path.unipath, '/C/some')
+        self.assertEqual(path.uri, 'file:///C/some?extra=arg')
         new_path = path / 'other'
-        assert new_path.unipath == '/C/some/other', new_path.unipath
-        assert new_path.uri == 'file:///C/some/other?extra=arg', new_path.uri
+        self.assertEqual(new_path.unipath, '/C/some/other')
+        self.assertEqual(new_path.uri, 'file:///C/some/other?extra=arg')
 
 
     def test_relative_dir_and_unipath(self):
         path = URI('somedir', sep='\\')
-        assert path.unipath == './somedir'
+        self.assertEqual(path.unipath, './somedir')
 
     def test_join(self):
         long_path = URI('this/is/a/long/path')
-        assert long_path == URI('this') / 'is' / 'a' / 'long' / 'path'
+        self.assertEqual(long_path, URI('this') / 'is' / 'a' / 'long' / 'path')
 
     def test_augmented_join(self):
         testpath = URI('/a')
         testpath /= 'path'
-        assert URI('/a/path') == testpath
+        self.assertEqual(URI('/a/path'), testpath)
 
     def test_adding_suffix(self):
         testpath = URI("/a")
         other = testpath + ".foo"
-        assert URI("/a.foo") == other
+        self.assertEqual(URI("/a.foo"), other)
         testpath += ".bar"
-        assert URI("/a.bar") == testpath
+        self.assertEqual(URI("/a.bar"), testpath)
 
     def test_path_equality(self):
         pth_one = URI("/a")
         pth_two = URI("file:///a")
-        assert pth_one == pth_two
+        self.assertEqual(pth_one, pth_two)
 
     def test_path_equals_path_with_trailing_slash(self):
         pth_one = URI("/a")
         pth_two = URI("/a/")
-        assert pth_one != pth_two
-        assert (pth_one / 'something') == (pth_two / 'something')
+        self.assertNotEqual(pth_one, pth_two)
+        self.assertEqual((pth_one / 'something'), (pth_two / 'something'))
 
     def test_extra_args(self):
         pth = URI("scheme://some/path?extra=arg")
-        assert pth.extras == {'extra':'arg'}
+        self.assertEqual(pth.extras, {'extra':'arg'})
 
     def test_extra_args_and_kwargs(self):
         pth = URI("scheme://some/path?extra=arg", something='different')
-        assert pth.extras == {'extra':'arg', 'something':'different'}
+        self.assertEqual(pth.extras, {'extra':'arg', 'something':'different'})
 
 
-class TestFileSystem:
+class TestFileSystem(TestCase):
 
     def local_setup(self):
         self.writable = True
@@ -173,7 +174,7 @@ class TestFileSystem:
         self.foo_path = URI(self.baseurl) / 'foo'
         self.extras = {}
 
-    def setup_method(self, method):
+    def setUp(self):
         self.local_setup()
         self.existing_dir = ujoin(self.baseurl,'foo')
         self.existing_file = ujoin(self.baseurl, 'foo','foo.txt')
@@ -187,7 +188,7 @@ class TestFileSystem:
         with open(some_file, 'w') as fd:
             fd.write('content')
 
-    def teardown_method(self, method):
+    def tearDown(self):
         thisdir = os.path.split(os.path.abspath(__file__))[0]
         foo_dir = os.path.join(thisdir, 'foo')
         shutil.rmtree(foo_dir)
@@ -205,39 +206,39 @@ class TestFileSystem:
                 fd.write('hallo')
             with path.open() as fd:
                 content = fd.read()
-            assert content == 'hallo'
-            assert path.exists()
-            assert path.isfile()
+            self.assertEqual(content, 'hallo')
+            self.assert_(path.exists())
+            self.assert_(path.isfile())
             path.remove()
-            assert not path.exists()
+            self.assert_(not path.exists())
         path = URI(self.existing_file, **self.extras)
-        assert path.exists()
-        assert path.isfile()
+        self.assert_(path.exists())
+        self.assert_(path.isfile())
         with path.open() as fd:
             content = fd.read()
-        assert content
+        self.assert_(content)
 
     def test_dir(self):
         if self.writable:
             testdir = URI('testdir', **self.extras)
             testdir.makedirs()
-            assert testdir.exists()
-            assert testdir.isdir()
-            assert not testdir.isfile()
+            self.assert_(testdir.exists())
+            self.assert_(testdir.isdir())
+            self.assert_(not testdir.isfile())
             testfile = URI('testdir/somefile', **self.extras)
             with testfile.open('w') as fd:
                 fd.write('test')
             testdir.remove(recursive=True)
-            assert not testdir.exists()
-            assert not testfile.exists()
+            self.assert_(not testdir.exists())
+            self.assert_(not testfile.exists())
         testdir = URI(self.existing_dir, **self.extras)
-        assert testdir.exists()
-        assert testdir.isdir()
+        self.assert_(testdir.exists())
+        self.assert_(testdir.isdir())
 
     def test_listdir(self):
         path = URI(self.existing_dir, **self.extras)
         dirs = path.listdir()
-        assert 'foo.txt' in dirs
+        self.assert_('foo.txt' in dirs)
 
     def test_walk(self):
         if not self.walkable:
@@ -245,8 +246,8 @@ class TestFileSystem:
         path = URI(self.existing_dir, **self.extras)
         for root, dirs, files in path.walk():
             if path == root:
-                assert 'foo.txt' in files
-                assert 'bar' in dirs
+                self.assert_('foo.txt' in files)
+                self.assert_('bar' in dirs)
 
     def test_relative_walk(self):
         if not self.walkable:
@@ -254,12 +255,12 @@ class TestFileSystem:
         path = URI(self.existing_dir, **self.extras)
         for root, relative, dirs, files in path.relative_walk():
             if path == root:
-                assert 'foo.txt' in files
-                assert 'bar' in dirs
-                assert relative == ''
+                self.assert_('foo.txt' in files)
+                self.assert_('bar' in dirs)
+                self.assertEqual(relative, '')
             if relative == 'bar':
-                assert not dirs
-                assert not files
+                self.assert_(not dirs)
+                self.assert_(not files)
 
     def test_copy_and_move_file(self):
         if not self.writable:
@@ -269,18 +270,18 @@ class TestFileSystem:
         with single_file.open('w') as fs:
             fs.write('content')
         single_file.copy(target_file)
-        assert target_file.exists()
-        assert target_file.isfile()
+        self.assert_(target_file.exists())
+        self.assert_(target_file.isfile())
         with target_file.open() as fs:
-            assert fs.read() == 'content'
+            self.assertEqual(fs.read(), 'content')
         target_file.remove()
-        assert not target_file.exists()
+        self.assert_(not target_file.exists())
         single_file.move(target_file)
-        assert not single_file.exists()
-        assert target_file.exists()
-        assert target_file.isfile()
+        self.assert_(not single_file.exists())
+        self.assert_(target_file.exists())
+        self.assert_(target_file.isfile())
         with target_file.open() as fs:
-            assert fs.read() == 'content'
+            self.assertEqual(fs.read(), 'content')
         target_file.remove()
         single_file.remove()
 
@@ -289,37 +290,37 @@ class TestFileSystem:
             return
         folder = URI(self.baseurl, **self.extras) / 'folder'
         folder.makedirs()
-        assert folder.isdir()
+        self.assert_(folder.isdir())
         afile = folder / 'afile.txt'
         with afile.open('w') as fs:
             fs.write('content')
         target = URI(self.baseurl, **self.extras) / 'target'
-        assert not target.exists()
+        self.assert_(not target.exists())
         folder.copy(target, recursive=True)
-        assert target.exists()
+        self.assert_(target.exists())
         target_file = target / 'afile.txt'
-        assert target_file.exists()
+        self.assert_(target_file.exists())
         with target_file.open() as fs:
             content = fs.read()
-            assert content == 'content'
+            self.assertEqual(content, 'content')
         target.remove(recursive=True)
-        assert not target.exists()
+        self.assert_(not target.exists())
         target.makedirs()
         folder.copy(target, recursive=True)
         newtarget = target / 'folder'
-        assert newtarget.exists()
-        assert newtarget.isdir()
+        self.assert_(newtarget.exists())
+        self.assert_(newtarget.isdir())
         newtarget_file = newtarget / 'afile.txt'
-        assert newtarget_file.exists()
-        assert newtarget_file.isfile()
+        self.assert_(newtarget_file.exists())
+        self.assert_(newtarget_file.isfile())
         target.remove(recursive=True)
 
         folder.move(target)
-        assert not folder.exists()
-        assert target.exists()
-        assert target.isdir()
-        assert target_file.exists()
-        assert target_file.isfile()
+        self.assert_(not folder.exists())
+        self.assert_(target.exists())
+        self.assert_(target.isdir())
+        self.assert_(target_file.exists())
+        self.assert_(target_file.isfile())
         target.remove(recursive=True)
 
     def test_move_folder_to_subfolder(self):
@@ -335,11 +336,11 @@ class TestFileSystem:
         target = self.foo_path / 'target'
         target.makedirs()
         folder.move(target)
-        assert not folder.exists()
-        assert target.exists()
-        assert 'folder' in target.listdir()
-        assert (target / 'folder').isdir()
-        assert (target / 'folder' / 'content_dir').isdir()
+        self.assert_(not folder.exists())
+        self.assert_(target.exists())
+        self.assert_('folder' in target.listdir())
+        self.assert_((target / 'folder').isdir())
+        self.assert_((target / 'folder' / 'content_dir').isdir())
 
     def test_rename_folder(self):
         """
@@ -354,15 +355,16 @@ class TestFileSystem:
         and_more.makedirs()
         target = self.foo_path / 'target'
         folder.move(target)
-        assert not folder.exists()
-        assert target.isdir()
-        assert 'content_dir' in target.listdir()
+        self.assert_(not folder.exists())
+        self.assert_(target.isdir())
+        self.assert_('content_dir' in target.listdir())
 
-def test_eq():
-    """
-    test for bugfix: __eq__ didn't check that 'other' is of URI type
-    """
-    p = URI('/some/path')
-    assert p != None
+class TestEq(TestCase):
+    def test_eq(self):
+        """
+        test for bugfix: __eq__ didn't check that 'other' is of URI type
+        """
+        p = URI('/some/path')
+        self.assertNotEqual(p, None)
 
 

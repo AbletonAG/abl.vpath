@@ -1,14 +1,17 @@
+#******************************************************************************
+# (C) 2008 Ableton AG
+#******************************************************************************
 """
 simpleuri.py contains the UriParse class, which replaces pythons
 urlparse module for non http urls
 """
-#******************************************************************************
-# (C) 2008 Ableton AG
-#******************************************************************************
+from __future__ import with_statement, absolute_import
 
 import re
 from urlparse import urlparse
 from urllib import urlencode, unquote_plus
+
+from .uriparse import urisplit, split_authority
 
 uri_parser = re.compile(r'''
                             (?P<scheme>.*?)
@@ -81,76 +84,37 @@ class UriParse(object):
         self.query = {}
         self.scheme = ''
         self.path = ''
-        if uri.startswith('http://') or uri.startswith('https://'):
-            self._init_as_http_url()
+        self.authority = ''
+        if not '://' in uri:
+            self.uri = 'file://'+uri
+        (
+            self.scheme,
+            self.authority,
+            self.path,
+            self.query,
+            self.fragment
+            ) = urisplit(uri)
+        if self.authority and '((' in self.authority:
+            self.vpath_connector = self.authority
+            self.authority = ''
+        if self.authority:
+            (
+                self.username,
+                self.password,
+                self.hostname,
+                self.port,
+                ) = split_authority(self.authority)
+            self.port = int(self.port or 0)
+        if self.query:
+            self.query = parse_query_string(self.query)
         else:
-            self._init_other_uri()
+            self.query = {}
 
-
-    def _init_as_http_url(self):
-        """
-        init code when having a http url
-        """
-        parsed = urlparse(self.uri)
-        self.hostname = parsed.hostname
-        self.username = parsed.username
-        self.password = parsed.password
-        self.netloc = parsed.netloc
-        self.port = parsed.port
-        if self.hostname != '.':
-            self.path = parsed.path
-        else:
-            self.hostname = ''
-            self.path = parsed.path[1:]
-        self.scheme = parsed.scheme
-        if not self.port:
-            self.port = 0
-        if parsed.query:
-            self.query = parse_query_string(parsed.query)
-
-    def _init_other_uri(self):
-        "init code for non http uri"
-        uri, querysep, rest = self.uri.partition('?')
-        if querysep and '=' in rest:
-            self.uri = uri
-            self.query = parse_query_string(rest)
-        parts = self.uri.split('://', 1)
-        if len(parts) == 2:
-            self.scheme, rest = parts
-        else:
-            self.scheme = 'file'
-            self.path = self.uri
-            return
-        if self.scheme == 'file':
-            self.path = rest
-            return
-        head = ''
-        if rest.startswith('.') or rest.startswith('/'):
-            self.path = rest
-        else:
-            parts = rest.split('/', 1)
-            if len(parts) == 2:
-                head, path = parts
-                self.path = '/'+path
-                self.netloc = head
+        if self.hostname:
+            if self.port:
+                self.netloc = ':'.join([self.hostname,str(self.port)])
             else:
-                self.path = parts[0]
-        parts = head.split('@', 1)
-        if len(parts) == 2:
-            host = parts[1]
-            hparts = host.split(':', 1)
-            if len(hparts) == 2:
-                port = hparts[1]
-                if port:
-                    self.port = int(port)
-            self.hostname = hparts[0]
-            uparts = parts[0].split(':', 1)
-            if len(uparts) == 2:
-                self.password = uparts[1]
-            self.username = uparts[0]
-        else:
-            self.hostname = self.netloc = parts[0]
-
+                self.netloc = self.hostname
 
     def __repr__(self):
         return '<SimpleUri (%s,%s,%s,%s,%s,%s) %s>' % (

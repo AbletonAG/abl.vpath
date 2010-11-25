@@ -52,8 +52,6 @@ Author: Paul Jiminez (?)
 License: ?, see bugs.python.org/issue1462525, so it's probably usable
 """
 
-# TODO-std: define generic parser for unknown scheme
-
 def urisplit(uri):
     """
        Basic URI Parser according to STD66 aka RFC3986
@@ -63,11 +61,21 @@ def urisplit(uri):
 
     """
     import re
+    inner_part = re.compile(r'\(\(.*?\)\)')
+    m = inner_part.search(uri)
+    inner_value = ''
+    if m is not None:
+        inner_value = uri[m.start()+2:m.end()-2]
+        uri = uri[:m.start()]+'__inner_part__'+uri[m.end():]
     # regex straight from STD 66 section B
     regex = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?'
     p = re.match(regex, uri).groups()
     scheme, authority, path, query, fragment = p[1], p[3], p[4], p[6], p[8]
     #if not path: path = None
+    authority = authority.replace('__inner_part__', inner_value)
+    if scheme == 'file':
+        path = ''.join([authority, path])
+        authority = None
     return (scheme, authority, path, query, fragment) 
 
 

@@ -7,25 +7,26 @@ from __future__ import with_statement
 import datetime
 import os
 import time
+from unittest import TestCase
 from abl.vpath.base import *
 
-class TestLocalFSInfo:
+class TestLocalFSInfo(TestCase):
 
-    def setup_method(self, method):
+    def setUp(self):
         self.starttime = datetime.datetime.now()
         p = URI("test.txt")
         with p.open("w") as fs:
             fs.write('test')
 
-    def teardown_method(self, method):
+    def tearDown(self):
         p = URI("test.txt")
         if p.exists():
             p.remove()
 
     def test_info_ctime(self):
         p = URI("test.txt")
-        assert p.info().ctime <= datetime.datetime.now()
-        assert p.info().ctime == p.info().mtime
+        self.assert_(p.info().ctime <= datetime.datetime.now())
+        self.assertEqual(p.info().ctime, p.info().mtime)
 
     def test_info_mtime(self):
         p = URI("test.txt")
@@ -33,8 +34,8 @@ class TestLocalFSInfo:
         size = p.info().size
         with p.open('a') as fs:
             fs.write(' again')
-        assert p.info().mtime >= p.info().ctime, (p.info().mtime, p.info().ctime)
-        assert p.info().size > size
+        self.assert_(p.info().mtime >= p.info().ctime)
+        self.assert_( p.info().size > size)
         # due to now's millisecond resolution, we must ignore milliseconds
-        assert p.info().mtime.timetuple()[:6] >= now.timetuple()[:6], (p.info().mtime, now)
+        self.assert_(p.info().mtime.timetuple()[:6] >= now.timetuple()[:6])
 
