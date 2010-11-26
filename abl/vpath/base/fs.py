@@ -95,6 +95,7 @@ class ConnectionRegistry(object):
         port=None,
         username=None,
         password=None,
+        vpath_connector=None,
         **extras
         ):
         """
@@ -131,6 +132,7 @@ class ConnectionRegistry(object):
             port,
             username,
             password,
+            vpath_connector,
             frozenset(extras.items())
             )
 
@@ -323,7 +325,8 @@ class BaseUri(object):
             self.hostname,
             self.port,
             self.username,
-            self.password
+            self.password,
+            self.vpath_connector,
             )
 
     def __str__(self):
@@ -688,12 +691,14 @@ class FileSystem(object):
         port=None,
         username=None,
         password=None,
+        vpath_connector=None,
         **extras
         ):
         self.hostname = hostname
         self.port = port
         self.username = username
         self.password = password
+        self.vpath_connector = vpath_connector
         self.extras = extras
         self.last_used = time.time()
 

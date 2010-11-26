@@ -283,7 +283,6 @@ class TestFileSystem(TestCase):
         with target_file.open() as fs:
             self.assertEqual(fs.read(), 'content')
         target_file.remove()
-        single_file.remove()
 
     def test_copy_and_move_dir(self):
         if not self.writable:

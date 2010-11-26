@@ -13,24 +13,6 @@ from urllib import urlencode, unquote_plus
 
 from .uriparse import urisplit, split_authority
 
-uri_parser = re.compile(r'''
-                            (?P<scheme>.*?)
-                            ://
-                            (
-                                (?P<username>.*?)
-                                (
-                                    :(?P<password>.*?)
-                                )?
-                                @
-                            )?
-                            (
-                                (?P<hostname>[^?]*)
-                            )
-                            (
-                                [?]
-                                (?P<attribs>.*)
-                            )?
-                         ''')
 
 def parse_query_string(query):
     """
@@ -171,7 +153,18 @@ class UriParse(object):
 
     def as_list(self):
         "return some attributes as a list"
-        return [self.scheme, self.netloc, self.path, self.query, '']
+        netloc = ''
+        if self.vpath_connector:
+            netloc = self.vpath_connector
+        else:
+            netloc = self.netloc
+        return [
+            self.scheme,
+            netloc,
+            self.path,
+            self.query,
+            '',
+            ]
 
 def uri_from_parts(parts):
     "simple function to merge three parts into an uri"

@@ -30,12 +30,16 @@ class MemoryFile(object):
         return self._data.read(size)
 
 
-    def seek(self, to):
-        self._data.seek(to)
+    def seek(self, to, whence=0):
+        self._data.seek(to, whence)
 
 
     def tell(self):
         return self._data.tell()
+
+
+    def flush(self):
+        return self._data.flush()
 
 
     def __enter__(self):
