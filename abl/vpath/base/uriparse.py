@@ -65,7 +65,7 @@ def urisplit(uri):
     m = inner_part.search(uri)
     inner_value = ''
     if m is not None:
-        inner_value = uri[m.start()+2:m.end()-2]
+        inner_value = uri[m.start():m.end()]
         uri = uri[:m.start()]+'__inner_part__'+uri[m.end():]
     # regex straight from STD 66 section B
     regex = '^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?'

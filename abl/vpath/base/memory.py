@@ -7,6 +7,7 @@ import time
 from cStringIO import StringIO
 
 from .fs import FileSystem, BaseUri, URI
+from .exceptions import FileDoesNotExistError
 
 from abl.util import Bunch
 
@@ -223,3 +224,17 @@ class MemoryFileSystem(FileSystem):
             current = current[part]
         return current.mtime
 
+
+    def _removeitem(self, path):
+        p = self._path(path)
+        current = self._fs
+        prev = None
+        for part in [x for x in p.split("/") if x]:
+            prev = current
+            current = current[part]
+        if prev is not None:
+            del prev[part]
+
+    removefile = _removeitem
+
+    removedir = _removeitem

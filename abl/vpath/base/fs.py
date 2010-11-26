@@ -17,7 +17,11 @@ from decorator import decorator
 import pkg_resources
 
 from .simpleuri import UriParse, uri_from_parts
-from .exceptions import NoSchemeError, RemoteConnectionTimeout
+from .exceptions import (
+    NoSchemeError,
+    RemoteConnectionTimeout,
+    FileDoesNotExistError
+    )
 
 
 #============================================================================
@@ -490,6 +494,8 @@ class BaseUri(object):
         the options string contains 'r'. Otherwise, the backends 'removedir'
         method is used.
         """
+        if not self.connection.exists(self):
+            raise FileDoesNotExistError(str(self))
         if self.connection.isdir(self):
             if recursive:
                 try:

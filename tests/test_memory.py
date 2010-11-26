@@ -6,6 +6,7 @@ from cStringIO import StringIO
 from unittest import TestCase
 
 from abl.vpath.base import URI
+from abl.vpath.base.exceptions import FileDoesNotExistError
 from abl.vpath.base.fs import CONNECTION_REGISTRY
 
 
@@ -13,7 +14,7 @@ class MemoryFSTests(TestCase):
 
 
     def setUp(self):
-        CONNECTION_REGISTRY.connections = {}
+        CONNECTION_REGISTRY.cleanup(force=True)
 
 
     def test_all(self):
@@ -96,3 +97,49 @@ class MemoryFSTests(TestCase):
             for l in inf:
                 assert l in ["foo\n", "bar"]
 
+class TestRemovalOfFilesAndDirs(TestCase):
+
+    def setUp(self):
+        CONNECTION_REGISTRY.cleanup(force=True)
+        self.root_path = URI('memory:///')
+
+    def test_first(self):
+        self.assertEqual(self.root_path.listdir(),[])
+
+    def test_removedir(self):
+        dir_path = self.root_path / 'foo'
+        self.assert_(not dir_path.exists())
+        dir_path.mkdir()
+        self.assert_(dir_path.exists())
+        self.assert_(dir_path.isdir())
+        dir_path.remove()
+        self.assert_(not dir_path.exists())
+
+    def test_remove_not_existing_dir(self):
+        dir_path = self.root_path / 'foo'
+        self.assertRaises(FileDoesNotExistError, dir_path.remove, ())
+
+    def test_removefile(self):
+        file_path = self.root_path / 'foo.txt'
+        self.assert_(not file_path.exists())
+        with file_path.open('w') as fd:
+            fd.write('bar')
+        self.assert_(file_path.isfile())
+        file_path.remove()
+        self.assert_(not file_path.exists())
+
+    def test_removefile_not_existing(self):
+        file_path = self.root_path / 'foo.txt'
+        self.assertRaises(FileDoesNotExistError, file_path.remove, ())
+
+    def test_remove_recursive(self):
+        dir_path = self.root_path / 'foo'
+        file_path = dir_path / 'bar.txt'
+        dir_path.mkdir()
+        with file_path.open('w') as fd:
+            fd.write('info')
+        self.assert_(dir_path.exists())
+        self.assert_(file_path.exists())
+        dir_path.remove(recursive=True)
+        self.assert_(not dir_path.exists())
+        self.assert_(not file_path.exists())

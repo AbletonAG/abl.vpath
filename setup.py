@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="abl.vpath",
-    version="0.5.4",
+    version="0.5.5",
     description="A OO-abstraction of file-systems",
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
@@ -30,6 +30,7 @@ setup(
     [abl.vpath.plugins]
     localfilefs=abl.vpath.base.localfs:LocalFileSystem
     memoryfs=abl.vpath.base.memory:MemoryFileSystem
+    zipfs=abl.vpath.base.zip:ZipFileSystem
     """,
     zip_safe=False,
 )

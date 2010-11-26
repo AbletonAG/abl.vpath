@@ -13,7 +13,7 @@ class TestURIParser(unittest.TestCase):
         self.assertEqual(urisplit('scheme:///some/path'), result)
 
     def test_with_authority_replace(self):
-        result = ('scheme', 'file:///inner/path', '/some/path', None, None)
+        result = ('scheme', '((file:///inner/path))', '/some/path', None, None)
         self.assertEqual(urisplit('scheme://((file:///inner/path))/some/path'),
                          result)
 

@@ -85,6 +85,8 @@ class UriParse(object):
         self.scheme = ''
         self.path = ''
         self.authority = ''
+        self.vpath_connector = ''
+        self.fragment = ''
         if not '://' in uri:
             self.uri = 'file://'+uri
         (
@@ -95,7 +97,7 @@ class UriParse(object):
             self.fragment
             ) = urisplit(uri)
         if self.authority and '((' in self.authority:
-            self.vpath_connector = self.authority
+            self.vpath_connector = self.authority[2:-2]
             self.authority = ''
         if self.authority:
             (
@@ -133,6 +135,8 @@ class UriParse(object):
             rest = '?'+('&'.join(qup))
         else:
             rest = ''
+        if self.fragment:
+            rest += '#%s' % self.fragment
         if (
             (self.scheme.startswith('http') and self.hostname) or 
             not self.scheme.startswith('http')
