@@ -137,6 +137,14 @@ class TestURI(TestCase):
         testpath /= 'path'
         self.assertEqual(URI('/a/path'), testpath)
 
+    def test_join_with_vpath_authority(self):
+        testpath = URI('zip://((/path/to/file.zip))/')
+        testpath /= 'content.txt'
+        self.assertEqual(
+            URI('zip://((/path/to/file.zip))/content.txt'),
+            testpath
+            )
+
     def test_adding_suffix(self):
         testpath = URI("/a")
         other = testpath + ".foo"

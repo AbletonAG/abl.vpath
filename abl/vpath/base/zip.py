@@ -31,12 +31,48 @@ class WriteStatement(object):
 ISDIR = 1
 ISFILE = 2
 
+def content_item(path1, path2, path_sep='/'):
+    """
+    if path1 is subpart of path2, get the next path item.
+    example:
+    path1 = '/foo'
+    path2 = '/foo/bar/foo'
+    -> 'bar'
+
+    """
+    p1_parts = path1.split(path_sep)
+    p2_parts = path2.split(path_sep)
+    # special case when path1 is root
+    if path1 == path_sep and len(p2_parts) == 2:
+        return p2_parts[1]
+    if len(p2_parts) <= len(p1_parts):
+        return ''
+    for i, item in enumerate(p1_parts):
+        if item != p2_parts[i]:
+            return ''
+    return p2_parts[i+1]
+
 def compare_path_strings(path1, path2, path_sep='/'):
-    return compare_parts(path1.split(path_sep), path2.split(path_sep))
+    """
+    find out, if path1 is a file, or a directory (or unknown).
+    """
+    if len(path2) < len(path1):
+        return 0
+    if path1 == path2:
+        return ISFILE
+    else:
+        p1_parts = path1.split(path_sep)
+        p2_parts = path2.split(path_sep)
+        if len(p2_parts) < len(p1_parts):
+            return 0
+        else:
+            return compare_parts(p1_parts, p2_parts)
 
 def compare_parts(list1, list2):
-    if len(list2) < len(list1):
-        return 0
+    """
+    if list2 does not start with list1, we can't really check and return 0
+    """
+
     for i, item in enumerate(list1):
         if item != list2[i]:
             return 0
@@ -102,8 +138,24 @@ class ZipFileSystem(FileSystem):
     def isfile(self, unc):
         return self._ispart(unc, (ISFILE,))
 
+    def listdir(self, unc, recursive=False):
+        path_string = self._path(unc)
+        if path_string == '/' and self._ziphandle is None:
+            return []
+        if not self.isdir(unc):
+            raise FileDoesNotExistError()
+        content_set = set()
+        for item in self._ziphandle.namelist():
+            citem = content_item(path_string, item)
+            if citem:
+                content_set.add(citem)
+            
+        return list(sorted(content_set))
+
     def _ispart(self, unc, expected):
         path_string = self._path(unc)
+        if path_string == '/':
+            return True
         for item in self._ziphandle.namelist():
             result = compare_path_strings(path_string, item)
             if result in expected:

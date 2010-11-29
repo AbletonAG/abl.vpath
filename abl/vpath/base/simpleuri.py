@@ -155,7 +155,7 @@ class UriParse(object):
         "return some attributes as a list"
         netloc = ''
         if self.vpath_connector:
-            netloc = self.vpath_connector
+            netloc = '(('+self.vpath_connector+'))'
         else:
             netloc = self.netloc
         return [
