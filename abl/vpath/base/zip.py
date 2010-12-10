@@ -43,7 +43,7 @@ def content_item(path1, path2, path_sep='/'):
     p1_parts = path1.split(path_sep)
     p2_parts = path2.split(path_sep)
     # special case when path1 is root
-    if path1 == path_sep and len(p2_parts) == 2:
+    if path1 == path_sep and len(p2_parts) >= 2:
         return p2_parts[1]
     if len(p2_parts) <= len(p1_parts):
         return ''
@@ -97,8 +97,14 @@ class ZipFileSystem(FileSystem):
             options = 'r'
         if self._mode is not None and options != self._mode:
             self._ziphandle.close()
+            self._ziphandle = None
+        if self._ziphandle is not None:
+            return
         if 'w' in options:
-            zip_options = 'a'
+            if self.real_zip_file_path.exists():
+                zip_options = 'a'
+            else:
+                zip_options = 'w'
         else:
             zip_options = options
         self._ziphandle = zipfile.ZipFile(

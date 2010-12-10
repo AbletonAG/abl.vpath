@@ -13,6 +13,11 @@ class TestHelper(TestCase):
         path2 = '/foo'
         self.assertEqual(content_item(path1, path2), 'foo')
 
+    def test_dir_item_in_root(self):
+        path1 = '/'
+        path2 = '/foo/other'
+        self.assertEqual(content_item(path1, path2), 'foo')
+
     def test_content_item_exists(self):
         path1 = '/foo'
         path2 = '/foo/bar'
@@ -31,6 +36,35 @@ class TestHelper(TestCase):
 
     def test_compare_ISFILE(self):
         self.assertEqual(compare_parts([1,2,3],[1,2,3]), ISFILE)
+
+class TestWritingZip(TestCase):
+    def setUp(self):
+        #self.zip_uri = 'memory:///file.zip'
+        self.zip_uri = 'file://./file.zip'
+        self.zip_path = URI(self.zip_uri)
+
+    def tearDown(self):
+        if self.zip_path.exists():
+            self.zip_path.remove()
+
+    def test_write_file_to_non_existing_zip(self):
+        foo = URI('zip://((%s))/foo.txt' % self.zip_uri)
+        with foo.open('w') as fd:
+            fd.write('bar')
+
+    def test_write_file_to_non_existing_zip_2(self):
+        foo = URI('zip://((%s))/deeper/foo.txt' % self.zip_uri)
+        with foo.open('w') as fd:
+            fd.write('bar')
+
+
+    def test_write_two_files(self):
+        foo = URI('zip://((%s))/foo.txt' % self.zip_uri)
+        with foo.open('w') as fd:
+            fd.write('bar')
+        bar = URI('zip://((%s))/bar.txt' % self.zip_uri)
+        with bar.open('w') as fd:
+            fd.write('foo')
 
 class TestReadingZip(TestCase):
 
@@ -94,10 +128,38 @@ class TestListDir(TestCase):
             self.zip_path.remove()
 
     def test_listdir(self):
-        base_path = URI('zip://((memory:///file.zip))/')
+        base_path = URI('zip://((%s))/' % self.zip_path.uri)
         self.assertEqual(base_path.listdir(), [])
         p1 = URI('zip://((memory:///file.zip))/foo.txt')
         with p1.open('w') as fd:
             fd.write('foo')
         self.assertEqual(base_path.listdir(), ['foo.txt'])
+        p2 = URI('zip://((memory:///file.zip))/dir/foo.txt')
+        with p2.open('w') as fd:
+            fd.write('foo')
+        self.assertEqual(set(base_path.listdir()), set(['foo.txt', 'dir']))
+
+
+class TestAdvancedZip(TestCase):
+
+    def setUp(self):
+        self.zip_path = URI('memory:///file.zip')
+        zip_handle = self.zip_path.open('wb')
+        try:
+            self.fp_zip = zipfile.ZipFile(zip_handle, 'w')
+            self.fp_zip.writestr('/dir1/foo.txt', 'bar')
+            self.fp_zip.writestr('/dir1/bar.txt', 'bar')
+            self.fp_zip.writestr('/bar.txt', 'bar')
+            self.fp_zip.close()
+        finally:
+            zip_handle.close()
+
+    def tearDown(self):
+        self.zip_path.remove()
+
+
+    def test_walk(self):
+        root = URI('zip://((%s))/' % self.zip_path.uri)
+        raise Exception()
+
 
