@@ -5,6 +5,17 @@ from abl.vpath.base import URI
 from abl.vpath.base import zipfile26 as zipfile
 
 from abl.vpath.base.zip import compare_parts, ISDIR, ISFILE, content_item
+from abl.vpath.base.fs import CONNECTION_REGISTRY
+
+
+def clean_registry():
+    CONNECTION_REGISTRY.connections = {}
+
+
+class ZipTestCase(TestCase):
+
+    def setUp(self):
+        clean_registry()
 
 class TestHelper(TestCase):
 
@@ -37,8 +48,9 @@ class TestHelper(TestCase):
     def test_compare_ISFILE(self):
         self.assertEqual(compare_parts([1,2,3],[1,2,3]), ISFILE)
 
-class TestWritingZip(TestCase):
+class TestWritingZip(ZipTestCase):
     def setUp(self):
+        super(TestWritingZip, self).setUp()
         #self.zip_uri = 'memory:///file.zip'
         self.zip_uri = 'file://./file.zip'
         self.zip_path = URI(self.zip_uri)
@@ -66,9 +78,10 @@ class TestWritingZip(TestCase):
         with bar.open('w') as fd:
             fd.write('foo')
 
-class TestReadingZip(TestCase):
+class TestReadingZip(ZipTestCase):
 
     def setUp(self):
+        super(TestReadingZip, self).setUp()
         self.zip_path = URI('memory:///file.zip')
         zip_handle = self.zip_path.open('wb')
         try:
@@ -79,7 +92,8 @@ class TestReadingZip(TestCase):
             zip_handle.close()
 
     def tearDown(self):
-        self.zip_path.remove()
+        if self.zip_path.exists():
+            self.zip_path.remove()
 
 
     def test_read_a_file(self):
@@ -119,8 +133,9 @@ class TestReadingZip(TestCase):
         new_path = dir_path / 'other'
         self.assertEqual(new_path.path, '/somedir/other')
 
-class TestListDir(TestCase):
+class TestListDir(ZipTestCase):
     def setUp(self):
+        super(TestListDir, self).setUp()
         self.zip_path = URI('memory:///file.zip')
 
     def tearDown(self):
@@ -130,19 +145,20 @@ class TestListDir(TestCase):
     def test_listdir(self):
         base_path = URI('zip://((%s))/' % self.zip_path.uri)
         self.assertEqual(base_path.listdir(), [])
-        p1 = URI('zip://((memory:///file.zip))/foo.txt')
+        p1 = URI('zip://((%s))/foo.txt' % self.zip_path.uri)
         with p1.open('w') as fd:
             fd.write('foo')
         self.assertEqual(base_path.listdir(), ['foo.txt'])
-        p2 = URI('zip://((memory:///file.zip))/dir/foo.txt')
+        p2 = URI('zip://((%s))/dir/foo.txt' % self.zip_path.uri)
         with p2.open('w') as fd:
             fd.write('foo')
         self.assertEqual(set(base_path.listdir()), set(['foo.txt', 'dir']))
 
 
-class TestAdvancedZip(TestCase):
+class TestAdvancedZip(ZipTestCase):
 
     def setUp(self):
+        super(TestAdvancedZip, self).setUp()
         self.zip_path = URI('memory:///file.zip')
         zip_handle = self.zip_path.open('wb')
         try:
@@ -160,6 +176,12 @@ class TestAdvancedZip(TestCase):
 
     def test_walk(self):
         root = URI('zip://((%s))/' % self.zip_path.uri)
-        raise Exception()
+        self.assertEqual(len(root.listdir()), 2)
+        rlist = []
+        for base, dirs, files in root.walk():
+            rlist.append((base, dirs, files))
+        self.assertEqual(rlist,
+                         [(root, ['dir1'], ['bar.txt']),
+                          ((root / 'dir1'), [], ['bar.txt', 'foo.txt'])])
 
 

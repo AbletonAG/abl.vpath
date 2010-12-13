@@ -13,17 +13,19 @@ from . import zipfile26 as zipfile
 from abl.util import Bunch
 
 class WriteStatement(object):
-    def __init__(self, path_string, zip_handle):
+    def __init__(self, path_string, zip_backend):
         self.path_string = path_string
-        self.zip_handle = zip_handle
+        self.zip_backend = zip_backend
         self.byte_buffer = StringIO()
 
     def __enter__(self):
         return self
 
     def __exit__(self, etype, evalue, etraceback):
-        self.zip_handle.writestr(self.path_string, self.byte_buffer.getvalue())
+        self.zip_backend._ziphandle.writestr(self.path_string, self.byte_buffer.getvalue())
         self.byte_buffer.close()
+        self.zip_backend.close_zip()
+        self.zip_backend.open_zip()
 
     def __getattr__(self, attr):
         return getattr(self.byte_buffer, attr)
@@ -87,40 +89,43 @@ class ZipFileSystem(FileSystem):
     scheme = 'zip'
     uri = ZipFileSystemUri
 
+    def _zip_file_path(self):
+        return URI(self.vpath_connector)
+
     def _initialize(self):
-        self.real_zip_file_path = URI(self.vpath_connector)
-        self._mode = None
+        self._file_handle = None
         self._ziphandle = None
 
-    def _open_zip(self, options=None):
-        if options is None:
-            options = 'r'
-        if self._mode is not None and options != self._mode:
-            self._ziphandle.close()
-            self._ziphandle = None
+    def close_zip(self):
         if self._ziphandle is not None:
-            return
+            self._ziphandle.close()
+        if self._file_handle is not None:
+            self._file_handle.close()
+
+    def open_zip(self, options=None):
+        self.close_zip()
+        if options is None or 'r' in options:
+            zip_options = 'r'
+            options = 'rb'
         if 'w' in options:
-            if self.real_zip_file_path.exists():
+            if self._zip_file_path().isfile():
                 zip_options = 'a'
+                options = 'r+b'
             else:
                 zip_options = 'w'
-        else:
-            zip_options = options
-        self._ziphandle = zipfile.ZipFile(
-            self.real_zip_file_path.open(options),
-            zip_options
-            )
-        self._mode = options
+                options = 'wb'
+
+        self._file_handle = self._zip_file_path().open(options)
+        self._ziphandle = zipfile.ZipFile(self._file_handle, zip_options)
 
     def open(self, unc, options=None):
-        self._open_zip(options)
+        self.open_zip(options)
         if options is None:
             options = 'r'
         path_string = self._path(unc)
-        if 'r' in self._mode:
+        if 'r' in options:
             return self._open_for_reading(unc, options)
-        elif 'w' in self._mode:
+        elif 'w' in options:
             return self._open_for_writing(unc, options)
 
     def _open_for_reading(self, unc, options):
@@ -133,7 +138,7 @@ class ZipFileSystem(FileSystem):
 
     def _open_for_writing(self, unc, options):
         path_string = self._path(unc)
-        return WriteStatement(path_string, self._ziphandle)
+        return WriteStatement(path_string, self)
 
     def exists(self, unc):
         return self._ispart(unc, (ISDIR, ISFILE))
@@ -145,6 +150,10 @@ class ZipFileSystem(FileSystem):
         return self._ispart(unc, (ISFILE,))
 
     def listdir(self, unc, recursive=False):
+        if not self._zip_file_path().exists():
+            return []
+        if self._ziphandle is None:
+            self.open_zip()
         path_string = self._path(unc)
         if path_string == '/' and self._ziphandle is None:
             return []

@@ -21,6 +21,14 @@ class MemoryFile(object):
         self.mtime = self.ctime = time.time()
 
 
+    def __len__(self):
+        pos = self._data.tell()
+        self._data.seek(-1,2)
+        length = self._data.tell() + 1
+        self._data.seek(pos)
+        return length
+
+
     def write(self, d):
         self._data.write(d)
         self.mtime = time.time()
