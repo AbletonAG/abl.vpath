@@ -73,7 +73,7 @@ def urisplit(uri):
     scheme, authority, path, query, fragment = p[1], p[3], p[4], p[6], p[8]
     #if not path: path = None
     authority = authority.replace('__inner_part__', inner_value)
-    if scheme == 'file':
+    if authority == '.':
         path = ''.join([authority, path])
         authority = None
     return (scheme, authority, path, query, fragment) 

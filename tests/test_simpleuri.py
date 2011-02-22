@@ -62,6 +62,10 @@ class TestSimpleUri(unittest.TestCase):
         uri = UriParse('file://./local/path')
         self.assertEqual(uri.path, './local/path')
 
+    def test_relative_uri_with_scheme(self):
+        uri = UriParse('scheme://./local/path')
+        self.assertEqual(uri.path, './local/path')
+
     def test_suburi_as_serverpart(self):
         uri = UriParse('scheme://((/path/to/local/file.zip))/content.txt')
         self.assertEqual(uri.vpath_connector, '/path/to/local/file.zip')

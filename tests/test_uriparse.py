@@ -21,6 +21,10 @@ class TestURIParser(unittest.TestCase):
         result = ('file', None, './relative/path', None, None)
         self.assertEqual(urisplit('file://./relative/path'), result)
 
+    def test_special_notation_for_scheme(self):
+        result = ('scheme', None, './relative/path', None, None)
+        self.assertEqual(urisplit('scheme://./relative/path'), result)
+
 
 if __name__ == '__main__':
     unittest.main()
