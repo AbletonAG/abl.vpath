@@ -224,7 +224,7 @@ def with_connection(func, self, *args, **argd):
 
 #============================================================================
 
-scheme_re = re.compile("([a-z+]+)://")
+scheme_re = re.compile("([a-z+-]+)://")
 
 def URI(uri, sep=os.sep, connection=None, **extras):
     scheme = 'file'
@@ -662,6 +662,10 @@ class BaseUri(object):
 
 class RevisionedUri(BaseUri):
     @with_connection
+    def switch(self, branch):
+        return self.connection.switch(self, branch)
+
+    @with_connection
     def update(self, recursive=True, clean=False):
         return self.connection.update(self, recursive, clean)
 
@@ -853,7 +857,10 @@ class FileSystem(object):
         raise NotImplementedError
 
 class RevisionedFileSystem(FileSystem):
-    def update(self,  path):
+    def switch(self, revision):
+        raise NotImplementedError
+
+    def update(self, path, recursive=False, clean=False):
         raise NotImplementedError
 
     def log(self, path, limit=0):
