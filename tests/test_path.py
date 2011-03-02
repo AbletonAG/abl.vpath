@@ -54,6 +54,39 @@ class TestHttpUri(TestCase):
         self.assertEqual(URI(str(p)), URI('http://storm/this/other?a=b'))
 
 
+class TestUnicodeURI(TestCase):
+
+    def setUp(self):
+        self.thisdir = os.path.split(os.path.abspath(__file__))[0]
+        self.foo_dir = os.path.join(self.thisdir, 'foo')
+        self.bar_dir = os.path.join(self.thisdir, 'bar')
+
+    def tearDown(self):
+        p = URI(self.foo_dir)
+        if p.isdir():
+            p.remove(recursive=True)
+        b = URI(self.bar_dir)
+        if b.isdir():
+            b.remove(recursive=True)
+
+    def test_creation(self):
+        local_path = URI(u'/tmp/this')
+        self.assertEqual(local_path.path.split(os.sep), ['', 'tmp', 'this'])
+        self.assertEqual(local_path.scheme, 'file')
+
+    def test_mkdir(self):
+        p = URI(unicode(self.foo_dir))
+        p.mkdir()
+
+    def test_unicode_extra(self):
+        p = URI(self.foo_dir, some_query=u"what's up")
+
+    def test_copy(self):
+        p = URI(unicode(self.foo_dir))
+        p.mkdir()
+        dest = URI(self.bar_dir)
+        p.copy(dest, recursive=True)
+
 class TestURI(TestCase):
 
     def test_rescheming(self):

@@ -38,3 +38,17 @@ class TempFileHandle(object):
         os.unlink(self.tmpfilename)
         return retval
 
+
+class WorkingDirectory(object):
+
+    def __init__(self, working_path):
+        self.cwd = os.getcwd()
+        self.working_path = working_path
+
+    def __enter__(self):
+        os.chdir(self.working_path.path)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        os.chdir(self.cwd)
+
+
