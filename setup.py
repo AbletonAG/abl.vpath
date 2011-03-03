@@ -8,9 +8,8 @@ setup(
     description="A OO-abstraction of file-systems",
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
-    url="",
     license="MIT",
-    download_url='',
+    url='http://hg.ableton.com/abl.vpath',
     install_requires=[
         "decorator",
         "abl.util",
@@ -19,11 +18,12 @@ setup(
     namespace_packages = ['abl', 'abl.vpath'],
     # TODO-std: add the classifiers
     classifiers = [
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Development Status :: 3 - Alpha',
-        'License :: OSI Approved :: MIT License',
-        'Topic :: Software Development :: Libraries :: Python Modules'
+        'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Filesystems',
     ],
     entry_points="""
