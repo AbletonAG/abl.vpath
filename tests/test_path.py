@@ -198,11 +198,11 @@ class TestURI(TestCase):
 
     def test_extra_args(self):
         pth = URI("scheme://some/path?extra=arg")
-        self.assertEqual(pth.extras, {'extra':'arg'})
+        self.assertEqual(pth._extras(), {'extra':'arg'})
 
     def test_extra_args_and_kwargs(self):
         pth = URI("scheme://some/path?extra=arg", something='different')
-        self.assertEqual(pth.extras, {'extra':'arg', 'something':'different'})
+        self.assertEqual(pth._extras(), {'extra':'arg', 'something':'different'})
 
 
 class TestFileSystem(TestCase):
@@ -398,6 +398,17 @@ class TestFileSystem(TestCase):
         self.assert_(not folder.exists())
         self.assert_(target.isdir())
         self.assert_('content_dir' in target.listdir())
+
+    def test_backend(self):
+        foo_path = self.foo_path
+        bar_path = URI(self.foo_path.path+'?arg1=value1')
+        foo_2_path = foo_path / 'some_dir'
+        self.assert_(foo_path.get_connection() is foo_2_path.get_connection())
+        self.assert_(bar_path.get_connection() is not foo_path.get_connection())
+
+        foo_path_connection = foo_path.get_connection()
+        foo_path.query['arg'] = 'value'
+        self.assert_(foo_path_connection is not foo_path.get_connection())
 
 class TestEq(TestCase):
     def test_eq(self):

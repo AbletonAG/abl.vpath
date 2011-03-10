@@ -211,12 +211,10 @@ def with_connection(func, self, *args, **argd):
     """
     with_connection: decorator; make sure that there is a connection available
     for action. Set the connections 'last_used' attribute to current timestamp.
+    We always get a fresh connection from the CONNECTION REGISTRY since the
+    'extras' could have changed.
     """
-    if self.connection is None:
-        self.connection = CONNECTION_REGISTRY.get_connection(
-            *self._key(),
-            **self.extras
-            )
+    self.connection = self.get_connection()
     self.connection.last_used = time.time()
 
     return func(self, *args, **argd)
@@ -226,7 +224,7 @@ def with_connection(func, self, *args, **argd):
 
 scheme_re = re.compile("([a-z+-]+)://")
 
-def URI(uri, sep=os.sep, connection=None, **extras):
+def URI(uri, sep=os.sep, **extras):
     scheme = 'file'
     if isinstance(uri, BaseUri):
         scheme = uri.scheme
@@ -238,7 +236,6 @@ def URI(uri, sep=os.sep, connection=None, **extras):
     return SCHEME_REGISTRY.get(scheme, BaseUri)(
         uri,
         sep=sep,
-        connection=connection,
         **extras
         )
 
@@ -258,13 +255,13 @@ class BaseUri(object):
     leads to more readable code.
     """
 
-    def __init__(self, uri, sep=os.sep, connection=None, **extras):
+    def __init__(self, uri, sep=os.sep, **extras):
         self._scheme = ''
+        self.connection = None
         if isinstance(uri, BaseUri):
             self.uri = uri.uri
             self.sep = uri.sep
             self.parse_result = uri.parse_result
-            self.connection = uri.connection
             self.extras = uri.extras
         else:
             if uri.startswith('file://'):
@@ -277,12 +274,17 @@ class BaseUri(object):
             self.uri = uri
             self.sep = sep
             self.parse_result = UriParse(uri)
-            self.connection = connection
             self.extras = extras
+
+    def get_connection(self):
+        return CONNECTION_REGISTRY.get_connection(*self._key(), **self._extras())
+
+    def _extras(self):
+        extras = self.extras.copy()
         if self.scheme not in ('http','https'):
-            # for non http schemes, the query part might contain extra
-            # args for the path constructor
-            self.extras.update(self.query)
+            extras.update(self.query)
+
+        return extras
 
     def _get_scheme(self):
         if not self._scheme:
@@ -355,8 +357,7 @@ class BaseUri(object):
         result = self.__class__(
             path,
             sep=self.sep,
-            connection=self.connection,
-            **self.extras
+            **self._extras()
             )
         result.parse_result.query = self.query.copy()
         return result
@@ -387,8 +388,7 @@ class BaseUri(object):
         return (self.__class__(
             first,
             sep=self.sep,
-            connection=self.connection,
-            **self.extras
+            **self._extras()
             ),
             second.partition('?')[0]
             )
@@ -456,8 +456,7 @@ class BaseUri(object):
         result = self.__class__(
             uri_from_parts(parts),
             sep=sep,
-            connection=self.connection,
-            **self.extras
+            **self._extras()
             )
 
         result.parse_result.query = self.query.copy()
@@ -621,7 +620,6 @@ class BaseUri(object):
         directory recursivly. The pathpart of 'self' will
         not be returned.
         """
-        # TODO-std: shouldn't this return URIs?
         return self.connection.listdir(self, recursive)
 
     @with_connection
