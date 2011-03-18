@@ -383,6 +383,9 @@ class BaseUri(object):
         except ValueError:
             first = ''
             second = self.uri
+        # we might be already on the root
+        if first.endswith('//'):
+            first = first + '/'
         if not first:
             first = '.'
         return (self.__class__(

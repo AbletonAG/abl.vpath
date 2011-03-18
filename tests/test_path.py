@@ -117,10 +117,19 @@ class TestURI(TestCase):
         self.assertEqual(pth, URI('.'))
         self.assertEqual(tail, 'somedir')
 
+
+    def test_split_with_short_path(self):
+        local_path = URI('/some')
+        pth, tail = local_path.split()
+        self.assertEqual(pth, URI('/'))
+        self.assertEqual(tail, 'some')
+
+
     def test_split_with_args(self):
         local_path = URI('file:///some/long?extra=arg')
         pth, tail = local_path.split()
         self.assertEqual(tail, 'long')
+
 
     def test_win_somehow_broken_on_windows(self):
         path = URI("file://C:\\some\\windows\\path", sep='\\')

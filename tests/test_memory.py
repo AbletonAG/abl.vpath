@@ -52,10 +52,12 @@ class MemoryFSTests(TestCase):
         connection.dump(out)
         print out.getvalue()
 
+
     def test_listdir_empty_root(self):
         root = URI("memory:///")
         files = root.listdir()
         assert not files
+
 
     def test_listdir_empty_dir(self):
         root = URI("memory:///")
@@ -65,6 +67,7 @@ class MemoryFSTests(TestCase):
         assert 'foo' in rootfiles
         foofiles = foo.listdir()
         assert not foofiles
+
 
     def test_walk(self):
         root = URI("memory:///")
@@ -96,6 +99,19 @@ class MemoryFSTests(TestCase):
         with subdir.open() as inf:
             for l in inf:
                 assert l in ["foo\n", "bar"]
+
+    def test_exists_on_root(self):
+        root = URI("memory:///")
+        assert root.exists()
+
+
+    def test_root_of_non_existing_dir_exists(self):
+        dir_path = URI("memory:///foo")
+        try:
+            assert dir_path.dirname().exists()
+        except AssertionError:
+            import pdb; pdb.set_trace()
+
 
 class TestRemovalOfFilesAndDirs(TestCase):
 
