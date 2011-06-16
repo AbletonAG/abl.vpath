@@ -131,6 +131,13 @@ class TestURI(TestCase):
         self.assertEqual(tail, 'long')
 
 
+    def test_root_split(self):
+        pth = URI('/')
+        directory, name = pth.split()
+        self.assertEqual(directory, URI('/'))
+        self.assertEqual(name, '')
+
+
     def test_win_somehow_broken_on_windows(self):
         path = URI("file://C:\\some\\windows\\path", sep='\\')
         self.assertEqual(path.path, r'C:\some\windows\path')
@@ -211,7 +218,17 @@ class TestURI(TestCase):
 
     def test_extra_args_and_kwargs(self):
         pth = URI("scheme://some/path?extra=arg", something='different')
-        self.assertEqual(pth._extras(), {'extra':'arg', 'something':'different'})
+        self.assertEqual(pth._extras(),
+                        {'extra':'arg', 'something':'different'})
+
+
+    def test_dirname(self):
+        pth = URI("/this/is/a/path")
+        self.assertEqual(pth.dirname(), URI("/this/is/a"))
+        self.assertEqual(pth.dirname(level=2), URI("/this/is"))
+        self.assertEqual(pth.dirname(level=3), URI("/this"))
+        self.assertEqual(pth.dirname(level=4), URI("/"))
+        self.assertEqual(pth.dirname(level=5), URI("/"))
 
 
 class TestFileSystem(TestCase):

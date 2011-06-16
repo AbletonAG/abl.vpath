@@ -107,10 +107,7 @@ class MemoryFSTests(TestCase):
 
     def test_root_of_non_existing_dir_exists(self):
         dir_path = URI("memory:///foo")
-        try:
-            assert dir_path.dirname().exists()
-        except AssertionError:
-            import pdb; pdb.set_trace()
+        assert dir_path.dirname().exists()
 
 
 class TestRemovalOfFilesAndDirs(TestCase):

@@ -396,11 +396,16 @@ class BaseUri(object):
             second.partition('?')[0]
             )
 
-    def directory(self):
+    def directory(self, level=1):
         """
         @return: the first part of the split method
         """
-        return self.split()[0]
+        assert level > 0
+        newpath = self
+        while level>0:
+            newpath = newpath.split()[0]
+            level -= 1
+        return newpath
 
 
     # os.path-compliance
