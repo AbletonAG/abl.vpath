@@ -78,14 +78,10 @@ class ConnectionRegistry(object):
         self.cleaner_thread = threading.Thread(target=self.cleaner)
         self.cleaner_thread.setDaemon(True)
         self.cleaner_thread.start()
-        self.creation_queue = Queue()
-        self.creation_thread = threading.Thread(target=self.create)
-        self.creation_thread.setDaemon(True)
-        self.creation_thread.start()
+        self.create_lock = threading.Lock()
 
-    def create(self):
-        while True:
-            scheme, key, extras = self.creation_queue.get()
+    def create(self, scheme, key, extras):
+        with self.create_lock:
             conn = self.schemes[scheme](*key[1:-1], **extras)
             self.connections[key] = conn
 
@@ -137,12 +133,7 @@ class ConnectionRegistry(object):
             )
 
         if not key in self.connections:
-            t0 = time.time()
-            self.creation_queue.put((scheme, key, extras))
-            while not key in self.connections:
-                time.sleep(.001)
-                if (time.time() - t0) > 5.0:
-                    raise RemoteConnectionTimeout()
+            self.create(scheme, key, extras)
         return self.connections[key]
 
     def cleanup(self, force=False):
@@ -583,7 +574,7 @@ class BaseUri(object):
         @return: the last time of modification is seconds since the epoch.
         """
         return self.connection.mtime(self)
-    
+
 
     @with_connection
     def walk(self):
