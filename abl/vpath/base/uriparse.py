@@ -57,7 +57,7 @@ def urisplit(uri):
        Basic URI Parser according to STD66 aka RFC3986
 
        >>> urisplit("scheme://authority/path?query#fragment")
-       ('scheme', 'authority', 'path', 'query', 'fragment') 
+       ('scheme', 'authority', 'path', 'query', 'fragment')
 
     """
     import re
@@ -76,7 +76,13 @@ def urisplit(uri):
     if authority == '.':
         path = ''.join([authority, path])
         authority = None
-    return (scheme, authority, path, query, fragment) 
+    # bugfix: '#' might be a legal character in a file name
+    # it only has special meaning in urls
+    if scheme not in ['http', 'https']:
+        if fragment:
+            path = '#'.join([path, fragment])
+            fragment = ''
+    return (scheme, authority, path, query, fragment)
 
 
 def uriunsplit((scheme, authority, path, query, fragment)):
