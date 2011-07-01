@@ -37,6 +37,17 @@ class TestSimpleUri(unittest.TestCase):
                             {'key_one':'val_one', 'key_two':'val_two'}
                             )
 
+    def test_funny_name(self):
+        uri = UriParse('file:///.#something')
+        self.assertEqual(uri.path, '/.#something')
+
+
+    def test_url_with_fragment(self):
+        uri = UriParse('http://somewhere/something#frack')
+        self.assertEqual(uri.path, '/something')
+        self.assertEqual(uri.fragment, 'frack')
+
+
     def test_query(self):
         uri = UriParse('http://heinz/?a=1')
         self.assertEqual(uri.query['a'], '1')
