@@ -71,7 +71,7 @@ class LocalFileSystem(FileSystem):
             mode = mode,
             )
 
-    def open(self, unc, options=None):
+    def open(self, unc, options=None, mimetype='application/octet-stream'):
         if options is not None:
             return open(self._path(unc), options)
         else:

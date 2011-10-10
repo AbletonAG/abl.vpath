@@ -161,7 +161,7 @@ class MemoryFileSystem(FileSystem):
             return True
 
 
-    def open(self, path, options):
+    def open(self, path, options, mimetype):
         p = self._path(path)
         existing_dirs = p.split("/")[:-1]
         file_to_create = p.split("/")[-1]

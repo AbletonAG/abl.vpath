@@ -231,8 +231,7 @@ def URI(uri, sep=os.sep, **extras):
         )
 
 class BaseUri(object):
-    """
-    An URI object represents a path, either on the local filesystem or on a
+    """An URI object represents a path, either on the local filesystem or on a
     remote server. On creation, the path is represented by an (more or less
     conform) uri like 'file:///some/local/file' or 'ssh://server:/remote/file'.
 
@@ -517,12 +516,12 @@ class BaseUri(object):
             return self.connection.removefile(self)
 
     @with_connection
-    def open(self, options=None):
+    def open(self, options=None, mimetype='application/octet-stream'):
         """
         open: return a file like object for self.
         The method can be used with the 'with' statment.
         """
-        return self.connection.open(self, options)
+        return self.connection.open(self, options, mimetype)
 
     @with_connection
     def makedirs(self):
@@ -814,7 +813,7 @@ class FileSystem(object):
     def _initialize(self):
         raise NotImplementedError
 
-    def open(self, path, options):
+    def open(self, path, options, mimetype):
         raise NotImplementedError
 
     def listdir(self, path, recursive=False):

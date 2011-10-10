@@ -118,7 +118,7 @@ class ZipFileSystem(FileSystem):
         self._file_handle = self._zip_file_path().open(options)
         self._ziphandle = zipfile.ZipFile(self._file_handle, zip_options)
 
-    def open(self, unc, options=None):
+    def open(self, unc, options=None, mimetype='application/octet-stream'):
         self.open_zip(options)
         if options is None:
             options = 'r'
