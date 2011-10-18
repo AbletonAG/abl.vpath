@@ -1,6 +1,7 @@
 from __future__ import with_statement
 
 import time
+import errno
 from cStringIO import StringIO
 
 from unittest import TestCase
@@ -108,6 +109,23 @@ class MemoryFSTests(TestCase):
     def test_root_of_non_existing_dir_exists(self):
         dir_path = URI("memory:///foo")
         assert dir_path.dirname().exists()
+
+
+    def test_directory_cant_be_overwritten_by_file(self):
+        base = URI("memory:///")
+        d = base / "foo"
+        d.mkdir()
+        assert d.exists()
+
+        try:
+            with d.open("w") as outf:
+                outf.write("foo")
+        except IOError, e:
+            self.assertEqual(e.errno, errno.EISDIR)
+        else:
+            assert False, "You shouldn't be able to ovewrite a directory like this"
+
+
 
 
 class TestRemovalOfFilesAndDirs(TestCase):

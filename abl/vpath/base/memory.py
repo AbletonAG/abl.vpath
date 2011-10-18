@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import mimetypes
 import hashlib
 import time
+import errno
 
 from cStringIO import StringIO
 
@@ -176,6 +177,8 @@ class MemoryFileSystem(FileSystem):
             return f
 
         if "w" in options or file_to_create not in current:
+            if file_to_create in current and isinstance(current[file_to_create], dict):
+                raise IOError(errno.EISDIR, "File is directory" )
             current[file_to_create] = MemoryFile()
             return current[file_to_create]
         if "a" in options:
