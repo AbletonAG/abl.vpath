@@ -265,6 +265,16 @@ class BaseUri(object):
             self.sep = sep
             self.parse_result = UriParse(uri)
             self.extras = extras
+        if self.username is None:
+            if 'username' in self.extras:
+                self.username = self.extras.pop('username')
+            elif 'username' in self.parse_result.query:
+                self.username = self.parse_result.query['username']
+        if self.password is None:
+            if 'password' in self.extras:
+                self.password = self.extras.pop('password')
+            elif 'password' in self.parse_result.query:
+                self.password = self.parse_result.query['password']
 
     def get_connection(self):
         return CONNECTION_REGISTRY.get_connection(*self._key(), **self._extras())

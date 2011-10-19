@@ -87,6 +87,29 @@ class TestUnicodeURI(TestCase):
         dest = URI(self.bar_dir)
         p.copy(dest, recursive=True)
 
+class TestCredentials(TestCase):
+    """
+    credentials (username, password) are treated as a special case
+    """
+
+    def test_regular(self):
+        some_path = URI('scheme://username:password@host/some/path')
+        self.assertEqual(some_path.username, 'username')
+        self.assertEqual(some_path.password, 'password')
+
+
+    def test_keyword_param(self):
+        some_path = URI('scheme://host/some/path', username='username', password='password')
+        self.assertEqual(some_path.username, 'username')
+        self.assertEqual(some_path.password, 'password')
+
+
+    def test_url_args(self):
+        some_path = URI('scheme://host/some/path?username=username&password=password')
+        self.assertEqual(some_path.username, 'username')
+        self.assertEqual(some_path.password, 'password')
+
+
 class TestURI(TestCase):
 
     def test_rescheming(self):
