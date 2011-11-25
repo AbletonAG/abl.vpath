@@ -4,7 +4,6 @@
 #******************************************************************************
 from __future__ import with_statement, absolute_import
 
-from contextlib import nested
 import datetime
 import logging
 import os
@@ -144,47 +143,3 @@ class LocalFileSystem(FileSystem):
         else:
             return super(LocalFileSystem, self).move(source, dest)
 
-    def copy(self, source, dest, recursive=False, ignore=None):
-
-        if ignore is not None:
-            ignore = set(ignore)
-        else:
-            ignore = set()
-        if not source.exists():
-            raise FileDoesNotExistError(str(source))
-        if not recursive:
-            assert source.isfile()
-            if dest.isdir():
-                dest = dest / source.last()
-            with nested(source.open('rb'), dest.open('wb')) as (infs, outfs):
-                shutil.copyfileobj(infs, outfs, 8192)
-        else:
-            assert source.isdir()
-            if dest.exists():
-                droot = dest / source.last()
-            else:
-                droot = dest
-            droot.makedirs()
-            spth = source.path
-            spth_len = len(spth) + 1
-            for root, dirs, files in source.walk():
-                rpth = root.path
-                tojoin = rpth[spth_len:].strip()
-                if tojoin:
-                    dbase = droot / tojoin
-                else:
-                    dbase = droot
-                for folder in dirs[:]:
-                    if folder in ignore:
-                        dirs.remove(folder)
-                        continue
-                    ddir = dbase / folder
-                    ddir.makedirs()
-                for fname in files:
-                    source = root / fname
-                    dest = dbase / fname
-                    with nested(
-                        source.open('rb'),
-                        dest.open('wb')
-                        ) as (infs, outfs):
-                        shutil.copyfileobj(infs, outfs, 8192)

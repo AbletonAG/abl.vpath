@@ -1,9 +1,10 @@
 from __future__ import with_statement
 
-import time
-import errno
 from cStringIO import StringIO
-
+import errno
+import os
+import tempfile
+import time
 from unittest import TestCase
 
 from abl.vpath.base import URI
@@ -16,6 +17,12 @@ class MemoryFSTests(TestCase):
 
     def setUp(self):
         CONNECTION_REGISTRY.cleanup(force=True)
+        self.temp_path = URI(tempfile.mktemp())
+        self.temp_path.mkdir()
+
+    def tearDown(self):
+        if self.temp_path.isdir():
+            self.temp_path.remove(recursive=True)
 
 
     def test_all(self):
@@ -124,6 +131,16 @@ class MemoryFSTests(TestCase):
             self.assertEqual(e.errno, errno.EISDIR)
         else:
             assert False, "You shouldn't be able to ovewrite a directory like this"
+
+
+    def test_copy_into_fs(self):
+        root = URI("memory:///")
+        for item in ["foo", "bar"]:
+            with (root/item).open("w") as fd:
+                fd.write(item)
+        root.copy(self.temp_path, recursive=True)
+        content = self.temp_path.listdir()
+        self.assertEqual(set(content), set(["foo", "bar"]))
 
 
 
