@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 
 import atexit
+from collections import defaultdict
 from contextlib import nested
 import fnmatch
 import hashlib
@@ -78,12 +79,14 @@ class ConnectionRegistry(object):
         self.cleaner_thread = threading.Thread(target=self.cleaner)
         self.cleaner_thread.setDaemon(True)
         self.cleaner_thread.start()
-        self.create_lock = threading.Lock()
+        self.creation_locks = defaultdict(threading.Lock)
+
 
     def create(self, scheme, key, extras):
-        with self.create_lock:
+        with self.creation_locks[scheme]:
             conn = self.schemes[scheme](*key[1:-1], **extras)
             self.connections[key] = conn
+
 
     def get_connection(self,
         scheme='',

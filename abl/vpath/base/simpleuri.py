@@ -134,6 +134,8 @@ class UriParse(object):
             parts.append('@')
         if self.hostname:
             parts.append(self.hostname)
+        elif self.vpath_connector:
+            parts.append("((%s))" % self.vpath_connector)
         if self.port:
             parts += [':', str(self.port)]
         parts += [self.path, rest]
