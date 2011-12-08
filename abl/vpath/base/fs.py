@@ -644,9 +644,11 @@ class BaseUri(object):
         """
         return self.connection.info(self, verbosity)
 
+
     @with_connection
     def sync(self, other, options=''):
         return self.connection.sync(self, other, options)
+
 
     @with_connection
     def glob(self, pattern):
@@ -667,6 +669,29 @@ class BaseUri(object):
                 block = inf.read(4096)
 
         return hash_.hexdigest()
+
+
+    @with_connection
+    def lock(self, fail_on_lock=False, cleanup=False):
+        """
+        Allows to lock a file via abl.util.LockFile, with the
+        same parameters there.
+
+        Returns an opened, writable file.
+        """
+        return self.connection.lock(self, fail_on_lock, cleanup)
+
+
+    @with_connection
+    def _manipulate(self, *args, **kwargs):
+        """
+        This is a semi-private method. It's current use is to
+        manipulate memory file system objects so that
+        you can create certain conditions, to provoke
+        errors that otherwise won't occur.
+        """
+        self.connection._manipulate(self, *args, **kwargs)
+
 
 
 class RevisionedUri(BaseUri):

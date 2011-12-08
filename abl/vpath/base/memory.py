@@ -4,22 +4,27 @@ import mimetypes
 import hashlib
 import time
 import errno
+import threading
 
 from cStringIO import StringIO
 
 from .fs import FileSystem, BaseUri, URI
 from .exceptions import FileDoesNotExistError
 
-from abl.util import Bunch
+from abl.util import Bunch, LockFileObtainException
 
 
 class MemoryFile(object):
 
+    FILE_LOCKS = {}
 
-    def __init__(self):
+    def __init__(self, fs, path):
+        self.path = path
+        self.fs = path
         self._data = StringIO()
         self._line_reader = None
         self.mtime = self.ctime = time.time()
+        self.lock = self.FILE_LOCKS.setdefault((self.fs, self.path), threading.Lock())
 
 
     def __len__(self):
@@ -89,6 +94,34 @@ class MemoryFile(object):
 
 
 class MemoryFileSystemUri(BaseUri):pass
+
+
+class MemoryLock(object):
+
+    def __init__(self, fs, path, fail_on_lock, cleanup):
+        self.fs = fs
+        self.path = path
+        self.fail_on_lock = fail_on_lock
+        self.cleanup = cleanup
+
+
+    def __enter__(self):
+        mfile = self.fs.open(self.path, "w", mimetype='application/octet-stream')
+        self.lock = mfile.lock
+        if self.fail_on_lock:
+            if not self.lock.acquire(False):
+                raise LockFileObtainException
+        else:
+            self.lock.acquire()
+        return mfile
+
+
+
+    def __exit__(self, unused_exc_type, unused_exc_val, unused_exc_tb):
+        self.lock.release()
+
+
+
 
 class MemoryFileSystem(FileSystem):
 
@@ -179,12 +212,13 @@ class MemoryFileSystem(FileSystem):
         if "w" in options or file_to_create not in current:
             if file_to_create in current and isinstance(current[file_to_create], dict):
                 raise IOError(errno.EISDIR, "File is directory" )
-            current[file_to_create] = MemoryFile()
+            current[file_to_create] = MemoryFile(self, p)
             return current[file_to_create]
         if "a" in options:
             f = current[file_to_create]
             f.seek(len(f))
             return f
+
 
     BINARY_MIME_TYPES = ["image/png",
                          "image/gif",
@@ -253,3 +287,31 @@ class MemoryFileSystem(FileSystem):
     removefile = _removeitem
 
     removedir = _removeitem
+
+
+
+    def lock(self, path, fail_on_lock, cleanup):
+        return MemoryLock(self, path, fail_on_lock, cleanup)
+
+
+    SENTINEL = object()
+
+
+    def _manipulate(self, path, lock=SENTINEL, unlock=SENTINEL, mtime=SENTINEL):
+        if lock is not self.SENTINEL and lock:
+            p = self._path(path)
+            lock = MemoryFile(self, p).lock
+            assert lock.acquire(), "you tried to double-lock a file, that's currently not supported"
+
+        if unlock is not self.SENTINEL and unlock:
+            p = self._path(path)
+            lock = MemoryFile(self, p).lock
+            lock.release()
+
+
+        if mtime is not self.SENTINEL:
+            p = self._path(path)
+            current = self._fs
+            for part in p.split("/"):
+                current = current[part]
+            current.mtime = mtime
