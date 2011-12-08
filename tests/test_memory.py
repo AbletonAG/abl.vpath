@@ -6,6 +6,7 @@ from cStringIO import StringIO
 
 from unittest import TestCase
 
+from abl.util import LockFileObtainException
 from abl.vpath.base import URI
 from abl.vpath.base.exceptions import FileDoesNotExistError
 from abl.vpath.base.fs import CONNECTION_REGISTRY
@@ -174,3 +175,58 @@ class TestRemovalOfFilesAndDirs(TestCase):
         dir_path.remove(recursive=True)
         self.assert_(not dir_path.exists())
         self.assert_(not file_path.exists())
+
+
+    def test_locking(self):
+        p = self.root_path / "test.txt"
+        try:
+            content = "I'm something written into a locked file"
+            with p.lock() as inf:
+                inf.write(content)
+            self.assertEqual(p.open().read(), content)
+        finally:
+            if p.exists():
+                p.remove()
+
+        mfile = p.open("w")
+
+        lock_a = mfile.lock
+        mfile.close()
+
+        mfile = p.open("w")
+        assert lock_a is mfile.lock
+
+        # artificially lock the file
+        mfile.lock.acquire()
+
+        try:
+            with p.lock(fail_on_lock=True):
+                assert False, "we shouldn't be allowed here!"
+        except LockFileObtainException:
+            pass
+        finally:
+            mfile.lock.release()
+
+
+
+    def test_manipulation_api(self):
+        p = self.root_path / "test.txt"
+        p._manipulate(lock=True)
+        mfile = p.open("w")
+        assert not mfile.lock.acquire(False)
+        p._manipulate(unlock=True)
+        try:
+            assert mfile.lock.acquire(False)
+        finally:
+            mfile.lock.release()
+
+
+        with p.open("w") as outf:
+            outf.write("foo")
+
+        old_mtime = p.mtime()
+        new_mtime = old_mtime + 100
+        p._manipulate(mtime=new_mtime)
+
+        self.assertEqual(p.mtime(), new_mtime)
+

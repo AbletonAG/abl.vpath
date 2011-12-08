@@ -18,15 +18,18 @@ class TestLocalFSInfo(TestCase):
         with p.open("w") as fs:
             fs.write('test')
 
+
     def tearDown(self):
         p = URI("test.txt")
         if p.exists():
             p.remove()
 
+
     def test_info_ctime(self):
         p = URI("test.txt")
         self.assert_(p.info().ctime <= datetime.datetime.now())
         self.assertEqual(p.info().ctime, p.info().mtime)
+
 
     def test_info_mtime(self):
         p = URI("test.txt")
@@ -39,3 +42,14 @@ class TestLocalFSInfo(TestCase):
         # due to now's millisecond resolution, we must ignore milliseconds
         self.assert_(p.info().mtime.timetuple()[:6] >= now.timetuple()[:6])
 
+
+    def test_locking(self):
+        try:
+            p = URI("lock.txt")
+            content = "I'm something written into a locked file"
+            with p.lock() as inf:
+                inf.write(content)
+            self.assertEqual(p.open().read(), content)
+        finally:
+            if p.exists():
+                p.remove()

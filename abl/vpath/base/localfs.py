@@ -16,7 +16,7 @@ import subprocess
 from .fs import FileSystem, BaseUri, denormalize_path
 from .exceptions import FileDoesNotExistError
 
-from abl.util import Bunch
+from abl.util import Bunch, LockFile
 
 # check for WindowsError
 try:
@@ -127,7 +127,7 @@ class LocalFileSystem(FileSystem):
         Unfortunatelly, shutil.move does work differently!!!
         Consider (all paths point to directories)
         mv /a/b /a/c
-        expected outcome: 
+        expected outcome:
         case 1.: 'c' does not exist:
           b moved over to /a such that /a/c is what was /a/b/ before
         case 2.: 'c' does exist:
@@ -188,3 +188,7 @@ class LocalFileSystem(FileSystem):
                         dest.open('wb')
                         ) as (infs, outfs):
                         shutil.copyfileobj(infs, outfs, 8192)
+
+
+    def lock(self, path, fail_on_lock, cleanup):
+        return LockFile(str(path), fail_on_lock=fail_on_lock, cleanup=cleanup)
