@@ -56,14 +56,6 @@ class MemoryFile(object):
         return self._data.flush()
 
 
-    def __enter__(self):
-        return self
-
-
-    def __exit__(self, *args):
-        pass
-
-
     def __str__(self):
         return self._data.getvalue()
 
@@ -91,6 +83,37 @@ class MemoryFile(object):
 
     def __iter__(self):
         return self
+
+
+class MemoryFileProxy(object):
+
+
+    def __init__(self, mem_file, readable):
+        self.mem_file, self.readable = mem_file, readable
+
+
+    def read(self, *args, **kwargs):
+        if not self.readable:
+            raise IOError(9, "bad file descriptor")
+        return self.mem_file.read(*args, **kwargs)
+
+
+    def __getattr__(self, name):
+        return getattr(self.mem_file, name)
+
+
+    def __enter__(self):
+        return self
+
+
+    def __exit__(self, *args):
+        pass
+
+
+    def __iter__(self):
+        return self.mem_file
+
+
 
 
 class MemoryFileSystemUri(BaseUri):pass
@@ -204,20 +227,27 @@ class MemoryFileSystem(FileSystem):
         for part in existing_dirs:
             current = current[part]
 
+
+        readable = False
+
         if options is None or "r" in options:
             f = current[file_to_create]
             f.seek(0)
-            return f
+            readable = True
 
-        if "w" in options or file_to_create not in current:
+        elif "w" in options or file_to_create not in current:
             if file_to_create in current and isinstance(current[file_to_create], dict):
                 raise IOError(errno.EISDIR, "File is directory" )
             current[file_to_create] = MemoryFile(self, p)
-            return current[file_to_create]
-        if "a" in options:
+            f = current[file_to_create]
+
+        elif "a" in options:
             f = current[file_to_create]
             f.seek(len(f))
-            return f
+
+
+        return MemoryFileProxy(f, readable)
+
 
 
     BINARY_MIME_TYPES = ["image/png",

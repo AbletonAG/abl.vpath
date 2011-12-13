@@ -247,3 +247,9 @@ class TestRemovalOfFilesAndDirs(TestCase):
 
         self.assertEqual(p.mtime(), new_mtime)
 
+
+
+    def test_reading_from_write_only_files_not_working(self):
+        p = self.root_path / "test.txt"
+        with p.open("w") as outf:
+            self.failUnlessRaises(IOError, outf.read)
