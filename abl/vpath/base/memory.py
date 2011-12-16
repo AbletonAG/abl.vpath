@@ -142,7 +142,8 @@ class MemoryLock(object):
 
     def __exit__(self, unused_exc_type, unused_exc_val, unused_exc_tb):
         self.lock.release()
-
+        if self.cleanup:
+            self.path.remove()
 
 
 

@@ -253,3 +253,15 @@ class TestRemovalOfFilesAndDirs(TestCase):
         p = self.root_path / "test.txt"
         with p.open("w") as outf:
             self.failUnlessRaises(IOError, outf.read)
+
+
+
+    def test_lockfile_cleanup(self):
+        p = self.root_path / "test.txt"
+        if p.exists():
+            p.remove()
+
+        with p.lock(cleanup=True):
+            assert p.exists()
+
+        assert not p.exists()
