@@ -282,4 +282,4 @@ class TestRemovalOfFilesAndDirs(TestCase):
     def test_double_dir_creation_fails(self):
         a = self.root_path / "a"
         a.mkdir()
-        self.failUnlessRaises(IOError, a.mkdir)
+        self.failUnlessRaises(OSError, a.mkdir)
