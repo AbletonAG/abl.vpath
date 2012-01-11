@@ -202,7 +202,7 @@ class MemoryFileSystem(FileSystem):
             for part in existing_dirs:
                 current = current[part]
             if dir_to_create in current:
-                raise IOError(17, "File exists: %r" % str(path))
+                raise OSError(17, "File exists: %r" % str(path))
             current[dir_to_create] = {}
 
 
