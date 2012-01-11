@@ -201,6 +201,8 @@ class MemoryFileSystem(FileSystem):
             dir_to_create = p.split("/")[-1]
             for part in existing_dirs:
                 current = current[part]
+            if dir_to_create in current:
+                raise IOError(17, "File exists: %r" % str(path))
             current[dir_to_create] = {}
 
 

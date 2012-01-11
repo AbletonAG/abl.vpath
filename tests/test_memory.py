@@ -277,3 +277,9 @@ class TestRemovalOfFilesAndDirs(TestCase):
         assert b != a
         assert not a != a
         assert not b != b
+
+
+    def test_double_dir_creation_fails(self):
+        a = self.root_path / "a"
+        a.mkdir()
+        self.failUnlessRaises(IOError, a.mkdir)
