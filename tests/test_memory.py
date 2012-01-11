@@ -265,3 +265,15 @@ class TestRemovalOfFilesAndDirs(TestCase):
             assert p.exists()
 
         assert not p.exists()
+
+
+
+    def test_file_name_comparison(self):
+        a = self.root_path / "a"
+        b = self.root_path / "b"
+        assert a == a
+        assert b == b
+        assert a != b
+        assert b != a
+        assert not a != a
+        assert not b != b

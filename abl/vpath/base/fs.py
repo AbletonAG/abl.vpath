@@ -345,11 +345,17 @@ class BaseUri(object):
     def __getattr__(self, attr):
         return getattr(self.parse_result, attr)
 
+
     def __eq__(self, other):
         if isinstance(other, BaseUri):
             return self.parse_result == other.parse_result
         else:
             return False
+
+
+    def __ne__(self, other):
+        return not self == other
+
 
     def __div__(self, other):
         return self.join(other)
