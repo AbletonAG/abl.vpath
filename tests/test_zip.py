@@ -49,20 +49,23 @@ class TestHelper(TestCase):
         self.assertEqual(compare_parts([1,2,3],[1,2,3]), ISFILE)
 
 class TestWritingZip(ZipTestCase):
+
     def setUp(self):
         super(TestWritingZip, self).setUp()
-        #self.zip_uri = 'memory:///file.zip'
         self.zip_uri = 'file://./file.zip'
         self.zip_path = URI(self.zip_uri)
+
 
     def tearDown(self):
         if self.zip_path.exists():
             self.zip_path.remove()
 
+
     def test_write_file_to_non_existing_zip(self):
         foo = URI('zip://((%s))/foo.txt' % self.zip_uri)
         with foo.open('w') as fd:
             fd.write('bar')
+
 
     def test_write_file_to_non_existing_zip_2(self):
         foo = URI('zip://((%s))/deeper/foo.txt' % self.zip_uri)
@@ -77,6 +80,7 @@ class TestWritingZip(ZipTestCase):
         bar = URI('zip://((%s))/bar.txt' % self.zip_uri)
         with bar.open('w') as fd:
             fd.write('foo')
+
 
 class TestReadingZip(ZipTestCase):
 

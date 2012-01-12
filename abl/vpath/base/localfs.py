@@ -6,31 +6,15 @@ from __future__ import with_statement, absolute_import
 
 import datetime
 import logging
-import os
-import platform
 import shutil
 import stat
 import subprocess
 
 from .fs import FileSystem, BaseUri, denormalize_path
 from .exceptions import FileDoesNotExistError
+from .os_abstraction import os
 
 from abl.util import Bunch, LockFile
-
-# check for WindowsError
-try:
-    raise WindowsError()
-except NameError:
-    WindowsError = None
-except:
-    pass
-
-if platform.system() == 'Windows':
-    import pywintypes
-    pywinerror = pywintypes.error
-else:
-    pywinerror = None
-
 
 LOGGER = logging.getLogger(__name__)
 #----------------------------------------------------------------------------
@@ -82,13 +66,8 @@ class LocalFileSystem(FileSystem):
 
     def removefile(self, unc):
         pth = self._path(unc)
-        try:
-            return os.unlink(pth)
-        except WindowsError:
-            import win32api
-            import win32con
-            win32api.SetFileAttributes(pth, win32con.FILE_ATTRIBUTE_NORMAL)
-            return os.unlink(pth)
+        return os.unlink(pth)
+
 
     def rmtree(self, unc):
         pth = self._path(unc)
@@ -97,15 +76,11 @@ class LocalFileSystem(FileSystem):
         except (WindowsError, pywinerror), exp:
             subprocess.call(['cmd','/C', 'rmdir', '/Q', '/S', pth])
 
+
     def removedir(self, unc):
         pth = self._path(unc)
-        try:
-            return os.rmdir(pth)
-        except WindowsError:
-            import win32api
-            import win32con
-            win32api.SetFileAttributes(pth, win32con.FILE_ATTRIBUTE_NORMAL)
-            return os.rmdir(pth)
+        return os.rmdir(pth)
+
 
     def mkdir(self, unc):
         path = self._path(unc)
