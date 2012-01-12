@@ -27,6 +27,7 @@ class WriteStatement(object):
         self.zip_backend.close_zip()
         self.zip_backend.open_zip()
 
+
     def __getattr__(self, attr):
         return getattr(self.byte_buffer, attr)
 
