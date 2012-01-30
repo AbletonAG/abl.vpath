@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="abl.vpath",
-    version="0.6.7",
+    version="0.6.8",
     description="A OO-abstraction of file-systems",
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
@@ -15,7 +15,7 @@ setup(
         "abl.util",
         ],
     packages=find_packages(exclude=['ez_setup', 'tests']),
-    namespace_packages = ['abl', 'abl.vpath'],
+    #namespace_packages = ['abl', 'abl.vpath'],
     # TODO-std: add the classifiers
     classifiers = [
         'Development Status :: 4 - Beta',
