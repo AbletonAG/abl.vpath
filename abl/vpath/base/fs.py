@@ -668,7 +668,7 @@ class BaseUri(object):
         expensive!
         """
         hash_ = hashlib.md5()
-        with self.open() as inf:
+        with self.open("rb") as inf:
             block = inf.read(4096)
             while block:
                 hash_.update(block)
