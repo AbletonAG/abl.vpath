@@ -71,10 +71,7 @@ class LocalFileSystem(FileSystem):
 
     def rmtree(self, unc):
         pth = self._path(unc)
-        try:
-            return shutil.rmtree(pth)
-        except (WindowsError, pywinerror), exp:
-            subprocess.call(['cmd','/C', 'rmdir', '/Q', '/S', pth])
+        return shutil.rmtree(pth)
 
 
     def removedir(self, unc):

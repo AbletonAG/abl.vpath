@@ -453,6 +453,7 @@ class BaseUri(object):
         else:
             return parts[-1]
 
+
     def join(self, *args):
         """
         join: join paths parts together to represent a path.
