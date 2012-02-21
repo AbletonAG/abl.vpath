@@ -24,6 +24,7 @@ class MemoryFile(object):
         self._data = StringIO()
         self._line_reader = None
         self.mtime = self.ctime = time.time()
+        self.mode = 0
         self.lock = self.FILE_LOCKS.setdefault((self.fs, self.path), threading.Lock())
 
 
@@ -277,17 +278,26 @@ class MemoryFileSystem(FileSystem):
         traverse(self._fs)
 
 
-    def info(self, unc, verbosity=0):
+    def info(self, unc, set_info=None):
         # TODO-dir: currently only defined
         # for file-nodes!
+
         p = self._path(unc)
         current = self._fs
-
         for part in p.split("/"):
             current = current[part]
-        return Bunch(mtime=current.mtime,
-                     size=len(current._data.getvalue())
-                     )
+
+        if set_info is not None:
+            if "mode" in set_info:
+                current.mode = set_info["mode"]
+            return
+
+
+        return Bunch(
+            mtime=current.mtime,
+            mode=current.mode,
+            size=len(current._data.getvalue())
+            )
 
 
 

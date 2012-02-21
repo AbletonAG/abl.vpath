@@ -7,6 +7,7 @@ from __future__ import with_statement
 import datetime
 import os
 import time
+import stat
 from unittest import TestCase
 from abl.vpath.base import *
 
@@ -53,3 +54,15 @@ class TestLocalFSInfo(TestCase):
         finally:
             if p.exists():
                 p.remove()
+
+
+    def test_setting_mode(self):
+        p = URI("test.txt")
+        mode = p.info().mode
+        new_mode = mode | stat.S_IXUSR
+        p.info(dict(mode=new_mode))
+        self.assertEqual(
+            p.info().mode,
+            new_mode,
+            )
+

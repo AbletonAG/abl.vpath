@@ -641,7 +641,7 @@ class BaseUri(object):
         return self.connection.listdir(self, recursive)
 
     @with_connection
-    def info(self, verbosity=0):
+    def info(self, set_info=None):
         """
         info: backend info about self (probably not implemented for
               all backends. The result will be backend specific
@@ -649,7 +649,7 @@ class BaseUri(object):
         @rtype: Bunch
         @return: backend specific information about self.
         """
-        return self.connection.info(self, verbosity)
+        return self.connection.info(self, set_info=set_info)
 
 
     @with_connection
@@ -920,7 +920,7 @@ class FileSystem(object):
     def isdir(self, path):
         raise NotImplementedError
 
-    def info(self,  path, verbosity=0):
+    def info(self,  path, set_info=None):
         raise NotImplementedError
 
     def sync(self, source, dest, options):

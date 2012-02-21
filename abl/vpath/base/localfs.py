@@ -38,8 +38,15 @@ class LocalFileSystem(FileSystem):
     def _initialize(self):
         pass
 
-    def info(self, unc, verbosity=0):
+
+    def info(self, unc, set_info=None):
         p = self._path(unc)
+
+        if set_info is not None:
+            if "mode" in set_info:
+                os.chmod(p, set_info["mode"])
+            return
+
         stats = os.stat(p)
         ctime = stats[stat.ST_CTIME]
         mtime = stats[stat.ST_MTIME]

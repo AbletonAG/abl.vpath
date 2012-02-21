@@ -5,6 +5,7 @@ import errno
 import os
 import tempfile
 import time
+import stat
 from unittest import TestCase
 
 from abl.util import LockFileObtainException
@@ -177,9 +178,11 @@ class TestRemovalOfFilesAndDirs(TestCase):
         file_path.remove()
         self.assert_(not file_path.exists())
 
+
     def test_removefile_not_existing(self):
         file_path = self.root_path / 'foo.txt'
         self.assertRaises(FileDoesNotExistError, file_path.remove, ())
+
 
     def test_remove_recursive(self):
         dir_path = self.root_path / 'foo'
@@ -267,7 +270,6 @@ class TestRemovalOfFilesAndDirs(TestCase):
         assert not p.exists()
 
 
-
     def test_file_name_comparison(self):
         a = self.root_path / "a"
         b = self.root_path / "b"
@@ -283,3 +285,20 @@ class TestRemovalOfFilesAndDirs(TestCase):
         a = self.root_path / "a"
         a.mkdir()
         self.failUnlessRaises(OSError, a.mkdir)
+
+
+    def test_setting_mode(self):
+        p = self.root_path / "test.txt"
+        if p.exists():
+            p.remove()
+
+        with p.open("w") as outf:
+            outf.write("foo")
+
+        mode = p.info().mode
+        new_mode = mode | stat.S_IXUSR
+        p.info(dict(mode=new_mode))
+        self.assertEqual(
+            p.info().mode,
+            new_mode,
+            )
