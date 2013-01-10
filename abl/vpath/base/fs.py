@@ -210,7 +210,7 @@ def with_connection(func, self, *args, **argd):
     """
     self.connection = self.get_connection()
     self.connection.last_used = time.time()
-
+    self.connection.pre_call_hook(self, func)
     return func(self, *args, **argd)
 
 
@@ -757,6 +757,15 @@ class FileSystem(object):
             return uriobj.path
         else:
             return uriobj
+
+
+
+    def pre_call_hook(self, path, func):
+        """
+        Invoked for all @with_connection decorated
+        functions before they get executed.
+        """
+        pass
 
 
 

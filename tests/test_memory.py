@@ -22,6 +22,7 @@ class MemoryFSTests(TestCase):
         self.temp_path = URI(tempfile.mktemp())
         self.temp_path.mkdir()
 
+
     def tearDown(self):
         if self.temp_path.isdir():
             self.temp_path.remove(recursive=True)
@@ -228,7 +229,6 @@ class TestRemovalOfFilesAndDirs(TestCase):
             mfile.lock.release()
 
 
-
     def test_manipulation_api(self):
         p = self.root_path / "test.txt"
         p._manipulate(lock=True)
@@ -249,6 +249,27 @@ class TestRemovalOfFilesAndDirs(TestCase):
         p._manipulate(mtime=new_mtime)
 
         self.assertEqual(p.mtime(), new_mtime)
+
+        error_file = self.root_path / "error"
+
+        with error_file.open("wb") as outf:
+            outf.write("foobarbaz")
+
+        error_dir = self.root_path / "error.dir"
+        error_dir.mkdir()
+
+        def next_op_callback(path, func):
+            raise OSError(13, "Permission denied")
+
+
+        for error in (error_file, error_dir):
+            error._manipulate(next_op_callback=next_op_callback)
+            try:
+                error.remove()
+            except OSError, e:
+                self.assertEqual(e.errno, 13)
+            else:
+                assert False, "Shouldn't be here"
 
 
 

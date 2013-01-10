@@ -117,7 +117,12 @@ class MemoryFileProxy(object):
 
 
 
-class MemoryFileSystemUri(BaseUri):pass
+class MemoryFileSystemUri(BaseUri):
+
+    def __init__(self, *args, **kwargs):
+        super(MemoryFileSystemUri, self).__init__(*args, **kwargs)
+        self._next_op_callback = None
+
 
 
 class MemoryLock(object):
@@ -220,6 +225,11 @@ class MemoryFileSystem(FileSystem):
         else:
             # we are root, which always exists
             return True
+
+
+    def pre_call_hook(self, path, func):
+        if path._next_op_callback:
+            path._next_op_callback(path, func)
 
 
     def open(self, path, options, mimetype):
@@ -340,7 +350,7 @@ class MemoryFileSystem(FileSystem):
     SENTINEL = object()
 
 
-    def _manipulate(self, path, lock=SENTINEL, unlock=SENTINEL, mtime=SENTINEL):
+    def _manipulate(self, path, lock=SENTINEL, unlock=SENTINEL, mtime=SENTINEL, next_op_callback=SENTINEL):
         if lock is not self.SENTINEL and lock:
             p = self._path(path)
             lock = MemoryFile(self, p).lock
@@ -358,3 +368,6 @@ class MemoryFileSystem(FileSystem):
             for part in p.split("/"):
                 current = current[part]
             current.mtime = mtime
+
+        if next_op_callback is not self.SENTINEL:
+            path._next_op_callback = next_op_callback
