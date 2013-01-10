@@ -161,6 +161,7 @@ class MemoryFileSystem(FileSystem):
 
     def _initialize(self):
         self._fs = {}
+        self.next_op_callbacks = {}
 
 
     def _path(self, path):
@@ -228,8 +229,9 @@ class MemoryFileSystem(FileSystem):
 
 
     def pre_call_hook(self, path, func):
-        if path._next_op_callback:
-            path._next_op_callback(path, func)
+        p = self._path(path)
+        if p in self.next_op_callbacks and self.next_op_callbacks[p] is not None:
+            self.next_op_callbacks[p](path, func)
 
 
     def open(self, path, options, mimetype):
@@ -370,4 +372,5 @@ class MemoryFileSystem(FileSystem):
             current.mtime = mtime
 
         if next_op_callback is not self.SENTINEL:
-            path._next_op_callback = next_op_callback
+            p = self._path(path)
+            self.next_op_callbacks[p] = next_op_callback

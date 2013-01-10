@@ -264,8 +264,9 @@ class TestRemovalOfFilesAndDirs(TestCase):
 
         for error in (error_file, error_dir):
             error._manipulate(next_op_callback=next_op_callback)
+            clone = URI(error)
             try:
-                error.remove()
+                clone.remove()
             except OSError, e:
                 self.assertEqual(e.errno, 13)
             else:
