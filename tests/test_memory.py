@@ -324,3 +324,30 @@ class TestRemovalOfFilesAndDirs(TestCase):
             p.info().mode,
             new_mode,
             )
+
+
+    def test_removing_non_empty_dirs(self):
+        p = self.root_path / "test-dir"
+        assert not p.exists()
+        p.mkdir()
+
+        with (p / "some-file.txt").open("w") as outf:
+            outf.write("foobar")
+
+        self.assertRaises(
+            OSError,
+            p.remove,
+            )
+
+        (p / "some-file.txt").remove()
+        p.remove()
+
+        assert not p.exists()
+        p.mkdir()
+
+        with (p / "some-file.txt").open("w") as outf:
+            outf.write("foobar")
+
+        p.remove(recursive=True)
+
+

@@ -329,7 +329,7 @@ class MemoryFileSystem(FileSystem):
         return current.mtime
 
 
-    def _removeitem(self, path):
+    def removefile(self, path):
         p = self._path(path)
         current = self._fs
         prev = None
@@ -339,9 +339,19 @@ class MemoryFileSystem(FileSystem):
         if prev is not None:
             del prev[part]
 
-    removefile = _removeitem
 
-    removedir = _removeitem
+    def removedir(self, path):
+        p = self._path(path)
+        current = self._fs
+        prev = None
+        for part in [x for x in p.split("/") if x]:
+            prev = current
+            current = current[part]
+        if prev is not None:
+            if not prev[part]:
+                del prev[part]
+            else:
+                raise OSError(13, "Permission denied: %r" % path)
 
 
 
