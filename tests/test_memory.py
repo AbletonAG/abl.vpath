@@ -13,10 +13,14 @@ from abl.vpath.base import URI
 from abl.vpath.base.exceptions import FileDoesNotExistError
 from abl.vpath.base.fs import CONNECTION_REGISTRY
 
+def create_file(inpath, name):
+    f = inpath / name
+    with f.open('w') as fs:
+        fs.write('content')
+    return f
+
 
 class MemoryFSTests(TestCase):
-
-
     def setUp(self):
         CONNECTION_REGISTRY.cleanup(force=True)
         self.temp_path = URI(tempfile.mktemp())
@@ -40,7 +44,6 @@ class MemoryFSTests(TestCase):
         assert not subdir.isfile()
 
         out = subdir / "bar"
-
 
         with out.open("w") as outf:
             outf.write("foobar")
@@ -351,3 +354,90 @@ class TestRemovalOfFilesAndDirs(TestCase):
         p.remove(recursive=True)
 
 
+class TestMemoryFSExec(TestCase):
+    def setUp(self):
+        CONNECTION_REGISTRY.cleanup(force=True)
+
+    def tearDown(self):
+        pass
+
+    def test_exec_flags(self):
+        root = URI("memory:///") / "folder"
+        root.mkdir()
+
+        # create a file with execution flag
+        xfile = root / 'xfile.sh'
+        with xfile.open('w') as fs:
+            fs.write('content')
+
+        xfile.set_exec(stat.S_IXUSR)
+        self.assert_(xfile.isexec())
+        self.assertEqual(xfile.info().mode & stat.S_IXUSR, stat.S_IXUSR)
+
+        # create a file without exec flag
+        ofile = root / 'otherfile.txt'
+        with ofile.open('w') as fs:
+            fs.write('content')
+
+        self.assertEqual(ofile.info().mode & stat.S_IXUSR, 0)
+        self.assert_(not ofile.isexec())
+
+
+class TestMemoryFSCopy(TestCase):
+    def setUp(self):
+        CONNECTION_REGISTRY.cleanup(force=True)
+
+    def tearDown(self):
+        pass
+
+    def test_copystat_exec_to_nonexec(self):
+        root = URI("memory:///") / "folder"
+        root.mkdir()
+
+        # create a file with execution flag
+        xfile = create_file(root, 'xfile.sh')
+        xfile.set_exec(stat.S_IXUSR)
+
+        # create a file without exec flag
+        ofile = create_file(root, 'otherfile.txt')
+
+        xfile.copystat(ofile)
+
+        self.assert_(ofile.isexec())
+
+
+    def test_copystat_exec_to_nonexec(self):
+        root = URI("memory:///") / "folder"
+        root.mkdir()
+
+        # create a file with execution flag
+        xfile = create_file(root, 'xfile.sh')
+        xfile.set_exec(stat.S_IXUSR)
+
+        # create a file without exec flag
+        ofile = create_file(root, 'otherfile.txt')
+
+        ofile.copystat(xfile)
+
+        self.assert_(not xfile.isexec())
+
+
+    def test_copy_recursive(self):
+        root = URI("memory:///") / "folder"
+        root.mkdir()
+        foo_path = root / 'foo'
+        foo_path.mkdir()
+
+        bar_path = root / 'bar'
+
+        # create a file with execution flag
+        xfile = create_file(foo_path, 'xfile.sh')
+        xfile.set_exec(stat.S_IXUSR)
+
+        # create a file without exec flag
+        ofile = create_file(foo_path, 'otherfile.txt')
+
+        foo_path.copy(bar_path, recursive=True)
+
+        self.assert_((bar_path / 'xfile.sh').isexec())
+        self.assert_(not (bar_path / 'otherfile.txt').isexec())

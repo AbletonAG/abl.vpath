@@ -100,6 +100,14 @@ class LocalFileSystem(FileSystem):
     def isdir(self, unc):
         return os.path.isdir(self._path(unc))
 
+    def isexec(self, unc, mode_mask):
+        return self.info(unc).mode & mode_mask != 0
+
+    def set_exec(self, unc, mode):
+        mask = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        new_mode = (self.info(unc).mode & ~mask) | mode
+        self.info(unc, dict(mode=new_mode))
+
     def move(self, source, dest):
         """
         the semantic should be like unix 'mv' command.
@@ -131,3 +139,6 @@ class LocalFileSystem(FileSystem):
     def mtime(self, path):
         return self.info(path).mtime
 
+
+    def copystat(self, source, dest):
+        shutil.copystat(source.path, dest.path)

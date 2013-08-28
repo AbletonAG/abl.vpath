@@ -4,16 +4,18 @@
 from __future__ import with_statement
 import datetime
 import os
+import stat
 from posixpath import join as ujoin
 import shutil
 import tempfile
 from unittest import TestCase
 
+
 from abl.vpath.base import *
 from abl.vpath.base.fs import scheme_re
 
-class KeepCurrentDir:
 
+class KeepCurrentDir:
     def __init__(self, directory):
         self._directory = directory
         self._currentdir = os.getcwd()
@@ -24,6 +26,7 @@ class KeepCurrentDir:
 
     def __exit__(self, *exc_args):
         os.chdir(self._currentdir)
+
 
 class TestSchemeRe(TestCase):
     def test_file(self):
@@ -40,6 +43,7 @@ class TestSchemeRe(TestCase):
         m = scheme_re.match("some/path")
         self.assertEqual(m, None)
 
+
 class TestHttpUri(TestCase):
     def test_query(self):
         p = URI('http://storm/this')
@@ -55,7 +59,6 @@ class TestHttpUri(TestCase):
 
 
 class TestUnicodeURI(TestCase):
-
     def setUp(self):
         self.thisdir = os.path.split(os.path.abspath(__file__))[0]
         self.foo_dir = os.path.join(self.thisdir, 'foo')
@@ -87,6 +90,7 @@ class TestUnicodeURI(TestCase):
         dest = URI(self.bar_dir)
         p.copy(dest, recursive=True)
 
+
 class TestCredentials(TestCase):
     """
     credentials (username, password) are treated as a special case
@@ -111,7 +115,6 @@ class TestCredentials(TestCase):
 
 
 class TestURI(TestCase):
-
     def test_rescheming(self):
         some_path = URI('first:///scheme')
         some_path.scheme = 'second'
@@ -459,6 +462,7 @@ class TestFileSystem(TestCase):
         foo_path.query['arg'] = 'value'
         self.assert_(foo_path_connection is not foo_path.get_connection())
 
+
 class TestEq(TestCase):
     def test_eq(self):
         """
@@ -466,5 +470,3 @@ class TestEq(TestCase):
         """
         p = URI('/some/path')
         self.assertNotEqual(p, None)
-
-

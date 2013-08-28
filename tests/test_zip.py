@@ -13,12 +13,11 @@ def clean_registry():
 
 
 class ZipTestCase(TestCase):
-
     def setUp(self):
         clean_registry()
 
-class TestHelper(TestCase):
 
+class TestHelper(TestCase):
     def test_content_item_in_root(self):
         path1 = '/'
         path2 = '/foo'
@@ -48,8 +47,8 @@ class TestHelper(TestCase):
     def test_compare_ISFILE(self):
         self.assertEqual(compare_parts([1,2,3],[1,2,3]), ISFILE)
 
-class TestWritingZip(ZipTestCase):
 
+class TestWritingZip(ZipTestCase):
     def setUp(self):
         super(TestWritingZip, self).setUp()
         self.zip_uri = 'file://./file.zip'
@@ -57,6 +56,10 @@ class TestWritingZip(ZipTestCase):
 
 
     def tearDown(self):
+        # reset the connection registry, otherwise the zip file cannot
+        # be deleted on windows since it is still opened by the
+        # backend
+        CONNECTION_REGISTRY.cleanup(force=True)
         if self.zip_path.exists():
             self.zip_path.remove()
 

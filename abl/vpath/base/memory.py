@@ -4,6 +4,7 @@ import mimetypes
 import hashlib
 import time
 import errno
+import stat
 import threading
 
 from cStringIO import StringIO
@@ -200,6 +201,16 @@ class MemoryFileSystem(FileSystem):
         return False
 
 
+    def isexec(self, path, mode_mask):
+        return self.info(path).mode & mode_mask != 0
+
+
+    def set_exec(self, path, mode):
+        mask = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        new_mode = (self.info(path).mode & ~mask) | mode
+        self.info(path, dict(mode=new_mode))
+
+
     def mkdir(self, path):
         p = self._path(path)
         current = self._fs
@@ -290,20 +301,24 @@ class MemoryFileSystem(FileSystem):
         traverse(self._fs)
 
 
-    def info(self, unc, set_info=None):
-        # TODO-dir: currently only defined
-        # for file-nodes!
-
+    def _get_memfile_for_path(self, unc):
         p = self._path(unc)
         current = self._fs
         for part in p.split("/"):
             current = current[part]
+        return current
+
+
+    def info(self, unc, set_info=None):
+        # TODO-dir: currently only defined
+        # for file-nodes!
+
+        current = self._get_memfile_for_path(unc)
 
         if set_info is not None:
             if "mode" in set_info:
                 current.mode = set_info["mode"]
             return
-
 
         return Bunch(
             mtime=current.mtime,
@@ -311,6 +326,15 @@ class MemoryFileSystem(FileSystem):
             size=len(current._data.getvalue())
             )
 
+
+    def copystat(self, src, dest):
+        # TODO: currently only defined for file-nodes
+
+        src_current = self._get_memfile_for_path(src)
+        dest_current = self._get_memfile_for_path(dest)
+
+        dest_current.mtime = src_current.mtime
+        dest_current.mode = src_current.mode
 
 
     def listdir(self, path, recursive=False):
@@ -322,11 +346,7 @@ class MemoryFileSystem(FileSystem):
 
 
     def mtime(self, path):
-        p = self._path(path)
-        current = self._fs
-        for part in p.split("/"):
-            current = current[part]
-        return current.mtime
+        return self._get_memfile_for_path(path).mtime
 
 
     def removefile(self, path):

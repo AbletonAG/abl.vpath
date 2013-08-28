@@ -150,6 +150,14 @@ class ZipFileSystem(FileSystem):
     def isfile(self, unc):
         return self._ispart(unc, (ISFILE,))
 
+    def isexec(self, unc, mode):
+        # TODO
+        raise NotImplementedError
+
+    def set_exec(self, unc, mode):
+        # TODO
+        raise NotImplementedError
+
     def listdir(self, unc, recursive=False):
         if not self._zip_file_path().exists():
             return []
@@ -165,7 +173,7 @@ class ZipFileSystem(FileSystem):
             citem = content_item(path_string, item)
             if citem:
                 content_set.add(citem)
-            
+
         return list(sorted(content_set))
 
     def _ispart(self, unc, expected):
@@ -178,3 +186,7 @@ class ZipFileSystem(FileSystem):
                 return True
         return False
 
+
+    def copystat(self, path, other):
+        # TODO
+        raise NotImplementedError

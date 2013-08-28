@@ -7,6 +7,7 @@ from contextlib import nested
 import fnmatch
 import hashlib
 import os
+import stat
 from Queue import Queue
 import re
 import shutil
@@ -490,8 +491,26 @@ class BaseUri(object):
         @param other: the path to copy itself over.
 
         What will really happen depends on the backend.
+
+        Note that file properties are only copied when self and other are
+        located in the same backend, i.e. it is not possible to copy
+        permissions etc. from a memory:// to a file:// based path.
         """
         return self.connection.copy(self, other, recursive, ignore)
+
+
+    @with_connection
+    def copystat(self, other):
+        """
+        copystat: copy file/folder metadata from self to other
+
+        @type other: URI
+        @param other: the path to copy the metadata to.
+
+        Will copy file permissions, mtime, atime, etc. to path.
+        """
+        return self.connection.copystat(self, other)
+
 
     @with_connection
     def move(self, other):
@@ -587,6 +606,37 @@ class BaseUri(object):
         @return: True is path is a directory on target system, else False
         """
         return self.connection.isdir(self)
+
+
+    @with_connection
+    def isexec(self, mode=stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH):
+        """
+        isexec:
+
+        @rtype: bool
+        @return: Indicates whether the path points to a file or folder
+        which has the executable flag set.
+
+        Note that on systems which do not support executables flags the
+        result may be unpredicatable.  On Windows the value is determined
+        by the file extension, a *.exe file is executable, a *.sh not.
+        """
+        return self.connection.isexec(self, mode)
+
+
+    @with_connection
+    def set_exec(self, mode):
+        """
+        set_exec:
+
+        @rtype: void
+        @return: Set the executable flag of the receiver to mode (which can
+        be any combination of stat.IXUSR, stat.IXGRP, or stat.IXOTH).
+
+        Note that on systems which do not support executables flags the
+        function may have no effect.
+        """
+        return self.connection.set_exec(self, mode)
 
 
     @with_connection
@@ -775,25 +825,31 @@ class FileSystem(object):
         if source.connection is dest.connection and hasattr(self, 'internal_copy'):
             return self.internal_copy(source, dest, recursive, ignore)
 
+        use_same_backend = source.scheme == dest.scheme
 
         if ignore is not None:
             ignore = set(ignore)
         else:
             ignore = set()
+
         if not source.exists():
             raise FileDoesNotExistError(str(source))
+
         if not recursive:
             assert source.isfile()
             if dest.isdir():
                 dest = dest / source.last()
             with nested(source.open('rb'), dest.open('wb')) as (infs, outfs):
                 shutil.copyfileobj(infs, outfs, 8192)
+            if use_same_backend:
+                self.copystat(source, dest)
         else:
             assert source.isdir()
             if dest.exists():
                 droot = dest / source.last()
             else:
                 droot = dest
+
             droot.makedirs()
             spth = source.path
             spth_len = len(spth) + 1
@@ -804,20 +860,21 @@ class FileSystem(object):
                     dbase = droot / tojoin
                 else:
                     dbase = droot
+
                 for folder in dirs[:]:
                     if folder in ignore:
                         dirs.remove(folder)
                         continue
                     ddir = dbase / folder
                     ddir.makedirs()
+
                 for fname in files:
                     source = root / fname
                     dest = dbase / fname
-                    with nested(
-                        source.open('rb'),
-                        dest.open('wb')
-                        ) as (infs, outfs):
+                    with nested(source.open('rb'), dest.open('wb') ) as (infs, outfs):
                         shutil.copyfileobj(infs, outfs, 8192)
+                if use_same_backend:
+                    self.copystat(source, dest)
 
 
     def makedirs(self, path):
@@ -929,6 +986,12 @@ class FileSystem(object):
     def isdir(self, path):
         raise NotImplementedError
 
+    def isexec(self, path, mode):
+        raise NotImplementedError
+
+    def set_exec(self, path, mode):
+        raise NotImplementedError
+
     def info(self,  path, set_info=None):
         raise NotImplementedError
 
@@ -937,6 +1000,10 @@ class FileSystem(object):
 
     def mtime(self, path):
         raise NotImplementedError
+
+    def copystat(self, path, other):
+        raise NotImplementedError
+
 
 class RevisionedFileSystem(FileSystem):
     def switch(self, revision):
