@@ -333,8 +333,9 @@ class MemoryFileSystem(FileSystem):
         src_current = self._get_memfile_for_path(src)
         dest_current = self._get_memfile_for_path(dest)
 
-        dest_current.mtime = src_current.mtime
-        dest_current.mode = src_current.mode
+        if isinstance(src_current, MemoryFile) and isinstance(dest_current, MemoryFile):
+            dest_current.mtime = src_current.mtime
+            dest_current.mode = src_current.mode
 
 
     def listdir(self, path, recursive=False):

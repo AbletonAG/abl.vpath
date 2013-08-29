@@ -426,7 +426,7 @@ class TestMemoryFSCopy(TestCase):
         root = URI("memory:///") / "folder"
         root.mkdir()
         foo_path = root / 'foo'
-        foo_path.mkdir()
+        foo_path.makedirs()
 
         bar_path = root / 'bar'
 
@@ -441,3 +441,17 @@ class TestMemoryFSCopy(TestCase):
 
         self.assert_((bar_path / 'xfile.sh').isexec())
         self.assert_(not (bar_path / 'otherfile.txt').isexec())
+
+
+    def test_copy_empty_dirs_recursive(self):
+        root = URI("memory:///") / "folder"
+        root.mkdir()
+
+        gaz_path = root / 'gaz'
+        gaz_path.makedirs()
+
+        moo_path = root / 'moo'
+
+        gaz_path.copy(moo_path, recursive=True)
+
+        self.assert_((moo_path).isdir())
