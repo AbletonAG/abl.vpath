@@ -157,10 +157,16 @@ class TestLocalFSCopy(TestCase):
         xfile = create_file(foo_path, 'xfile.exe')
         xfile.set_exec(stat.S_IXUSR)
 
+        zfile = create_file(foo_path, 'zfile.exe')
+        zfile.set_exec(stat.S_IXUSR)
+
         # create a file without exec flag
         ofile = create_file(foo_path, 'otherfile.txt')
+        nfile = create_file(foo_path, 'nfile.txt')
 
         foo_path.copy(bar_path, recursive=True)
 
         self.assert_((bar_path / 'xfile.exe').isexec())
+        self.assert_((bar_path / 'zfile.exe').isexec())
         self.assert_(not (bar_path / 'otherfile.txt').isexec())
+        self.assert_(not (bar_path / 'nfile.txt').isexec())

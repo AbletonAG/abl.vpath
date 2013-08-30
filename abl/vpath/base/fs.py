@@ -873,8 +873,8 @@ class FileSystem(object):
                     dest = dbase / fname
                     with nested(source.open('rb'), dest.open('wb') ) as (infs, outfs):
                         shutil.copyfileobj(infs, outfs, 8192)
-                if use_same_backend:
-                    self.copystat(source, dest)
+                    if use_same_backend:
+                        self.copystat(source, dest)
 
 
     def makedirs(self, path):
