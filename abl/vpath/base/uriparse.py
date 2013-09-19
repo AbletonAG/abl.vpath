@@ -52,6 +52,8 @@ Author: Paul Jiminez (?)
 License: ?, see bugs.python.org/issue1462525, so it's probably usable
 """
 
+import re
+
 def urisplit(uri):
     """
        Basic URI Parser according to STD66 aka RFC3986
@@ -60,7 +62,6 @@ def urisplit(uri):
        ('scheme', 'authority', 'path', 'query', 'fragment')
 
     """
-    import re
     inner_part = re.compile(r'\(\(.*?\)\)')
     m = inner_part.search(uri)
     inner_value = ''
