@@ -681,14 +681,13 @@ class BaseUri(object):
         return self.connection.relative_walk(self)
 
     @with_connection
-    def listdir(self, recursive=False):
+    def listdir(self):
         """
         listdir: list contents of directory self.
-        if recursive==True, return the content of this
-        directory recursivly. The pathpart of 'self' will
-        not be returned.
+        The pathpart of 'self' will not be returned.
         """
-        return self.connection.listdir(self, recursive)
+        return self.connection.listdir(self)
+
 
     @with_connection
     def info(self, set_info=None):
@@ -962,7 +961,7 @@ class FileSystem(object):
     def open(self, path, options, mimetype):
         raise NotImplementedError
 
-    def listdir(self, path, recursive=False):
+    def listdir(self, path):
         raise NotImplementedError
 
     def removefile(self, path):

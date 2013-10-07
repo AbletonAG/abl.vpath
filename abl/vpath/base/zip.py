@@ -158,7 +158,7 @@ class ZipFileSystem(FileSystem):
         # TODO
         raise NotImplementedError
 
-    def listdir(self, unc, recursive=False):
+    def listdir(self, unc):
         if not self._zip_file_path().exists():
             return []
         if self._ziphandle is None:
