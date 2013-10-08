@@ -204,6 +204,20 @@ def denormalize_path(path, sep='\\'):
         return path.replace('/', sep)
 
 
+def remove_dir_recursively(connection, path, followlinks):
+    for root, dirs, files in connection.walk(path, topdown=False,
+                                             followlinks=followlinks):
+        for fname in files:
+            connection.removefile(root / fname)
+        for dname in dirs:
+            d = root / dname
+            if connection.islink(d) and not followlinks:
+                connection.removefile(d)
+            else:
+                connection.removedir(d)
+    return connection.removedir(path)
+
+
 #============================================================================
 
 @decorator
@@ -500,7 +514,8 @@ class BaseUri(object):
 
 
     @with_connection
-    def copy(self, other, recursive=False, ignore=None):
+    def copy(self, other, recursive=False, ignore=None,
+             followlinks=True):
         """
         copy: copy self to other
 
@@ -513,7 +528,7 @@ class BaseUri(object):
         located in the same backend, i.e. it is not possible to copy
         permissions etc. from a memory:// to a file:// based path.
         """
-        return self.connection.copy(self, other, recursive, ignore)
+        return self.connection.copy(self, other, recursive, ignore, followlinks)
 
 
     @with_connection
@@ -543,7 +558,7 @@ class BaseUri(object):
 
 
     @with_connection
-    def remove(self, recursive=False):
+    def remove(self, recursive=False, followlinks=True):
         """
         remove: shortcut method to remove self.
         if 'self' represents a file, the backends 'removefile' method id used.
@@ -553,20 +568,21 @@ class BaseUri(object):
         """
         if not self.connection.exists(self):
             raise FileDoesNotExistError(str(self))
+
+        if self.connection.islink(self) and not followlinks:
+            return self.connection.removefile(self)
+
         if self.connection.isdir(self):
             if recursive:
-                try:
-                    self.connection.rmtree(self)
-                except NotImplementedError:
-                    for root, dirs, files in self.connection.walk(
-                        self,
-                        topdown=False
-                        ):
-                        for fname in files:
-                            self.connection.removefile(root / fname)
-                        for dname in dirs:
-                            self.connection.removedir(root / dname)
-                    return self.connection.removedir(self)
+                if followlinks:
+                    try:
+                        self.connection.rmtree(self)
+                    except NotImplementedError:
+                        return remove_dir_recursively(self.connection, self,
+                                                      followlinks)
+                else:
+                    return remove_dir_recursively(self.connection, self,
+                                                  followlinks)
             else:
                 return self.connection.removedir(self)
         elif self.connection.isfile(self):
@@ -719,7 +735,7 @@ class BaseUri(object):
 
 
     @with_connection
-    def walk(self):
+    def walk(self, followlinks=True):
         """
         walk: walk the filesystem (just like os.walk).
         Use like:
@@ -730,10 +746,11 @@ class BaseUri(object):
 
         root will be an URI object.
         """
-        return self.connection.walk(self)
+        return self.connection.walk(self, followlinks)
+
 
     @with_connection
-    def relative_walk(self):
+    def relative_walk(self, followlinks=True):
         """
         similar to "walk", but give as well the
         directory part relative to the initial directory to walk.
@@ -746,7 +763,8 @@ class BaseUri(object):
         root will be an URI object.
         relative is a string like "part" or "sub/part"
         """
-        return self.connection.relative_walk(self)
+        return self.connection.relative_walk(self, followlinks=followlinks)
+
 
     @with_connection
     def listdir(self):
@@ -887,9 +905,15 @@ class FileSystem(object):
         pass
 
 
+    def _copy_link(self, source, dest):
+        assert self.islink(source)
+        if dest.isfile():
+            self.removefile(dest)
+        self.symlink(self.readlink(source), dest)
 
 
-    def copy(self, source, dest, recursive=False, ignore=None):
+    def copy(self, source, dest, recursive=False, ignore=None,
+             followlinks=True):
         if source.connection is dest.connection and hasattr(self, 'internal_copy'):
             return self.internal_copy(source, dest, recursive, ignore)
 
@@ -907,10 +931,14 @@ class FileSystem(object):
             assert source.isfile()
             if dest.isdir():
                 dest = dest / source.last()
-            with nested(source.open('rb'), dest.open('wb')) as (infs, outfs):
-                shutil.copyfileobj(infs, outfs, 8192)
-            if use_same_backend:
-                self.copystat(source, dest)
+
+            if source.islink() and not followlinks:
+                self._copy_link(source, dest)
+            else:
+                with nested(source.open('rb'), dest.open('wb')) as (infs, outfs):
+                    shutil.copyfileobj(infs, outfs, 8192)
+                if use_same_backend:
+                    self.copystat(source, dest)
         else:
             assert source.isdir()
             if dest.exists():
@@ -918,31 +946,41 @@ class FileSystem(object):
             else:
                 droot = dest
 
-            droot.makedirs()
-            spth = source.path
-            spth_len = len(spth) + 1
-            for root, dirs, files in source.walk():
-                rpth = root.path
-                tojoin = rpth[spth_len:].strip()
-                if tojoin:
-                    dbase = droot / tojoin
-                else:
-                    dbase = droot
+            if source.islink() and not followlinks:
+                self._copy_link(source, droot)
+            else:
+                droot.makedirs()
+                spth = source.path
+                spth_len = len(spth) + 1
+                for root, dirs, files in source.walk(followlinks):
+                    rpth = root.path
+                    tojoin = rpth[spth_len:].strip()
+                    if tojoin:
+                        dbase = droot / tojoin
+                    else:
+                        dbase = droot
 
-                for folder in dirs[:]:
-                    if folder in ignore:
-                        dirs.remove(folder)
-                        continue
-                    ddir = dbase / folder
-                    ddir.makedirs()
+                    for folder in dirs[:]:
+                        if folder in ignore:
+                            dirs.remove(folder)
+                            continue
+                        ddir = dbase / folder
+                        srcp = root / folder
+                        if srcp.islink() and not followlinks:
+                            self._copy_link(srcp, ddir)
+                        else:
+                            ddir.makedirs()
 
-                for fname in files:
-                    source = root / fname
-                    dest = dbase / fname
-                    with nested(source.open('rb'), dest.open('wb') ) as (infs, outfs):
-                        shutil.copyfileobj(infs, outfs, 8192)
-                    if use_same_backend:
-                        self.copystat(source, dest)
+                    for fname in files:
+                        srcf = root / fname
+                        destf = dbase / fname
+                        if srcf.islink() and not followlinks:
+                            self._copy_link(srcf, destf)
+                        else:
+                            with nested(srcf.open('rb'), destf.open('wb') ) as (infs, outfs):
+                                shutil.copyfileobj(infs, outfs, 8192)
+                            if use_same_backend:
+                                self.copystat(srcf, destf)
 
 
     def makedirs(self, path):
@@ -969,7 +1007,7 @@ class FileSystem(object):
             source.remove('r')
 
 
-    def relative_walk(self, top, relative="", topdown=True):
+    def relative_walk(self, top, relative="", topdown=True, followlinks=True):
         names = self.listdir(top)
 
         dirs, nondirs = [], []
@@ -983,16 +1021,20 @@ class FileSystem(object):
             yield top, relative, dirs, nondirs
         for name in dirs:
             path = top / name
-            if not relative:
-                relpart = name
-            else:
-                relpart = relative + '/%s' % name
-            for x in self.relative_walk(path, relpart, topdown):
-                yield x
+            if not path.islink() or followlinks:
+                if not relative:
+                    relpart = name
+                else:
+                    relpart = relative + '/%s' % name
+                for x in self.relative_walk(path, relative=relpart,
+                                            topdown=topdown,
+                                            followlinks=followlinks):
+                    yield x
         if not topdown:
             yield top, relative, dirs, nondirs
 
-    def walk(self, top, topdown=True):
+
+    def walk(self, top, topdown=True, followlinks=True):
         names = self.listdir(top)
 
         dirs, nondirs = [], []
@@ -1006,8 +1048,9 @@ class FileSystem(object):
             yield top, dirs, nondirs
         for name in dirs:
             path = top / name
-            for x in self.walk(path, topdown):
-                yield x
+            if not path.islink() or followlinks:
+                for x in self.walk(path, topdown, followlinks):
+                    yield x
         if not topdown:
             yield top, dirs, nondirs
 

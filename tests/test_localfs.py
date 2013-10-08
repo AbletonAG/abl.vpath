@@ -231,3 +231,251 @@ class TestLocalFSSymlink(TestCase):
         # check that gaz.txt is accessible through the symlink
         self.assert_(load_file(tee_path) == 'foobar')
 
+
+    @mac_only
+    def test_copy_filesymlink_to_file_followlinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        gaz_path.symlink(tee_path)
+
+        moo_path = root / 'moo.txt'
+        create_file(moo_path, content='moomoo')
+
+        tee_path.copy(moo_path, followlinks=True)
+
+        self.assert_(not moo_path.islink())
+        self.assert_(load_file(moo_path) == 'foobar')
+
+
+    @mac_only
+    def test_copy_filesymlink_to_file_preservelinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        gaz_path.symlink(tee_path)
+
+        moo_path = root / 'moo2.txt'
+        create_file(moo_path, content='moomoo')
+
+        tee_path.copy(moo_path, followlinks=False)
+
+        self.assert_(moo_path.islink())
+        self.assert_(load_file(moo_path) == 'foobar')
+
+
+    @mac_only
+    def test_copy_filesymlink_to_dir_followlinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        gaz_path.symlink(tee_path)
+
+        moo_path = root / 'moo'
+        moo_path.makedirs()
+
+        tee_path.copy(moo_path, followlinks=True)
+
+        helloworld_path = moo_path / 'helloworld'
+        self.assert_(not helloworld_path.islink())
+        self.assert_(load_file(helloworld_path) == 'foobar')
+
+
+    @mac_only
+    def test_copy_filesymlink_to_dir_preservelinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        gaz_path.symlink(tee_path)
+
+        moo_path = root / 'moo'
+        moo_path.makedirs()
+
+        tee_path.copy(moo_path, followlinks=False)
+
+        helloworld_path = moo_path / 'helloworld'
+        self.assert_(helloworld_path.islink())
+        self.assert_(load_file(helloworld_path) == 'foobar')
+
+
+    @mac_only
+    def test_copy_filesymlink_to_missingfile_followlinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        gaz_path.symlink(tee_path)
+
+        moo_path = root / 'moo'
+        moo_path.makedirs()
+
+        helloworld_path = moo_path / 'helloworld'
+        tee_path.copy(helloworld_path, followlinks=True)
+
+        self.assert_(not helloworld_path.islink())
+        self.assert_(load_file(helloworld_path) == 'foobar')
+
+
+    @mac_only
+    def test_copy_filesymlink_to_missingfile_preservelinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        gaz_path.symlink(tee_path)
+
+        moo_path = root / 'moo'
+        moo_path.makedirs()
+
+        helloworld_path = moo_path / 'helloworld'
+        tee_path.copy(helloworld_path, followlinks=False)
+
+        self.assert_(helloworld_path.islink())
+        self.assert_(load_file(helloworld_path) == 'foobar')
+
+
+    @mac_only
+    def test_copy_filesymlink_to_filesymlink_followlinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        gaz2_path = bar_path / 'gaz2.txt'
+        create_file(gaz2_path, content='foobar2')
+
+        tee_path = root / 'helloworld'
+        gaz_path.symlink(tee_path)
+
+        tee2_path = root / 'helloworld2'
+        gaz2_path.symlink(tee2_path)
+
+        tee_path.copy(tee2_path, followlinks=True)
+
+        # when following links copying to a symlink->file modifies the
+        # referenced file!
+        self.assert_(tee2_path.islink())
+        self.assert_(load_file(tee2_path) == 'foobar')
+        self.assert_(load_file(gaz2_path) == 'foobar')
+
+
+    @mac_only
+    def test_copy_filesymlink_to_filesymlink_preservelinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        gaz2_path = bar_path / 'gaz2.txt'
+        create_file(gaz2_path, content='foobar2')
+
+        tee_path = root / 'helloworld'
+        gaz_path.symlink(tee_path)
+
+        tee2_path = root / 'helloworld2'
+        gaz2_path.symlink(tee2_path)
+
+        tee_path.copy(tee2_path, followlinks=False)
+
+        self.assert_(tee2_path.islink())
+        self.assert_(load_file(tee2_path) == 'foobar')
+        self.assert_(tee2_path.readlink() == gaz_path)
+        # when preserving links, we don't touch the original file!
+        self.assert_(load_file(gaz2_path) == 'foobar2')
+
+
+    @mac_only
+    def test_copy_filesymlink_to_dirsymlink_followlinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        moo_path = root / 'moo'
+        moo_path.makedirs()
+
+        tee_path = root / 'helloworld'
+        gaz_path.symlink(tee_path)
+
+        tee2_path = root / 'helloworld2'
+        moo_path.symlink(tee2_path)
+
+        tee_path.copy(tee2_path, followlinks=True)
+
+        helloworld_path = tee2_path / 'helloworld'
+
+        self.assert_(tee2_path.islink())  # still a link?
+        self.assert_(tee_path.islink())  # still a link?
+
+        self.assert_(not helloworld_path.islink())
+        self.assert_(helloworld_path.isfile())
+        self.assert_(load_file(helloworld_path) == 'foobar')
+        self.assert_((moo_path / 'helloworld').isfile())
+
+
+    @mac_only
+    def test_copy_filesymlink_to_dirsymlink_preservelinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        moo_path = root / 'moo'
+        moo_path.makedirs()
+
+        tee_path = root / 'helloworld'
+        gaz_path.symlink(tee_path)
+
+        tee2_path = root / 'helloworld2'
+        moo_path.symlink(tee2_path)
+
+        tee_path.copy(tee2_path, followlinks=False)
+
+        helloworld_path = tee2_path / 'helloworld'
+
+        self.assert_(tee2_path.islink())  # still a link?
+        self.assert_(tee_path.islink())  # still a link?
+
+        self.assert_(helloworld_path.islink())
+        self.assert_(helloworld_path.isfile())
+        self.assert_(load_file(helloworld_path) == 'foobar')
+        self.assert_((moo_path / 'helloworld').islink())
+        self.assert_((moo_path / 'helloworld').isfile())
+        self.assert_(helloworld_path.readlink() == gaz_path)
+

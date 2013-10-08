@@ -79,11 +79,13 @@ class LocalFileSystem(FileSystem):
 
 
     def rmtree(self, unc):
+        assert not unc.islink()
         pth = self._path(unc)
         return shutil.rmtree(pth)
 
 
     def removedir(self, unc):
+        assert not unc.islink()
         pth = self._path(unc)
         return os.rmdir(pth)
 
