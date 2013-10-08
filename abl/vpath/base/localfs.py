@@ -31,6 +31,7 @@ class LocalFileSystemUri(BaseUri):
         else:
             return super(LocalFileSystemUri, self).path
 
+
 class LocalFileSystem(FileSystem):
     scheme = 'file'
     uri = LocalFileSystemUri
@@ -91,22 +92,28 @@ class LocalFileSystem(FileSystem):
         if path:
             return os.mkdir(path)
 
+
     def exists(self, unc):
         return os.path.exists(self._path(unc))
+
 
     def isfile(self, unc):
         return os.path.isfile(self._path(unc))
 
+
     def isdir(self, unc):
         return os.path.isdir(self._path(unc))
 
+
     def isexec(self, unc, mode_mask):
         return self.info(unc).mode & mode_mask != 0
+
 
     def set_exec(self, unc, mode):
         mask = stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         new_mode = (self.info(unc).mode & ~mask) | mode
         self.info(unc, dict(mode=new_mode))
+
 
     def move(self, source, dest):
         """

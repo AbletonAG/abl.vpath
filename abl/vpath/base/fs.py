@@ -140,6 +140,7 @@ class ConnectionRegistry(object):
             self.create(scheme, key, extras)
         return self.connections[key]
 
+
     def cleanup(self, force=False):
         import time
         now = time.time()
@@ -151,6 +152,7 @@ class ConnectionRegistry(object):
                     print "### Exception while closing connection %s" % conn
                     traceback.print_exc()
                 del self.connections[key]
+
 
     def cleaner(self):
         """
@@ -166,10 +168,12 @@ class ConnectionRegistry(object):
             except:
                 return
 
+
     def register(self, scheme, factory):
         "register: register factory callable 'factory' with scheme"
 
         self.schemes[scheme] = factory
+
 
     def shutdown(self):
         """
@@ -179,6 +183,7 @@ class ConnectionRegistry(object):
         self.cleanup(True)
         if self.cleaner_thread.isAlive():
             self.cleaner_thread.join()
+
 
 CONNECTION_REGISTRY = ConnectionRegistry()
 SCHEME_REGISTRY = {}
@@ -191,6 +196,7 @@ def normalize_uri(uri, sep='/'):
         if len(uri) > 1 and uri[1] == ':':
             uri = '/'+uri[0]+uri[2:]
     return uri
+
 
 def denormalize_path(path, sep='\\'):
     if len(path) > 2 and path[0] == path[2] == '/':
@@ -233,6 +239,7 @@ def URI(uri, sep=os.sep, **extras):
         sep=sep,
         **extras
         )
+
 
 class BaseUri(object):
     """An URI object represents a path, either on the local filesystem or on a
@@ -280,8 +287,10 @@ class BaseUri(object):
             elif 'password' in self.parse_result.query:
                 self.password = self.parse_result.query['password']
 
+
     def get_connection(self):
         return CONNECTION_REGISTRY.get_connection(*self._key(), **self._extras())
+
 
     def _extras(self):
         extras = self.extras.copy()
@@ -290,15 +299,18 @@ class BaseUri(object):
 
         return extras
 
+
     def _get_scheme(self):
         if not self._scheme:
             scheme = self.parse_result.scheme
             self._scheme = scheme
         return self._scheme
 
+
     def _set_scheme(self, scheme):
         self._scheme = scheme
         self.parse_result.scheme = scheme
+
 
     scheme = property(_get_scheme, _set_scheme)
 
@@ -309,6 +321,7 @@ class BaseUri(object):
         except ValueError:
             return None
 
+
     @property
     def path(self):
         path = self.parse_result.path
@@ -317,6 +330,7 @@ class BaseUri(object):
         else:
             return path
 
+
     @property
     def unipath(self):
         pathstr = self.parse_result.path
@@ -324,6 +338,7 @@ class BaseUri(object):
             return './'+pathstr
         else:
             return pathstr
+
 
     def _key(self):
         return (
@@ -334,6 +349,7 @@ class BaseUri(object):
             self.password,
             self.vpath_connector,
             )
+
 
     def __str__(self):
         return str(self.parse_result)
@@ -380,6 +396,7 @@ class BaseUri(object):
             path = path[1:]
         return path.startswith('/')
 
+
     def split(self):
         """
         split: like os.path.split
@@ -406,6 +423,7 @@ class BaseUri(object):
             second.partition('?')[0]
             )
 
+
     def directory(self, level=1):
         """
         @return: the first part of the split method
@@ -420,7 +438,6 @@ class BaseUri(object):
 
     # os.path-compliance
     dirname = directory
-
 
     def basename(self):
         """
@@ -482,6 +499,7 @@ class BaseUri(object):
 
         return result
 
+
     @with_connection
     def copy(self, other, recursive=False, ignore=None):
         """
@@ -524,6 +542,7 @@ class BaseUri(object):
         """
         return self.connection.move(self, other)
 
+
     @with_connection
     def remove(self, recursive=False):
         """
@@ -554,6 +573,7 @@ class BaseUri(object):
         elif self.connection.isfile(self):
             return self.connection.removefile(self)
 
+
     @with_connection
     def open(self, options=None, mimetype='application/octet-stream'):
         """
@@ -562,12 +582,14 @@ class BaseUri(object):
         """
         return self.connection.open(self, options, mimetype)
 
+
     @with_connection
     def makedirs(self):
         """
         makedirs: recursivly create directory if it doesn't exist yet.
         """
         return self.connection.makedirs(self)
+
 
     @with_connection
     def mkdir(self):
@@ -576,6 +598,7 @@ class BaseUri(object):
         os.mkdir.
         """
         return self.connection.mkdir(self)
+
 
     @with_connection
     def exists(self):
@@ -587,6 +610,7 @@ class BaseUri(object):
         """
         return self.connection.exists(self)
 
+
     @with_connection
     def isfile(self):
         """
@@ -596,6 +620,7 @@ class BaseUri(object):
         @return: True is path is a file on target system, else False
         """
         return self.connection.isfile(self)
+
 
     @with_connection
     def isdir(self):
@@ -755,13 +780,16 @@ class RevisionedUri(BaseUri):
     def switch(self, branch):
         return self.connection.switch(self, branch)
 
+
     @with_connection
     def update(self, recursive=True, clean=False):
         return self.connection.update(self, recursive, clean)
 
+
     @with_connection
     def log(self, limit=0, **kwargs):
         return self.connection.log(self, limit, **kwargs)
+
 
     @with_connection
     def log_by_time(self, start_time=None, stop_time=None):
@@ -779,15 +807,13 @@ class FileSystem(object):
 
     scheme = None
 
-    def __init__(
-        self,
-        hostname=None,
-        port=None,
-        username=None,
-        password=None,
-        vpath_connector=None,
-        **extras
-        ):
+    def __init__(self,
+                 hostname=None,
+                 port=None,
+                 username=None,
+                 password=None,
+                 vpath_connector=None,
+                 **extras):
         self.hostname = hostname
         self.port = port
         self.username = username
@@ -798,15 +824,16 @@ class FileSystem(object):
 
         self._initialize()
 
+
     def close(self):
         pass
+
 
     def _path(self, uriobj):
         if isinstance(uriobj, BaseUri):
             return uriobj.path
         else:
             return uriobj
-
 
 
     def pre_call_hook(self, path, func):
@@ -818,7 +845,6 @@ class FileSystem(object):
 
 
 
-#-- default implementations -------------------------------------------------
 
     def copy(self, source, dest, recursive=False, ignore=None):
         if source.connection is dest.connection and hasattr(self, 'internal_copy'):
@@ -953,8 +979,6 @@ class FileSystem(object):
         return res
 
 
-#-- overwritable methods ----------------------------------------------------
-
     def _initialize(self):
         raise NotImplementedError
 
@@ -994,11 +1018,14 @@ class FileSystem(object):
     def info(self,  path, set_info=None):
         raise NotImplementedError
 
+
     def sync(self, source, dest, options):
         raise NotImplementedError
 
+
     def mtime(self, path):
         raise NotImplementedError
+
 
     def copystat(self, path, other):
         raise NotImplementedError
@@ -1008,11 +1035,14 @@ class RevisionedFileSystem(FileSystem):
     def switch(self, revision):
         raise NotImplementedError
 
+
     def update(self, path, recursive=False, clean=False):
         raise NotImplementedError
 
+
     def log(self, path, limit=0):
         raise NotImplementedError
+
 
     def log_by_time(self, path, start_time=None, stop_time=None):
         raise NotImplementedError

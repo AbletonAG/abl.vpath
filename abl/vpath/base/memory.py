@@ -89,7 +89,6 @@ class MemoryFile(object):
 
 class MemoryFileProxy(object):
 
-
     def __init__(self, mem_file, readable):
         self.mem_file, self.readable = mem_file, readable
 
@@ -144,7 +143,6 @@ class MemoryLock(object):
         else:
             self.lock.acquire()
         return mfile
-
 
 
     def __exit__(self, unused_exc_type, unused_exc_val, unused_exc_tb):
@@ -320,11 +318,9 @@ class MemoryFileSystem(FileSystem):
                 current.mode = set_info["mode"]
             return
 
-        return Bunch(
-            mtime=current.mtime,
-            mode=current.mode,
-            size=len(current._data.getvalue())
-            )
+        return Bunch(mtime=current.mtime,
+                     mode=current.mode,
+                     size=len(current._data.getvalue()))
 
 
     def copystat(self, src, dest):
@@ -375,15 +371,14 @@ class MemoryFileSystem(FileSystem):
                 raise OSError(13, "Permission denied: %r" % path)
 
 
-
     def lock(self, path, fail_on_lock, cleanup):
         return MemoryLock(self, path, fail_on_lock, cleanup)
 
 
     SENTINEL = object()
 
-
-    def _manipulate(self, path, lock=SENTINEL, unlock=SENTINEL, mtime=SENTINEL, next_op_callback=SENTINEL):
+    def _manipulate(self, path, lock=SENTINEL, unlock=SENTINEL, mtime=SENTINEL,
+                    next_op_callback=SENTINEL):
         if lock is not self.SENTINEL and lock:
             p = self._path(path)
             lock = MemoryFile(self, p).lock

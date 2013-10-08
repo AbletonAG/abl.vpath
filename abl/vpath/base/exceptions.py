@@ -13,11 +13,14 @@ class NoSchemeError(PathError):
 class WrongSchemeError(PathError):
     "WrongSchemeError is raised if functionality requires specific schemes"
 
+
 class FileDoesNotExistError(PathError):
     "FileDoesNotExistError is raised, if resource does not exist"
 
+
 class NoDefinedOperationError(PathError):
     "NoDefinedOperationError is raised if method is not supported by backend"
+
 
 class OptionsError(PathError):
     "OptionsError is raised if specific options need to be used"

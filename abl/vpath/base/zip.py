@@ -12,17 +12,21 @@ from . import zipfile26 as zipfile
 
 from abl.util import Bunch
 
+
 class WriteStatement(object):
     def __init__(self, path_string, zip_backend):
         self.path_string = path_string
         self.zip_backend = zip_backend
         self.byte_buffer = StringIO()
 
+
     def __enter__(self):
         return self
 
+
     def __exit__(self, etype, evalue, etraceback):
-        self.zip_backend._ziphandle.writestr(self.path_string, self.byte_buffer.getvalue())
+        self.zip_backend._ziphandle.writestr(self.path_string,
+                                             self.byte_buffer.getvalue())
         self.byte_buffer.close()
         self.zip_backend.close_zip()
         self.zip_backend.open_zip()
@@ -30,6 +34,7 @@ class WriteStatement(object):
 
     def __getattr__(self, attr):
         return getattr(self.byte_buffer, attr)
+
 
 ISDIR = 1
 ISFILE = 2
@@ -55,6 +60,7 @@ def content_item(path1, path2, path_sep='/'):
             return ''
     return p2_parts[i+1]
 
+
 def compare_path_strings(path1, path2, path_sep='/'):
     """
     find out, if path1 is a file, or a directory (or unknown).
@@ -71,6 +77,7 @@ def compare_path_strings(path1, path2, path_sep='/'):
         else:
             return compare_parts(p1_parts, p2_parts)
 
+
 def compare_parts(list1, list2):
     """
     if list2 does not start with list1, we can't really check and return 0
@@ -84,24 +91,31 @@ def compare_parts(list1, list2):
     else:
         return ISFILE
 
-class ZipFileSystemUri(BaseUri):pass
+
+class ZipFileSystemUri(BaseUri):
+    pass
+
 
 class ZipFileSystem(FileSystem):
     scheme = 'zip'
     uri = ZipFileSystemUri
 
+
     def _zip_file_path(self):
         return URI(self.vpath_connector)
+
 
     def _initialize(self):
         self._file_handle = None
         self._ziphandle = None
+
 
     def close_zip(self):
         if self._ziphandle is not None:
             self._ziphandle.close()
         if self._file_handle is not None:
             self._file_handle.close()
+
 
     def open_zip(self, options=None):
         self.close_zip()
@@ -119,6 +133,7 @@ class ZipFileSystem(FileSystem):
         self._file_handle = self._zip_file_path().open(options)
         self._ziphandle = zipfile.ZipFile(self._file_handle, zip_options)
 
+
     def open(self, unc, options=None, mimetype='application/octet-stream'):
         self.open_zip(options)
         if options is None:
@@ -129,6 +144,7 @@ class ZipFileSystem(FileSystem):
         elif 'w' in options:
             return self._open_for_writing(unc, options)
 
+
     def _open_for_reading(self, unc, options):
         path_string = self._path(unc)
         try:
@@ -137,22 +153,28 @@ class ZipFileSystem(FileSystem):
         except KeyError:
             raise FileDoesNotExistError()
 
+
     def _open_for_writing(self, unc, options):
         path_string = self._path(unc)
         return WriteStatement(path_string, self)
 
+
     def exists(self, unc):
         return self._ispart(unc, (ISDIR, ISFILE))
+
 
     def isdir(self, unc):
         return self._ispart(unc, (ISDIR,))
 
+
     def isfile(self, unc):
         return self._ispart(unc, (ISFILE,))
+
 
     def isexec(self, unc, mode):
         # TODO
         raise NotImplementedError
+
 
     def set_exec(self, unc, mode):
         # TODO
@@ -175,6 +197,7 @@ class ZipFileSystem(FileSystem):
                 content_set.add(citem)
 
         return list(sorted(content_set))
+
 
     def _ispart(self, unc, expected):
         path_string = self._path(unc)
