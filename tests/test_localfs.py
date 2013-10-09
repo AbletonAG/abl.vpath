@@ -166,6 +166,21 @@ class TestLocalFSCopy(TestCase):
         self.assert_(not (bar_path / 'nfile.txt').isexec())
 
 
+    def test_copy_dir_to_file(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        moo_path = root / 'moo.txt'
+        create_file(moo_path, content='moomoo')
+
+        # can't copy dir on (existing) file
+        self.failUnlessRaises(OSError, bar_path.copy,
+                              moo_path, recursive=True)
+
+
 class TestLocalFSSymlink(TestCase):
     def setUp(self):
         self.thisdir = os.path.split(os.path.abspath(__file__))[0]

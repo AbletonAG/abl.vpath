@@ -941,7 +941,7 @@ class FileSystem(object):
                     self.copystat(source, dest)
         else:
             assert source.isdir()
-            if dest.exists():
+            if dest.isdir():
                 droot = dest / source.last()
             else:
                 droot = dest
