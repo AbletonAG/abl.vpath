@@ -546,3 +546,203 @@ class TestLocalFSSymlink(TestCase):
         self.assert_(moo_path.isdir())
         self.assert_(load_file(moo_path / 'gaz.txt') == 'foobar')
 
+
+    @mac_only
+    def test_copy_dirsymlink_to_dir_followlinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        bar_path.symlink(tee_path)
+
+        moo_path = root / 'moo'
+        moo_path.makedirs()
+
+        # can't copy dir over existing file
+        tee_path.copy(moo_path, recursive=True, followlinks=True)
+
+        helloworld_path = moo_path / 'helloworld'
+        self.assert_(not helloworld_path.islink())
+        self.assert_(helloworld_path.isdir())
+        self.assert_((helloworld_path / 'gaz.txt').isfile())
+
+
+    @mac_only
+    def test_copy_dirsymlink_to_dir_preservelinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        bar_path.symlink(tee_path)
+
+        moo_path = root / 'moo'
+        moo_path.makedirs()
+
+        # can't copy dir over existing file
+        tee_path.copy(moo_path, recursive=True, followlinks=False)
+
+        helloworld_path = moo_path / 'helloworld'
+        self.assert_(helloworld_path.islink())
+        self.assert_(helloworld_path.isdir())
+        self.assert_(helloworld_path.readlink() == bar_path)
+
+
+    @mac_only
+    def test_copy_dirsymlink_to_missingfile_followlinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        bar_path.symlink(tee_path)
+
+        moo_path = root / 'moo'
+
+        # can't copy dir over existing file
+        tee_path.copy(moo_path, recursive=True, followlinks=True)
+
+        self.assert_(not moo_path.islink())
+        self.assert_(moo_path.isdir())
+        self.assert_((moo_path / 'gaz.txt').isfile())
+
+
+    @mac_only
+    def test_copy_dirsymlink_to_missingfile_preservelinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        bar_path.symlink(tee_path)
+
+        moo_path = root / 'moo'
+
+        # can't copy dir over existing file
+        tee_path.copy(moo_path, recursive=True, followlinks=False)
+
+        self.assert_(moo_path.islink())
+        self.assert_(moo_path.isdir())
+        self.assert_(moo_path.readlink() == bar_path)
+
+
+    @mac_only
+    def test_copy_dirsymlink_to_filesymlink_followlinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        gaz2_path = bar_path / 'gaz2.txt'
+        create_file(gaz2_path, content='foobar2')
+
+        tee_path = root / 'helloworld'
+        bar_path.symlink(tee_path)
+
+        tee2_path = root / 'helloworld2'
+        gaz2_path.symlink(tee2_path)
+
+        # copying a dir to a symlink->file fails.
+        self.failUnlessRaises(OSError, tee_path.copy,
+                              tee2_path, recursive=True, followlinks=True)
+
+
+    @mac_only
+    def test_copy_dirsymlink_to_filesymlink_preservelinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        gaz2_path = bar_path / 'gaz2.txt'
+        create_file(gaz2_path, content='foobar2')
+
+        tee_path = root / 'helloworld'
+        bar_path.symlink(tee_path)
+
+        tee2_path = root / 'helloworld2'
+        gaz2_path.symlink(tee2_path)
+
+        # copying a dir to a symlink->file fails.
+        tee_path.copy(tee2_path, recursive=True, followlinks=False)
+
+        self.assert_(tee2_path.islink())
+        self.assert_(tee2_path.isdir())
+        self.assert_(tee2_path.readlink() == tee_path.readlink())
+        self.assert_(tee2_path.readlink() == bar_path)
+
+
+    @mac_only
+    def test_copy_dirsymlink_to_dirsymlink_followlinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        moo_path = root / 'moo'
+        moo_path.makedirs()
+
+        tee_path = root / 'helloworld'
+        bar_path.symlink(tee_path)
+
+        tee2_path = root / 'helloworld2'
+        moo_path.symlink(tee2_path)
+
+        tee_path.copy(tee2_path, recursive=True, followlinks=True)
+
+        helloworld_path = tee2_path / 'helloworld'
+
+        self.assert_(tee2_path.islink())  # still a link?
+        self.assert_(tee_path.islink())  # still a link?
+
+        self.assert_(not helloworld_path.islink())
+        self.assert_(helloworld_path.isdir())
+        self.assert_((helloworld_path / 'gaz.txt').isfile())
+
+
+    @mac_only
+    def test_copy_dirsymlink_to_dirsymlink_preservelinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        moo_path = root / 'moo'
+        moo_path.makedirs()
+
+        tee_path = root / 'helloworld'
+        bar_path.symlink(tee_path)
+
+        tee2_path = root / 'helloworld2'
+        moo_path.symlink(tee2_path)
+
+        tee_path.copy(tee2_path, recursive=True, followlinks=False)
+
+        helloworld_path = tee2_path / 'helloworld'
+
+        self.assert_(tee2_path.islink())  # still a link?
+        self.assert_(tee_path.islink())  # still a link?
+
+        self.assert_(helloworld_path.islink())
+        self.assert_(helloworld_path.isdir())
+        self.assert_((helloworld_path / 'gaz.txt').isfile())
+        self.assert_(helloworld_path.readlink() == bar_path)
+        self.assert_(helloworld_path.readlink() == tee_path.readlink())
+
