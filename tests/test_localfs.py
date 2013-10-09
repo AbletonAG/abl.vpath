@@ -17,6 +17,8 @@ import shutil
 from common import create_file, load_file, mac_only, windows_only
 
 
+#-------------------------------------------------------------------------------
+
 class TestLocalFSInfo(TestCase):
     def setUp(self):
         self.starttime = datetime.datetime.now()
@@ -74,6 +76,8 @@ class TestLocalFSInfo(TestCase):
                 )
 
 
+#-------------------------------------------------------------------------------
+
 class TestLocalFSExec(TestCase):
     def setUp(self):
         self.thisdir = os.path.split(os.path.abspath(__file__))[0]
@@ -99,6 +103,8 @@ class TestLocalFSExec(TestCase):
         self.assertEqual(ofile.info().mode & stat.S_IXUSR, 0)
         self.assert_(not ofile.isexec())
 
+
+#-------------------------------------------------------------------------------
 
 class TestLocalFSCopy(TestCase):
     def setUp(self):
@@ -181,6 +187,8 @@ class TestLocalFSCopy(TestCase):
                               moo_path, recursive=True)
 
 
+#-------------------------------------------------------------------------------
+
 class TestLocalFSSymlink(TestCase):
     def setUp(self):
         self.thisdir = os.path.split(os.path.abspath(__file__))[0]
@@ -246,6 +254,8 @@ class TestLocalFSSymlink(TestCase):
         # check that gaz.txt is accessible through the symlink
         self.assert_(load_file(tee_path) == 'foobar')
 
+
+    #------------------------------
 
     @mac_only
     def test_copy_filesymlink_to_file_followlinks(self):
@@ -493,4 +503,46 @@ class TestLocalFSSymlink(TestCase):
         self.assert_((moo_path / 'helloworld').islink())
         self.assert_((moo_path / 'helloworld').isfile())
         self.assert_(helloworld_path.readlink() == gaz_path)
+
+
+    #------------------------------
+
+    @mac_only
+    def test_copy_dirsymlink_to_file_followlinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        bar_path.symlink(tee_path)
+
+        moo_path = root / 'moo.txt'
+        create_file(moo_path, content='moomoo')
+
+        # can't copy dir over existing file
+        self.failUnlessRaises(OSError, tee_path.copy, moo_path,
+                              recursive=True, followlinks=True)
+
+
+    @mac_only
+    def test_copy_dirsymlink_to_file_preservelinks(self):
+        root = URI(self.baseurl)
+        bar_path = root / 'foo' / 'bar'
+        bar_path.makedirs()
+        gaz_path = bar_path / 'gaz.txt'
+        create_file(gaz_path, content='foobar')
+
+        tee_path = root / 'helloworld'
+        bar_path.symlink(tee_path)
+
+        moo_path = root / 'moo.txt'
+        create_file(moo_path, content='moomoo')
+
+        tee_path.copy(moo_path, recursive=True, followlinks=False)
+
+        self.assert_(moo_path.islink())
+        self.assert_(moo_path.isdir())
+        self.assert_(load_file(moo_path / 'gaz.txt') == 'foobar')
 
