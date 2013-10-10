@@ -163,6 +163,41 @@ class MemoryFileSystem(FileSystem):
         self.next_op_callbacks = {}
 
 
+    def _child(self, parent, name):
+        return parent[name] if name in parent else None
+
+    def _create_child(self, parent, name, object):
+        parent[name] = object
+
+    def _del_child(self, parent, name):
+        del parent[name]
+
+
+    def _get_node_prev(self, base, steps):
+        prev = None
+        current = base
+        for part in steps:
+            prev = current
+            if part in current:
+                current = self._child(current, part)
+            else:
+                return [None, None]
+        return [prev, current]
+
+
+    def _get_node(self, base, steps):
+        _, current = self._get_node_prev(base, steps)
+        return current
+
+
+    def _get_node_for_path(self, base, unc):
+        p = self._path(unc)
+        if p:
+            return self._get_node(base, p.split("/"))
+        else:
+            return base
+
+
     def _path(self, path):
         p = super(MemoryFileSystem, self)._path(path)
         # cut off leading slash, that's our root
@@ -172,30 +207,21 @@ class MemoryFileSystem(FileSystem):
 
 
     def isdir(self, path):
-        p = self._path(path)
-        current = self._fs
-        if p:
-            for part in p.split("/"):
-                if part in current:
-                    current = current[part]
-                else:
-                    return False
-
-            return isinstance(current, dict)
+        if self._path(path):
+            nd = self._get_node_for_path(self._fs, path)
+            if nd is None:
+                return False
+            return isinstance(nd, dict)
+        # the root always exists and is always a dir
         return True
 
 
     def isfile(self, path):
-        p = self._path(path)
-        current = self._fs
-        if p:
-            for part in p.split("/"):
-                if part in current:
-                    current = current[part]
-                else:
-                    return False
-
-            return isinstance(current, MemoryFile)
+        if self._path(path):
+            nd = self._get_node_for_path(self._fs, path)
+            if nd is None:
+                return False
+            return isinstance(nd, MemoryFile)
         return False
 
 
@@ -211,30 +237,24 @@ class MemoryFileSystem(FileSystem):
 
     def mkdir(self, path):
         p = self._path(path)
-        current = self._fs
         if p:
-            existing_dirs = p.split("/")[:-1]
+            nd = self._get_node(self._fs, p.split("/")[:-1])
+            if nd is None:
+                raise OSError(errno.ENOENT, "No such dir: %r" % str(path))
+
             dir_to_create = p.split("/")[-1]
-            for part in existing_dirs:
-                current = current[part]
-            if dir_to_create in current:
-                raise OSError(17, "File exists: %r" % str(path))
-            current[dir_to_create] = {}
+            if dir_to_create in nd:
+                raise OSError(errno.EEXIST, "File exists: %r" % str(path))
+            self._create_child(nd, dir_to_create, {})
 
 
     def exists(self, path):
-        p = self._path(path)
-        current = self._fs
-        if p:
-            for part in p.split("/"):
-                if part in current:
-                    current = current[part]
-                else:
-                    return False
-            return True
-        else:
-            # we are root, which always exists
-            return True
+        if self._path(path):
+            nd = self._get_node_for_path(self._fs, path)
+            if nd is None:
+                return False
+        # the root always exists
+        return True
 
 
     def pre_call_hook(self, path, func):
@@ -245,31 +265,28 @@ class MemoryFileSystem(FileSystem):
 
     def open(self, path, options, mimetype):
         p = self._path(path)
-        existing_dirs = p.split("/")[:-1]
-        file_to_create = p.split("/")[-1]
-        current = self._fs
-
-        for part in existing_dirs:
-            current = current[part]
-
+        current = self._get_node(self._fs, p.split("/")[:-1])
+        if current is None:
+            raise OSError(errno.ENOENT, "No such dir: %r" % str(path))
 
         readable = False
+        file_to_create = p.split("/")[-1]
 
         if options is None or "r" in options:
-            f = current[file_to_create]
+            f = self._child(current, file_to_create)
             f.seek(0)
             readable = True
 
         elif "w" in options or file_to_create not in current:
-            if file_to_create in current and isinstance(current[file_to_create], dict):
+            c = self._child(current, file_to_create)
+            if c is not None and isinstance(c, dict):
                 raise IOError(errno.EISDIR, "File is directory" )
-            current[file_to_create] = MemoryFile(self, p)
-            f = current[file_to_create]
+            f = MemoryFile(self, p)
+            self._create_child(current, file_to_create, f)
 
         elif "a" in options:
-            f = current[file_to_create]
+            f = self._child(current, file_to_create)
             f.seek(len(f))
-
 
         return MemoryFileProxy(f, readable)
 
@@ -294,24 +311,19 @@ class MemoryFileSystem(FileSystem):
                     outf.write(value)
                     outf.write("\n--- END %s%s ---\n\n" % (path, name))
                 else:
-                    traverse(value, (path[:-1] if path.endswith("/") else path) + "/" + name + "/")
+                    traverse(value,
+                             (path[:-1] if path.endswith("/") else path) + "/" + name + "/")
 
         traverse(self._fs)
-
-
-    def _get_memfile_for_path(self, unc):
-        p = self._path(unc)
-        current = self._fs
-        for part in p.split("/"):
-            current = current[part]
-        return current
 
 
     def info(self, unc, set_info=None):
         # TODO-dir: currently only defined
         # for file-nodes!
 
-        current = self._get_memfile_for_path(unc)
+        current = self._get_node_for_path(self._fs, unc)
+        if current is None:
+            raise OSError(errno.ENOENT, "No such file: %r" % str(path))
 
         if set_info is not None:
             if "mode" in set_info:
@@ -326,8 +338,12 @@ class MemoryFileSystem(FileSystem):
     def copystat(self, src, dest):
         # TODO: currently only defined for file-nodes
 
-        src_current = self._get_memfile_for_path(src)
-        dest_current = self._get_memfile_for_path(dest)
+        src_current = self._get_node_for_path(self._fs, src)
+        dest_current = self._get_node_for_path(self._fs, dest)
+        if src_current is None:
+            raise OSError(errno.ENOENT, "No such file: %r" % str(src))
+        if dest_current is None:
+            raise OSError(errno.ENOENT, "No such file: %r" % str(dest))
 
         if isinstance(src_current, MemoryFile) and isinstance(dest_current, MemoryFile):
             dest_current.mtime = src_current.mtime
@@ -335,38 +351,35 @@ class MemoryFileSystem(FileSystem):
 
 
     def listdir(self, path):
-        p = self._path(path)
-        current = self._fs
-        for part in [x for x in p.split("/") if x]:
-            current = current[part]
-        return sorted(current.keys())
+        nd = self._get_node(self._fs,
+                            [x for x in self._path(path).split("/") if x])
+        return sorted(nd.keys())
 
 
     def mtime(self, path):
-        return self._get_memfile_for_path(path).mtime
+        return self._get_node_for_path(self._fs, path).mtime
 
 
     def removefile(self, path):
-        p = self._path(path)
-        current = self._fs
-        prev = None
-        for part in [x for x in p.split("/") if x]:
-            prev = current
-            current = current[part]
+        prev, current = self._get_node_prev(self._fs,
+                                            [x for x in self._path(path).split("/") if x])
+
+        if current is None:
+            raise OSError(errno.ENOENT, "No such file: %r" % str(path))
         if prev is not None:
-            del prev[part]
+            self._del_child(prev, path.last())
 
 
     def removedir(self, path):
-        p = self._path(path)
-        current = self._fs
-        prev = None
-        for part in [x for x in p.split("/") if x]:
-            prev = current
-            current = current[part]
+        prev, current = self._get_node_prev(self._fs,
+                                            [x for x in self._path(path).split("/") if x])
+
+        if current is None:
+            raise OSError(errno.ENOENT, "No such dir: %r" % str(path))
         if prev is not None:
-            if not prev[part]:
-                del prev[part]
+            part = path.last()
+            if not self._child(prev, part):
+                self._del_child(prev, part)
             else:
                 raise OSError(13, "Permission denied: %r" % path)
 
@@ -389,13 +402,11 @@ class MemoryFileSystem(FileSystem):
             lock = MemoryFile(self, p).lock
             lock.release()
 
-
         if mtime is not self.SENTINEL:
-            p = self._path(path)
-            current = self._fs
-            for part in p.split("/"):
-                current = current[part]
-            current.mtime = mtime
+            nd = self._get_node_for_path(self._fs, path)
+            if nd is None:
+                raise OSError(errno.ENOENT, "No such file: %r" % str(path))
+            nd.mtime = mtime
 
         if next_op_callback is not self.SENTINEL:
             p = self._path(path)
