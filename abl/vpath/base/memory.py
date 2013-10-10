@@ -373,9 +373,6 @@ class MemoryFileSystem(FileSystem):
 
 
     def info(self, unc, set_info=None):
-        # TODO-dir: currently only defined
-        # for file-nodes!
-
         current = self._get_node_for_path(self._fs, unc)
         if current is None:
             raise OSError(errno.ENOENT, "No such file: %r" % str(path))
@@ -391,8 +388,6 @@ class MemoryFileSystem(FileSystem):
 
 
     def copystat(self, src, dest):
-        # TODO: currently only defined for file-nodes
-
         src_current = self._get_node_for_path(self._fs, src)
         dest_current = self._get_node_for_path(self._fs, dest)
         if src_current is None:
@@ -400,9 +395,8 @@ class MemoryFileSystem(FileSystem):
         if dest_current is None:
             raise OSError(errno.ENOENT, "No such file: %r" % str(dest))
 
-        if src_current.kind() == NodeKind.FILE and dest_current.kind() == NodeKind.FILE:
-            dest_current.mtime = src_current.mtime
-            dest_current.mode = src_current.mode
+        dest_current.mtime = src_current.mtime
+        dest_current.mode = src_current.mode
 
 
     def listdir(self, path):
