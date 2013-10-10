@@ -228,7 +228,7 @@ class MemoryFileSystem(FileSystem):
         parent.remove(name)
 
 
-    def _get_node_prev(self, base, steps):
+    def _get_node_prev(self, base, steps, throw=True):
         prev = None
         current = base
         for part in steps:
@@ -236,19 +236,23 @@ class MemoryFileSystem(FileSystem):
             if current.has(part):
                 current = self._child(current, part)
             else:
-                return [None, None]
+                if throw:
+                    raise OSError(errno.ENOENT,
+                                  "No such file or directory: %s" % '/'.join(steps))
+                else:
+                    return [None, None]
         return [prev, current]
 
 
-    def _get_node(self, base, steps):
-        _, current = self._get_node_prev(base, steps)
+    def _get_node(self, base, steps, throw=True):
+        _, current = self._get_node_prev(base, steps, throw=throw)
         return current
 
 
-    def _get_node_for_path(self, base, unc):
+    def _get_node_for_path(self, base, unc, throw=True):
         p = self._path(unc)
         if p:
-            return self._get_node(base, p.split("/"))
+            return self._get_node(base, p.split("/"), throw=throw)
         else:
             return base
 
@@ -263,7 +267,7 @@ class MemoryFileSystem(FileSystem):
 
     def isdir(self, path):
         if self._path(path):
-            nd = self._get_node_for_path(self._fs, path)
+            nd = self._get_node_for_path(self._fs, path, throw=False)
             if nd is None:
                 return False
             return nd.kind == NodeKind.DIR
@@ -273,7 +277,7 @@ class MemoryFileSystem(FileSystem):
 
     def isfile(self, path):
         if self._path(path):
-            nd = self._get_node_for_path(self._fs, path)
+            nd = self._get_node_for_path(self._fs, path, throw=False)
             if nd is None:
                 return False
             return nd.kind == NodeKind.FILE
@@ -294,9 +298,6 @@ class MemoryFileSystem(FileSystem):
         p = self._path(path)
         if p:
             nd = self._get_node(self._fs, p.split("/")[:-1])
-            if nd is None:
-                raise OSError(errno.ENOENT, "No such dir: %r" % str(path))
-
             dir_to_create = p.split("/")[-1]
             if nd.has(dir_to_create):
                 raise OSError(errno.EEXIST, "File exists: %r" % str(path))
@@ -305,7 +306,7 @@ class MemoryFileSystem(FileSystem):
 
     def exists(self, path):
         if self._path(path):
-            nd = self._get_node_for_path(self._fs, path)
+            nd = self._get_node_for_path(self._fs, path, throw=False)
             if nd is None:
                 return False
         # the root always exists
@@ -321,9 +322,6 @@ class MemoryFileSystem(FileSystem):
     def open(self, path, options, mimetype):
         p = self._path(path)
         current = self._get_node(self._fs, p.split("/")[:-1])
-        if current is None:
-            raise OSError(errno.ENOENT, "No such dir: %r" % str(path))
-
         readable = False
         file_to_create = p.split("/")[-1]
 
@@ -374,9 +372,6 @@ class MemoryFileSystem(FileSystem):
 
     def info(self, unc, set_info=None):
         current = self._get_node_for_path(self._fs, unc)
-        if current is None:
-            raise OSError(errno.ENOENT, "No such file: %r" % str(path))
-
         if set_info is not None:
             if "mode" in set_info:
                 current.mode = set_info["mode"]
@@ -390,11 +385,6 @@ class MemoryFileSystem(FileSystem):
     def copystat(self, src, dest):
         src_current = self._get_node_for_path(self._fs, src)
         dest_current = self._get_node_for_path(self._fs, dest)
-        if src_current is None:
-            raise OSError(errno.ENOENT, "No such file: %r" % str(src))
-        if dest_current is None:
-            raise OSError(errno.ENOENT, "No such file: %r" % str(dest))
-
         dest_current.mtime = src_current.mtime
         dest_current.mode = src_current.mode
 
@@ -412,9 +402,6 @@ class MemoryFileSystem(FileSystem):
     def removefile(self, path):
         prev, current = self._get_node_prev(self._fs,
                                             [x for x in self._path(path).split("/") if x])
-
-        if current is None:
-            raise OSError(errno.ENOENT, "No such file: %r" % str(path))
         if prev is not None:
             self._del_child(prev, path.last())
 
@@ -422,9 +409,6 @@ class MemoryFileSystem(FileSystem):
     def removedir(self, path):
         prev, current = self._get_node_prev(self._fs,
                                             [x for x in self._path(path).split("/") if x])
-
-        if current is None:
-            raise OSError(errno.ENOENT, "No such dir: %r" % str(path))
         if prev is not None:
             part = path.last()
             if self._child(prev, part).isempty():
@@ -453,8 +437,6 @@ class MemoryFileSystem(FileSystem):
 
         if mtime is not self.SENTINEL:
             nd = self._get_node_for_path(self._fs, path)
-            if nd is None:
-                raise OSError(errno.ENOENT, "No such file: %r" % str(path))
             nd.mtime = mtime
 
         if next_op_callback is not self.SENTINEL:
