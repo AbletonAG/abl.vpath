@@ -381,7 +381,7 @@ class MemoryFileSystem(FileSystem):
             if not self._child(prev, part):
                 self._del_child(prev, part)
             else:
-                raise OSError(13, "Permission denied: %r" % path)
+                raise OSError(errno.ENOTEMPTY, "Directory not empty: %r" % path)
 
 
     def lock(self, path, fail_on_lock, cleanup):
