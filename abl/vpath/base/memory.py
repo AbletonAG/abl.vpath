@@ -17,6 +17,7 @@ from abl.util import Bunch, LockFileObtainException
 class NodeKind(object):
     FILE = 0
     DIR = 1
+    LINK = 2
 
 
 class MemoryFile(object):
@@ -172,6 +173,13 @@ class MemoryDir(object):
         return len(self._files) == 0
 
 
+class MemorySymlink(object):
+    kind = NodeKind.LINK
+
+    def __init__(self, target):
+        self.target = target
+
+
 class MemoryFileSystemUri(BaseUri):
 
     def __init__(self, *args, **kwargs):
@@ -218,8 +226,19 @@ class MemoryFileSystem(FileSystem):
         self.next_op_callbacks = {}
 
 
-    def _child(self, parent, name):
-        return parent.get(name) if parent.has(name) else None
+    def _child(self, parent, name, follow_link=True, throw=True):
+        if parent.has(name):
+            nd = parent.get(name)
+            level = 0
+            if follow_link:
+                while nd.kind == NodeKind.LINK:
+                    # TODO: supports absolute links only for now
+                    nd = self._get_node_for_path(self._fs, nd.target, throw=throw)
+                    level = level + 1
+                    if level >= 32:
+                        raise OSError(errno.ELOOP, "Too many symbolic links encountered")
+            return nd
+        return None
 
     def _create_child(self, parent, name, obj):
         parent.create(name, obj)
@@ -228,13 +247,16 @@ class MemoryFileSystem(FileSystem):
         parent.remove(name)
 
 
-    def _get_node_prev(self, base, steps, throw=True):
+    def _get_node_prev(self, base, steps, follow_link=True, throw=True):
         prev = None
         current = base
         for part in steps:
             prev = current
             if current.has(part):
-                current = self._child(current, part)
+                is_last = part == steps[-1]
+                current = self._child(current, part,
+                                      follow_link=follow_link if is_last else True,
+                                      throw=throw)
             else:
                 if throw:
                     raise OSError(errno.ENOENT,
@@ -244,15 +266,16 @@ class MemoryFileSystem(FileSystem):
         return [prev, current]
 
 
-    def _get_node(self, base, steps, throw=True):
-        _, current = self._get_node_prev(base, steps, throw=throw)
+    def _get_node(self, base, steps, follow_link=True, throw=True):
+        _, current = self._get_node_prev(base, steps, follow_link=follow_link, throw=throw)
         return current
 
 
-    def _get_node_for_path(self, base, unc, throw=True):
+    def _get_node_for_path(self, base, unc, follow_link=True, throw=True):
         p = self._path(unc)
         if p:
-            return self._get_node(base, p.split("/"), throw=throw)
+            return self._get_node(base, p.split("/"), follow_link=follow_link,
+                                  throw=throw)
         else:
             return base
 
@@ -445,4 +468,32 @@ class MemoryFileSystem(FileSystem):
 
 
     def supports_symlinks(self):
+        return True
+
+
+    def islink(self, path):
+        if self._path(path):
+            nd = self._get_node_for_path(self._fs, path, follow_link=False,
+                                         throw=False)
+            if nd is None:
+                return False
+            return nd.kind == NodeKind.LINK
         return False
+
+
+    def symlink(self, target, link_name):
+        p = self._path(link_name)
+        if p:
+            nd = self._get_node(self._fs, p.split("/")[:-1])
+            file_to_create = p.split("/")[-1]
+            if nd.has(file_to_create):
+                raise OSError(errno.EEXIST, "File exists: %r" % str(link_name))
+            self._create_child(nd, file_to_create, MemorySymlink(target))
+
+
+    def readlink(self, path):
+        if self._path(path):
+            nd = self._get_node_for_path(self._fs, path, follow_link=False)
+            if nd.kind == NodeKind.LINK:
+                return nd.target
+        raise OSError(errno.EINVAL, "Not a link")

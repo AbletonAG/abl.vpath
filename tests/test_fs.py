@@ -1112,70 +1112,70 @@ class TestMemoryFSSymlink(CommonLocalFSSymlinkTest):
     def tearDown(self):
         pass
 
-#    def test_symlink_dir(self):
-#        super(TestMemoryFSSymlink, self).symlink_dir()
-#
-#    def test_symlink_file(self):
-#        super(TestMemoryFSSymlink, self).symlink_file()
-#
-#    def test_copy_filesymlink_to_file_followlinks(self):
-#        super(TestMemoryFSSymlink, self).copy_filesymlink_to_file_followlinks()
-#
-#    def test_copy_filesymlink_to_file_preservelinks(self):
-#        super(TestMemoryFSSymlink, self).copy_filesymlink_to_file_preservelinks()
-#
-#    def test_copy_filesymlink_to_dir_followlinks(self):
-#        super(TestMemoryFSSymlink, self).copy_filesymlink_to_dir_followlinks()
-#
-#    def test_copy_filesymlink_to_dir_preservelinks(self):
-#        super(TestMemoryFSSymlink, self).copy_filesymlink_to_dir_preservelinks()
-#
-#    def test_copy_filesymlink_to_missingfile_followlinks(self):
-#        super(TestMemoryFSSymlink, self).copy_filesymlink_to_missingfile_followlinks()
-#
-#    def test_copy_filesymlink_to_missingfile_preservelinks(self):
-#        super(TestMemoryFSSymlink, self).copy_filesymlink_to_missingfile_preservelinks()
-#
+    def test_symlink_dir(self):
+        super(TestMemoryFSSymlink, self).symlink_dir()
+
+    def test_symlink_file(self):
+        super(TestMemoryFSSymlink, self).symlink_file()
+
+    def test_copy_filesymlink_to_file_followlinks(self):
+        super(TestMemoryFSSymlink, self).copy_filesymlink_to_file_followlinks()
+
+    def test_copy_filesymlink_to_file_preservelinks(self):
+        super(TestMemoryFSSymlink, self).copy_filesymlink_to_file_preservelinks()
+
+    def test_copy_filesymlink_to_dir_followlinks(self):
+        super(TestMemoryFSSymlink, self).copy_filesymlink_to_dir_followlinks()
+
+    def test_copy_filesymlink_to_dir_preservelinks(self):
+        super(TestMemoryFSSymlink, self).copy_filesymlink_to_dir_preservelinks()
+
+    def test_copy_filesymlink_to_missingfile_followlinks(self):
+        super(TestMemoryFSSymlink, self).copy_filesymlink_to_missingfile_followlinks()
+
+    def test_copy_filesymlink_to_missingfile_preservelinks(self):
+        super(TestMemoryFSSymlink, self).copy_filesymlink_to_missingfile_preservelinks()
+
 #    def test_copy_filesymlink_to_filesymlink_followlinks(self):
 #        super(TestMemoryFSSymlink, self).copy_filesymlink_to_filesymlink_followlinks()
-#
-#    def test_copy_filesymlink_to_filesymlink_preservelinks(self):
-#        super(TestMemoryFSSymlink, self).copy_filesymlink_to_filesymlink_preservelinks()
-#
-#    def test_copy_filesymlink_to_dirsymlink_followlinks(self):
-#        super(TestMemoryFSSymlink, self).copy_filesymlink_to_dirsymlink_followlinks()
-#
-#    def test_copy_filesymlink_to_dirsymlink_preservelinks(self):
-#        super(TestMemoryFSSymlink, self).copy_filesymlink_to_dirsymlink_preservelinks()
-#
-#    def test_copy_dirsymlink_to_file_followlinks(self):
-#        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_file_followlinks()
-#
-#    def test_copy_dirsymlink_to_file_preservelinks(self):
-#        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_file_preservelinks()
-#
-#    def test_copy_dirsymlink_to_dir_followlinks(self):
-#        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_dir_followlinks()
-#
-#    def test_copy_dirsymlink_to_dir_preservelinks(self):
-#        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_dir_preservelinks()
-#
-#    def test_copy_dirsymlink_to_missingfile_followlinks(self):
-#        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_missingfile_followlinks()
-#
-#    def test_copy_dirsymlink_to_missingfile_preservelinks(self):
-#        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_missingfile_preservelinks()
-#
-#    def test_copy_dirsymlink_to_filesymlink_followlinks(self):
-#        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_filesymlink_followlinks()
-#
-#    def test_copy_dirsymlink_to_filesymlink_preservelinks(self):
-#        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_filesymlink_preservelinks()
-#
-#    def test_copy_dirsymlink_to_dirsymlink_followlinks(self):
-#        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_dirsymlink_followlinks()
-#
-#    def test_copy_dirsymlink_to_dirsymlink_preservelinks(self):
-#        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_dirsymlink_preservelinks()
+
+    def test_copy_filesymlink_to_filesymlink_preservelinks(self):
+        super(TestMemoryFSSymlink, self).copy_filesymlink_to_filesymlink_preservelinks()
+
+    def test_copy_filesymlink_to_dirsymlink_followlinks(self):
+        super(TestMemoryFSSymlink, self).copy_filesymlink_to_dirsymlink_followlinks()
+
+    def test_copy_filesymlink_to_dirsymlink_preservelinks(self):
+        super(TestMemoryFSSymlink, self).copy_filesymlink_to_dirsymlink_preservelinks()
+
+    def test_copy_dirsymlink_to_file_followlinks(self):
+        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_file_followlinks()
+
+    def test_copy_dirsymlink_to_file_preservelinks(self):
+        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_file_preservelinks()
+
+    def test_copy_dirsymlink_to_dir_followlinks(self):
+        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_dir_followlinks()
+
+    def test_copy_dirsymlink_to_dir_preservelinks(self):
+        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_dir_preservelinks()
+
+    def test_copy_dirsymlink_to_missingfile_followlinks(self):
+        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_missingfile_followlinks()
+
+    def test_copy_dirsymlink_to_missingfile_preservelinks(self):
+        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_missingfile_preservelinks()
+
+    def test_copy_dirsymlink_to_filesymlink_followlinks(self):
+        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_filesymlink_followlinks()
+
+    def test_copy_dirsymlink_to_filesymlink_preservelinks(self):
+        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_filesymlink_preservelinks()
+
+    def test_copy_dirsymlink_to_dirsymlink_followlinks(self):
+        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_dirsymlink_followlinks()
+
+    def test_copy_dirsymlink_to_dirsymlink_preservelinks(self):
+        super(TestMemoryFSSymlink, self).copy_dirsymlink_to_dirsymlink_preservelinks()
 
 
