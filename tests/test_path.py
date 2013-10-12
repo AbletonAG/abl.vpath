@@ -20,9 +20,11 @@ class KeepCurrentDir:
         self._directory = directory
         self._currentdir = os.getcwd()
 
+
     def __enter__(self):
         os.chdir(self._directory)
         return self
+
 
     def __exit__(self, *exc_args):
         os.chdir(self._currentdir)
@@ -34,10 +36,12 @@ class TestSchemeRe(TestCase):
         self.assert_(m is not None)
         self.assertEqual(m.group(1), 'file')
 
+
     def test_with_plus(self):
         m = scheme_re.match("svn+ssh://something")
         self.assert_(m is not None)
         self.assertEqual(m.group(1), 'svn+ssh')
+
 
     def test_no_scheme(self):
         m = scheme_re.match("some/path")
@@ -49,6 +53,7 @@ class TestHttpUri(TestCase):
         p = URI('http://storm/this')
         p.query['a'] = 'b'
         self.assertEqual(URI(str(p)), URI('http://storm/this?a=b'))
+
 
     def test_query_after_join(self):
         p = URI('http://storm/this')
@@ -64,6 +69,7 @@ class TestUnicodeURI(TestCase):
         self.foo_dir = os.path.join(self.thisdir, 'foo')
         self.bar_dir = os.path.join(self.thisdir, 'bar')
 
+
     def tearDown(self):
         p = URI(self.foo_dir)
         if p.isdir():
@@ -72,17 +78,21 @@ class TestUnicodeURI(TestCase):
         if b.isdir():
             b.remove(recursive=True)
 
+
     def test_creation(self):
         local_path = URI(u'/tmp/this')
         self.assertEqual(local_path.path.split(os.sep), ['', 'tmp', 'this'])
         self.assertEqual(local_path.scheme, 'file')
 
+
     def test_mkdir(self):
         p = URI(unicode(self.foo_dir))
         p.mkdir()
 
+
     def test_unicode_extra(self):
         p = URI(self.foo_dir, some_query=u"what's up")
+
 
     def test_copy(self):
         p = URI(unicode(self.foo_dir))
@@ -121,6 +131,7 @@ class TestURI(TestCase):
         joined_path = some_path / 'other'
         self.assertEqual(joined_path.scheme, 'second')
 
+
     def test_creation(self):
         local_path = URI('/tmp/this')
         self.assertEqual(local_path.path.split(os.sep), ['', 'tmp', 'this'])
@@ -131,6 +142,7 @@ class TestURI(TestCase):
 
         path = URI('trailing/slash/', sep='/')
         self.assertEqual(path.path, './trailing/slash/')
+
 
     def test_split(self):
         local_path = URI('/some/long/dir/structure')
@@ -170,10 +182,12 @@ class TestURI(TestCase):
         self.assertEqual(path.uri, 'file:///C/some/windows/path')
         self.assertEqual(path.unipath, '/C/some/windows/path')
 
+
     def test_windows_repr(self):
         path = URI(r'C:\some\path\on\windows', sep='\\')
         self.assertEqual(path.path, r'C:\some\path\on\windows')
         self.assertEqual(path.uri, 'file:///C/some/path/on/windows')
+
 
     def test_split_windows(self):
         path = URI(r'C:\some\path\on\windows', sep='\\')
@@ -183,11 +197,13 @@ class TestURI(TestCase):
         self.assertEqual(pth, URI(r'C:\some\path\on', sep='\\'))
         self.assertEqual(tail, 'windows')
 
+
     def test_join_windows(self):
         path = URI('C:\\some', sep='\\')
         self.assertEqual(path.uri, 'file:///C/some')
         new_path = path / 'other'
         self.assertEqual(new_path.uri, 'file:///C/some/other')
+
 
     def test_unipath_windows(self):
         path = URI('C:\\some?extra=arg', sep='\\')
@@ -203,22 +219,24 @@ class TestURI(TestCase):
         path = URI('somedir', sep='\\')
         self.assertEqual(path.unipath, './somedir')
 
+
     def test_join(self):
         long_path = URI('this/is/a/long/path')
         self.assertEqual(long_path, URI('this') / 'is' / 'a' / 'long' / 'path')
+
 
     def test_augmented_join(self):
         testpath = URI('/a')
         testpath /= 'path'
         self.assertEqual(URI('/a/path'), testpath)
 
+
     def test_join_with_vpath_authority(self):
         testpath = URI('zip://((/path/to/file.zip))/')
         testpath /= 'content.txt'
-        self.assertEqual(
-            URI('zip://((/path/to/file.zip))/content.txt'),
-            testpath
-            )
+        self.assertEqual(URI('zip://((/path/to/file.zip))/content.txt'),
+                         testpath)
+
 
     def test_adding_suffix(self):
         testpath = URI("/a")
@@ -227,10 +245,12 @@ class TestURI(TestCase):
         testpath += ".bar"
         self.assertEqual(URI("/a.bar"), testpath)
 
+
     def test_path_equality(self):
         pth_one = URI("/a")
         pth_two = URI("file:///a")
         self.assertEqual(pth_one, pth_two)
+
 
     def test_path_equals_path_with_trailing_slash(self):
         pth_one = URI("/a")
@@ -238,9 +258,11 @@ class TestURI(TestCase):
         self.assertNotEqual(pth_one, pth_two)
         self.assertEqual((pth_one / 'something'), (pth_two / 'something'))
 
+
     def test_extra_args(self):
         pth = URI("scheme://some/path?extra=arg")
         self.assertEqual(pth._extras(), {'extra':'arg'})
+
 
     def test_extra_args_and_kwargs(self):
         pth = URI("scheme://some/path?extra=arg", something='different')
@@ -269,8 +291,8 @@ class TestFileSystem(TestCase):
 
 
     def test_backend(self):
-        foo_path = self.foo_path
-        bar_path = URI(self.foo_path.path+'?arg1=value1')
+        foo_path = URI(self.baseurl) / 'foo'
+        bar_path = URI(foo_path.path + '?arg1=value1')
         foo_2_path = foo_path / 'some_dir'
         self.assert_(foo_path.get_connection() is foo_2_path.get_connection())
         self.assert_(bar_path.get_connection() is not foo_path.get_connection())
