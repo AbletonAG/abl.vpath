@@ -261,6 +261,8 @@ class MemoryFileSystem(FileSystem):
                                                     "Too many symbolic links encountered")
                     nd = self._get_node_for_path(self._fs, nd.target, throw=throw,
                                                  linklevel=linklevel + 1)
+                    if nd is None:
+                        return None
                     assert nd.kind != NodeKind.LINK
             return nd
         return None

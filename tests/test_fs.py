@@ -553,6 +553,96 @@ class CommonLocalFSSymlinkTest(TestCase):
 
     #------------------------------
 
+    def symlink_on_unknown_file(self):
+        """Check that backends fail with a proper exception when trying to
+        create a symlink on a path where directory steps do not exist.
+        """
+        root = URI(self.baseurl)
+        notexisting_path = root / 'ma' / 'moo'
+        tee_path = root / 'helloworld'
+        notexisting_path.symlink(tee_path)
+
+        self.assert_(tee_path.islink())
+        self.assert_(tee_path.readlink() == notexisting_path)
+        self.assert_(not notexisting_path.exists())
+
+
+    def open_deadlink_fails(self):
+        root = URI(self.baseurl)
+
+        notexisting_path = root / 'foo' / 'bar'
+        tee_path = root / 'helloworld'
+        notexisting_path.symlink(tee_path)
+
+        self.failUnlessRaises(IOError, load_file, tee_path)
+        self.failUnlessRaises(IOError, create_file, tee_path)
+
+
+    def listdir_deadlink_fails(self):
+        root = URI(self.baseurl)
+
+        notexisting_path = root / 'foo' / 'bar'
+        tee_path = root / 'helloworld'
+        notexisting_path.symlink(tee_path)
+
+        self.failUnlessRaises(OSError, tee_path.listdir)
+
+
+    def isfile_doesnt_fail_on_deadlink(self):
+        root = URI(self.baseurl)
+
+        notexisting_path = root / 'foo' / 'bar'
+        tee_path = root / 'helloworld'
+        notexisting_path.symlink(tee_path)
+
+        self.assert_(not tee_path.isfile())
+        self.assert_(not tee_path.isdir())
+        self.assert_(not tee_path.exists())
+
+
+    def isdir_doesnt_fail_on_deadlink(self):
+        root = URI(self.baseurl)
+
+        notexisting_path = root / 'foo' / 'bar'
+        tee_path = root / 'helloworld'
+        notexisting_path.symlink(tee_path)
+
+        self.assert_(not tee_path.isdir())
+
+
+    def exists_doesnt_fail_on_deadlink(self):
+        root = URI(self.baseurl)
+
+        notexisting_path = root / 'foo' / 'bar'
+        tee_path = root / 'helloworld'
+        notexisting_path.symlink(tee_path)
+
+        self.assert_(not tee_path.exists())
+
+
+    def isexec_fails_on_deadlink(self):
+        root = URI(self.baseurl)
+
+        notexisting_path = root / 'foo' / 'bar'
+        tee_path = root / 'helloworld'
+        notexisting_path.symlink(tee_path)
+
+        self.failUnlessRaises(OSError, tee_path.isexec)
+
+
+    def set_exec_fails_on_deadlink(self):
+        root = URI(self.baseurl)
+
+        notexisting_path = root / 'foo' / 'bar'
+        tee_path = root / 'helloworld'
+        notexisting_path.symlink(tee_path)
+
+        self.failUnlessRaises(OSError, tee_path.set_exec,
+                              stat.S_IXUSR | stat.S_IXGRP)
+
+
+    #------------------------------
+
     def copy_filesymlink_to_file_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
@@ -1046,6 +1136,38 @@ class TestLocalFSSymlink(CommonLocalFSSymlinkTest):
         super(TestLocalFSSymlink, self).symlink_file()
 
     @mac_only
+    def test_symlink_on_unknown_file(self):
+        super(TestLocalFSSymlink, self).symlink_on_unknown_file()
+
+    @mac_only
+    def test_open_deadlink_fails(self):
+        super(TestLocalFSSymlink, self).open_deadlink_fails()
+
+    @mac_only
+    def test_listdir_deadlink_fails(self):
+        super(TestLocalFSSymlink, self).listdir_deadlink_fails()
+
+    @mac_only
+    def test_isfile_doesnt_fail_on_deadlink(self):
+        super(TestLocalFSSymlink, self).isfile_doesnt_fail_on_deadlink()
+
+    @mac_only
+    def test_isdir_doesnt_fail_on_deadlink(self):
+        super(TestLocalFSSymlink, self).isdir_doesnt_fail_on_deadlink()
+
+    @mac_only
+    def test_exists_doesnt_fail_on_deadlink(self):
+        super(TestLocalFSSymlink, self).exists_doesnt_fail_on_deadlink()
+
+    @mac_only
+    def test_isexec_fails_on_deadlink(self):
+        super(TestLocalFSSymlink, self).isexec_fails_on_deadlink()
+
+    @mac_only
+    def test_set_exec_fails_on_deadlink(self):
+        super(TestLocalFSSymlink, self).set_exec_fails_on_deadlink()
+
+    @mac_only
     def test_copy_filesymlink_to_file_followlinks(self):
         super(TestLocalFSSymlink, self).copy_filesymlink_to_file_followlinks()
 
@@ -1139,6 +1261,30 @@ class TestMemoryFSSymlink(CommonLocalFSSymlinkTest):
 
     def test_symlink_file(self):
         super(TestMemoryFSSymlink, self).symlink_file()
+
+    def test_symlink_on_unknown_file(self):
+        super(TestMemoryFSSymlink, self).symlink_on_unknown_file()
+
+    def test_open_deadlink_fails(self):
+        super(TestMemoryFSSymlink, self).open_deadlink_fails()
+
+    def test_listdir_deadlink_fails(self):
+        super(TestMemoryFSSymlink, self).listdir_deadlink_fails()
+
+    def test_isfile_doesnt_fail_on_deadlink(self):
+        super(TestMemoryFSSymlink, self).isfile_doesnt_fail_on_deadlink()
+
+    def test_isdir_doesnt_fail_on_deadlink(self):
+        super(TestMemoryFSSymlink, self).isdir_doesnt_fail_on_deadlink()
+
+    def test_exists_doesnt_fail_on_deadlink(self):
+        super(TestMemoryFSSymlink, self).exists_doesnt_fail_on_deadlink()
+
+    def test_isexec_fails_on_deadlink(self):
+        super(TestMemoryFSSymlink, self).isexec_fails_on_deadlink()
+
+    def test_set_exec_fails_on_deadlink(self):
+        super(TestMemoryFSSymlink, self).set_exec_fails_on_deadlink()
 
     def test_copy_filesymlink_to_file_followlinks(self):
         super(TestMemoryFSSymlink, self).copy_filesymlink_to_file_followlinks()
