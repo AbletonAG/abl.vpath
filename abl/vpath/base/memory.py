@@ -14,8 +14,14 @@ from .exceptions import FileDoesNotExistError
 
 from abl.util import Bunch, LockFileObtainException
 
+class NodeKind(object):
+    FILE = 0
+    DIR = 1
+
 
 class MemoryFile(object):
+
+    kind = NodeKind.FILE
 
     FILE_LOCKS = {}
 
@@ -35,6 +41,10 @@ class MemoryFile(object):
         length = self._data.tell() + 1
         self._data.seek(pos)
         return length
+
+
+    def size(self):
+        return len(self._data.getvalue())
 
 
     def write(self, d):
@@ -83,8 +93,13 @@ class MemoryFile(object):
         else:
             raise StopIteration
 
+
     def __iter__(self):
         return self
+
+
+    def items(self):
+        return []
 
 
 class MemoryFileProxy(object):
@@ -115,6 +130,46 @@ class MemoryFileProxy(object):
         return self.mem_file
 
 
+class MemoryDir(object):
+
+    kind = NodeKind.DIR
+
+    def __init__(self):
+        self._files = {}
+        self.mtime = self.ctime = time.time()
+        self.mode = 0
+
+
+    def size(self):
+        return 0
+
+
+    def items(self):
+        return self._files.items()
+
+
+    def keys(self):
+        return self._files.keys()
+
+
+    def has(self, name):
+        return name in self._files
+
+
+    def get(self, name):
+        return self._files[name]
+
+
+    def create(self, name, obj):
+        self._files[name] = obj
+
+
+    def remove(self, name):
+        del self._files[name]
+
+
+    def isempty(self):
+        return len(self._files) == 0
 
 
 class MemoryFileSystemUri(BaseUri):
@@ -159,18 +214,18 @@ class MemoryFileSystem(FileSystem):
     uri = MemoryFileSystemUri
 
     def _initialize(self):
-        self._fs = {}
+        self._fs = MemoryDir()
         self.next_op_callbacks = {}
 
 
     def _child(self, parent, name):
-        return parent[name] if name in parent else None
+        return parent.get(name) if parent.has(name) else None
 
-    def _create_child(self, parent, name, object):
-        parent[name] = object
+    def _create_child(self, parent, name, obj):
+        parent.create(name, obj)
 
     def _del_child(self, parent, name):
-        del parent[name]
+        parent.remove(name)
 
 
     def _get_node_prev(self, base, steps):
@@ -178,7 +233,7 @@ class MemoryFileSystem(FileSystem):
         current = base
         for part in steps:
             prev = current
-            if part in current:
+            if current.has(part):
                 current = self._child(current, part)
             else:
                 return [None, None]
@@ -211,7 +266,7 @@ class MemoryFileSystem(FileSystem):
             nd = self._get_node_for_path(self._fs, path)
             if nd is None:
                 return False
-            return isinstance(nd, dict)
+            return nd.kind == NodeKind.DIR
         # the root always exists and is always a dir
         return True
 
@@ -221,7 +276,7 @@ class MemoryFileSystem(FileSystem):
             nd = self._get_node_for_path(self._fs, path)
             if nd is None:
                 return False
-            return isinstance(nd, MemoryFile)
+            return nd.kind == NodeKind.FILE
         return False
 
 
@@ -243,9 +298,9 @@ class MemoryFileSystem(FileSystem):
                 raise OSError(errno.ENOENT, "No such dir: %r" % str(path))
 
             dir_to_create = p.split("/")[-1]
-            if dir_to_create in nd:
+            if nd.has(dir_to_create):
                 raise OSError(errno.EEXIST, "File exists: %r" % str(path))
-            self._create_child(nd, dir_to_create, {})
+            self._create_child(nd, dir_to_create, MemoryDir())
 
 
     def exists(self, path):
@@ -277,9 +332,9 @@ class MemoryFileSystem(FileSystem):
             f.seek(0)
             readable = True
 
-        elif "w" in options or file_to_create not in current:
+        elif "w" in options or not current.has(file_to_create):
             c = self._child(current, file_to_create)
-            if c is not None and isinstance(c, dict):
+            if c is not None and c.kind == NodeKind.DIR:
                 raise IOError(errno.EISDIR, "File is directory" )
             f = MemoryFile(self, p)
             self._create_child(current, file_to_create, f)
@@ -299,7 +354,7 @@ class MemoryFileSystem(FileSystem):
     def dump(self, outf, no_binary=False):
         def traverse(current, path="memory:///"):
             for name, value in sorted(current.items()):
-                if not isinstance(value, dict):
+                if value.kind != NodeKind.DIR:
                     value = str(value)
                     if no_binary:
                         mt, _ = mimetypes.guess_type(name)
@@ -332,7 +387,7 @@ class MemoryFileSystem(FileSystem):
 
         return Bunch(mtime=current.mtime,
                      mode=current.mode,
-                     size=len(current._data.getvalue()))
+                     size=current.size())
 
 
     def copystat(self, src, dest):
@@ -345,7 +400,7 @@ class MemoryFileSystem(FileSystem):
         if dest_current is None:
             raise OSError(errno.ENOENT, "No such file: %r" % str(dest))
 
-        if isinstance(src_current, MemoryFile) and isinstance(dest_current, MemoryFile):
+        if src_current.kind() == NodeKind.FILE and dest_current.kind() == NodeKind.FILE:
             dest_current.mtime = src_current.mtime
             dest_current.mode = src_current.mode
 
@@ -378,7 +433,7 @@ class MemoryFileSystem(FileSystem):
             raise OSError(errno.ENOENT, "No such dir: %r" % str(path))
         if prev is not None:
             part = path.last()
-            if not self._child(prev, part):
+            if self._child(prev, part).isempty():
                 self._del_child(prev, part)
             else:
                 raise OSError(errno.ENOTEMPTY, "Directory not empty: %r" % path)
