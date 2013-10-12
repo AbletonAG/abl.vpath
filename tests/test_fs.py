@@ -33,16 +33,15 @@ class CommonFileSystemTest(TestCase):
 
 
     def file(self):
-        if self.writable:
-            path = URI(self.baseurl) / 'testfile.txt'
-            create_file(path, content='hallo')
-            content = load_file(path)
+        path = URI(self.baseurl) / 'testfile.txt'
+        create_file(path, content='hallo')
+        content = load_file(path)
 
-            self.assertEqual(content, 'hallo')
-            self.assert_(path.exists())
-            self.assert_(path.isfile())
-            path.remove()
-            self.assert_(not path.exists())
+        self.assertEqual(content, 'hallo')
+        self.assert_(path.exists())
+        self.assert_(path.isfile())
+        path.remove()
+        self.assert_(not path.exists())
 
         path = URI(self.existing_file)
         self.assert_(path.exists())
@@ -53,17 +52,16 @@ class CommonFileSystemTest(TestCase):
 
 
     def dir(self):
-        if self.writable:
-            testdir = URI('testdir')
-            testdir.makedirs()
-            self.assert_(testdir.exists())
-            self.assert_(testdir.isdir())
-            self.assert_(not testdir.isfile())
-            testfile = URI('testdir/somefile')
-            create_file(testfile, content='test')
-            testdir.remove(recursive=True)
-            self.assert_(not testdir.exists())
-            self.assert_(not testfile.exists())
+        testdir = URI('testdir')
+        testdir.makedirs()
+        self.assert_(testdir.exists())
+        self.assert_(testdir.isdir())
+        self.assert_(not testdir.isfile())
+        testfile = URI('testdir/somefile')
+        create_file(testfile, content='test')
+        testdir.remove(recursive=True)
+        self.assert_(not testdir.exists())
+        self.assert_(not testfile.exists())
 
         testdir = URI(self.existing_dir)
         self.assert_(testdir.exists())
@@ -77,89 +75,85 @@ class CommonFileSystemTest(TestCase):
 
 
     def walk(self):
-        if self.walkable:
-            path = URI(self.existing_dir)
-            for root, dirs, files in path.walk():
-                if path == root:
-                    self.assert_('foo.txt' in files)
-                    self.assert_('bar' in dirs)
+        path = URI(self.existing_dir)
+        for root, dirs, files in path.walk():
+            if path == root:
+                self.assert_('foo.txt' in files)
+                self.assert_('bar' in dirs)
 
 
     def relative_walk(self):
-        if self.walkable:
-            path = URI(self.existing_dir)
-            for root, relative, dirs, files in path.relative_walk():
-                if path == root:
-                    self.assert_('foo.txt' in files)
-                    self.assert_('bar' in dirs)
-                    self.assertEqual(relative, '')
-                if relative == 'bar':
-                    self.assert_(not dirs)
-                    self.assert_(not files)
+        path = URI(self.existing_dir)
+        for root, relative, dirs, files in path.relative_walk():
+            if path == root:
+                self.assert_('foo.txt' in files)
+                self.assert_('bar' in dirs)
+                self.assertEqual(relative, '')
+            if relative == 'bar':
+                self.assert_(not dirs)
+                self.assert_(not files)
 
 
     def copy_and_move_file(self):
-        if self.writable:
-            single_file = URI(self.non_existing_file)
-            target_file = URI(self.baseurl) / 'target_file.txt'
-            create_file(single_file)
+        single_file = URI(self.non_existing_file)
+        target_file = URI(self.baseurl) / 'target_file.txt'
+        create_file(single_file)
 
-            single_file.copy(target_file)
-            self.assert_(target_file.exists())
-            self.assert_(target_file.isfile())
-            self.assertEqual(load_file(target_file), 'content')
+        single_file.copy(target_file)
+        self.assert_(target_file.exists())
+        self.assert_(target_file.isfile())
+        self.assertEqual(load_file(target_file), 'content')
 
-            target_file.remove()
-            self.assert_(not target_file.exists())
-            single_file.move(target_file)
+        target_file.remove()
+        self.assert_(not target_file.exists())
+        single_file.move(target_file)
 
-            self.assert_(not single_file.exists())
-            self.assert_(target_file.exists())
-            self.assert_(target_file.isfile())
+        self.assert_(not single_file.exists())
+        self.assert_(target_file.exists())
+        self.assert_(target_file.isfile())
 
-            self.assertEqual(load_file(target_file), 'content')
-            target_file.remove()
+        self.assertEqual(load_file(target_file), 'content')
+        target_file.remove()
 
 
     def copy_and_move_dir(self):
-        if self.writable:
-            folder = URI(self.baseurl) / 'folder'
-            folder.makedirs()
+        folder = URI(self.baseurl) / 'folder'
+        folder.makedirs()
 
-            self.assert_(folder.isdir())
-            afile = folder / 'afile.txt'
-            create_file(afile)
+        self.assert_(folder.isdir())
+        afile = folder / 'afile.txt'
+        create_file(afile)
 
-            target = URI(self.baseurl) / 'target'
-            self.assert_(not target.exists())
-            folder.copy(target, recursive=True)
-            self.assert_(target.exists())
+        target = URI(self.baseurl) / 'target'
+        self.assert_(not target.exists())
+        folder.copy(target, recursive=True)
+        self.assert_(target.exists())
 
-            target_file = target / 'afile.txt'
-            self.assert_(target_file.exists())
-            self.assertEqual(load_file(target_file), 'content')
+        target_file = target / 'afile.txt'
+        self.assert_(target_file.exists())
+        self.assertEqual(load_file(target_file), 'content')
 
-            target.remove(recursive=True)
-            self.assert_(not target.exists())
-            target.makedirs()
-            folder.copy(target, recursive=True)
+        target.remove(recursive=True)
+        self.assert_(not target.exists())
+        target.makedirs()
+        folder.copy(target, recursive=True)
 
-            newtarget = target / 'folder'
-            self.assert_(newtarget.exists())
-            self.assert_(newtarget.isdir())
+        newtarget = target / 'folder'
+        self.assert_(newtarget.exists())
+        self.assert_(newtarget.isdir())
 
-            newtarget_file = newtarget / 'afile.txt'
-            self.assert_(newtarget_file.exists())
-            self.assert_(newtarget_file.isfile())
-            target.remove(recursive=True)
+        newtarget_file = newtarget / 'afile.txt'
+        self.assert_(newtarget_file.exists())
+        self.assert_(newtarget_file.isfile())
+        target.remove(recursive=True)
 
-            folder.move(target)
-            self.assert_(not folder.exists())
-            self.assert_(target.exists())
-            self.assert_(target.isdir())
-            self.assert_(target_file.exists())
-            self.assert_(target_file.isfile())
-            target.remove(recursive=True)
+        folder.move(target)
+        self.assert_(not folder.exists())
+        self.assert_(target.exists())
+        self.assert_(target.isdir())
+        self.assert_(target_file.exists())
+        self.assert_(target_file.isfile())
+        target.remove(recursive=True)
 
 
     def move_folder_to_subfolder(self):
@@ -218,8 +212,6 @@ class CommonFileSystemTest(TestCase):
 
 class TestLocalFileSystem(CommonFileSystemTest):
     def local_setup(self):
-        self.writable = True
-        self.walkable = True
         thisdir = os.path.split(os.path.abspath(__file__))[0]
         self.tmpdir = tempfile.mkdtemp('.temp', 'test-local-fs', thisdir)
         self.baseurl = 'file://' + self.tmpdir
@@ -271,8 +263,6 @@ class TestLocalFileSystem(CommonFileSystemTest):
 
 class TestMemoryFileSystem(CommonFileSystemTest):
     def local_setup(self):
-        self.writable = True
-        self.walkable = True
         CONNECTION_REGISTRY.cleanup(force=True)
         self.baseurl = "memory:///"
 
