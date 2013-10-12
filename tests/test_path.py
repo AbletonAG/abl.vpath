@@ -1,5 +1,5 @@
 #******************************************************************************
-# (C) 2008 Ableton AG
+# (C) 2008-2013 Ableton AG
 #******************************************************************************
 from __future__ import with_statement
 import datetime
@@ -258,198 +258,15 @@ class TestURI(TestCase):
 
 
 class TestFileSystem(TestCase):
-
-    def local_setup(self):
-        self.writable = True
-        self.walkable = True
-        thisdir = os.path.split(os.path.abspath(__file__))[0]
-        self.baseurl = 'file://' + thisdir
-        self.foo_path = URI(self.baseurl) / 'foo'
-        self.extras = {}
-
     def setUp(self):
-        self.local_setup()
-        self.existing_dir = ujoin(self.baseurl,'foo')
-        self.existing_file = ujoin(self.baseurl, 'foo','foo.txt')
-        self.non_existing_file = ujoin(self.baseurl, 'bar.txt')
         thisdir = os.path.split(os.path.abspath(__file__))[0]
-        foo_dir = os.path.join(thisdir, 'foo')
-        bar_dir = os.path.join(foo_dir, 'bar')
-        os.mkdir(foo_dir)
-        os.mkdir(bar_dir)
-        some_file = os.path.join(foo_dir, 'foo.txt')
-        with open(some_file, 'w') as fd:
-            fd.write('content')
+        self.tmpdir = tempfile.mkdtemp('.temp', 'test-local-fs', thisdir)
+        self.baseurl = 'file://' + self.tmpdir
+
 
     def tearDown(self):
-        thisdir = os.path.split(os.path.abspath(__file__))[0]
-        foo_dir = os.path.join(thisdir, 'foo')
-        shutil.rmtree(foo_dir)
-        folder_dir = os.path.join(thisdir, 'folder')
-        if os.path.isdir(folder_dir):
-            shutil.rmtree(folder_dir)
-        target_dir = os.path.join(thisdir, 'target')
-        if os.path.isdir(target_dir):
-            shutil.rmtree(target_dir)
+        shutil.rmtree(self.tmpdir)
 
-    def test_file(self):
-        if self.writable:
-            path = URI(self.baseurl, **self.extras) / 'testfile.txt'
-            with path.open('w') as fd:
-                fd.write('hallo')
-            with path.open() as fd:
-                content = fd.read()
-            self.assertEqual(content, 'hallo')
-            self.assert_(path.exists())
-            self.assert_(path.isfile())
-            path.remove()
-            self.assert_(not path.exists())
-        path = URI(self.existing_file, **self.extras)
-        self.assert_(path.exists())
-        self.assert_(path.isfile())
-        with path.open() as fd:
-            content = fd.read()
-        self.assert_(content)
-
-    def test_dir(self):
-        if self.writable:
-            testdir = URI('testdir', **self.extras)
-            testdir.makedirs()
-            self.assert_(testdir.exists())
-            self.assert_(testdir.isdir())
-            self.assert_(not testdir.isfile())
-            testfile = URI('testdir/somefile', **self.extras)
-            with testfile.open('w') as fd:
-                fd.write('test')
-            testdir.remove(recursive=True)
-            self.assert_(not testdir.exists())
-            self.assert_(not testfile.exists())
-        testdir = URI(self.existing_dir, **self.extras)
-        self.assert_(testdir.exists())
-        self.assert_(testdir.isdir())
-
-    def test_listdir(self):
-        path = URI(self.existing_dir, **self.extras)
-        dirs = path.listdir()
-        self.assert_('foo.txt' in dirs)
-
-    def test_walk(self):
-        if not self.walkable:
-            return
-        path = URI(self.existing_dir, **self.extras)
-        for root, dirs, files in path.walk():
-            if path == root:
-                self.assert_('foo.txt' in files)
-                self.assert_('bar' in dirs)
-
-    def test_relative_walk(self):
-        if not self.walkable:
-            return
-        path = URI(self.existing_dir, **self.extras)
-        for root, relative, dirs, files in path.relative_walk():
-            if path == root:
-                self.assert_('foo.txt' in files)
-                self.assert_('bar' in dirs)
-                self.assertEqual(relative, '')
-            if relative == 'bar':
-                self.assert_(not dirs)
-                self.assert_(not files)
-
-    def test_copy_and_move_file(self):
-        if not self.writable:
-            return
-        single_file = URI(self.non_existing_file, **self.extras)
-        target_file = URI(self.baseurl, **self.extras) / 'target_file.txt'
-        with single_file.open('w') as fs:
-            fs.write('content')
-        single_file.copy(target_file)
-        self.assert_(target_file.exists())
-        self.assert_(target_file.isfile())
-        with target_file.open() as fs:
-            self.assertEqual(fs.read(), 'content')
-        target_file.remove()
-        self.assert_(not target_file.exists())
-        single_file.move(target_file)
-        self.assert_(not single_file.exists())
-        self.assert_(target_file.exists())
-        self.assert_(target_file.isfile())
-        with target_file.open() as fs:
-            self.assertEqual(fs.read(), 'content')
-        target_file.remove()
-
-    def test_copy_and_move_dir(self):
-        if not self.writable:
-            return
-        folder = URI(self.baseurl, **self.extras) / 'folder'
-        folder.makedirs()
-        self.assert_(folder.isdir())
-        afile = folder / 'afile.txt'
-        with afile.open('w') as fs:
-            fs.write('content')
-        target = URI(self.baseurl, **self.extras) / 'target'
-        self.assert_(not target.exists())
-        folder.copy(target, recursive=True)
-        self.assert_(target.exists())
-        target_file = target / 'afile.txt'
-        self.assert_(target_file.exists())
-        with target_file.open() as fs:
-            content = fs.read()
-            self.assertEqual(content, 'content')
-        target.remove(recursive=True)
-        self.assert_(not target.exists())
-        target.makedirs()
-        folder.copy(target, recursive=True)
-        newtarget = target / 'folder'
-        self.assert_(newtarget.exists())
-        self.assert_(newtarget.isdir())
-        newtarget_file = newtarget / 'afile.txt'
-        self.assert_(newtarget_file.exists())
-        self.assert_(newtarget_file.isfile())
-        target.remove(recursive=True)
-
-        folder.move(target)
-        self.assert_(not folder.exists())
-        self.assert_(target.exists())
-        self.assert_(target.isdir())
-        self.assert_(target_file.exists())
-        self.assert_(target_file.isfile())
-        target.remove(recursive=True)
-
-    def test_move_folder_to_subfolder(self):
-        """
-        test moving a directory '/some/path/folder' to '/some/path/target'
-        '/some/path/target' does already exist. It is expected that after
-        the move '/some/path/target/folder' exists.
-        """
-        folder = self.foo_path / 'folder'
-        content = folder / 'content_dir'
-        and_more = content / 'and_more'
-        and_more.makedirs()
-        target = self.foo_path / 'target'
-        target.makedirs()
-        folder.move(target)
-        self.assert_(not folder.exists())
-        self.assert_(target.exists())
-        self.assert_('folder' in target.listdir())
-        self.assert_((target / 'folder').isdir())
-        self.assert_((target / 'folder' / 'content_dir').isdir())
-
-    def test_rename_folder(self):
-        """
-        test moving a directory '/some/path/folder' to '/some/path/target'
-        '/some/path/target' does NOT yet exist. It is expected that after
-        the move '/some/path/target' exists and is actually the former
-        '/some/path/folder'.
-        """
-        folder = self.foo_path / 'folder'
-        content = folder / 'content_dir'
-        and_more = content / 'and_more'
-        and_more.makedirs()
-        target = self.foo_path / 'target'
-        folder.move(target)
-        self.assert_(not folder.exists())
-        self.assert_(target.isdir())
-        self.assert_('content_dir' in target.listdir())
 
     def test_backend(self):
         foo_path = self.foo_path

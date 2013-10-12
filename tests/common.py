@@ -8,6 +8,11 @@ from functools import wraps
 from abl.vpath.base import *
 
 
+def os_create_file(some_file, content='content'):
+    with open(some_file, 'w') as fd:
+        fd.write('content')
+
+
 def create_file(path, content='content'):
     with path.open('w') as fs:
         fs.write(content)
