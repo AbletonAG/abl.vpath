@@ -681,6 +681,8 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.assert_(tee2_path.islink())
         self.assert_(load_file(tee2_path) == 'foobar')
         self.assert_(load_file(gaz2_path) == 'foobar')
+        self.assert_((bar_path / 'gaz2.txt').isfile())
+        self.assert_((bar_path / 'gaz.txt').isfile())
 
 
     def copy_filesymlink_to_filesymlink_preservelinks(self):
@@ -1136,8 +1138,8 @@ class TestMemoryFSSymlink(CommonLocalFSSymlinkTest):
     def test_copy_filesymlink_to_missingfile_preservelinks(self):
         super(TestMemoryFSSymlink, self).copy_filesymlink_to_missingfile_preservelinks()
 
-#    def test_copy_filesymlink_to_filesymlink_followlinks(self):
-#        super(TestMemoryFSSymlink, self).copy_filesymlink_to_filesymlink_followlinks()
+    def test_copy_filesymlink_to_filesymlink_followlinks(self):
+        super(TestMemoryFSSymlink, self).copy_filesymlink_to_filesymlink_followlinks()
 
     def test_copy_filesymlink_to_filesymlink_preservelinks(self):
         super(TestMemoryFSSymlink, self).copy_filesymlink_to_filesymlink_preservelinks()

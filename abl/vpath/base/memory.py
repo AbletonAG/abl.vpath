@@ -36,6 +36,14 @@ class MemoryFile(object):
         self.lock = self.FILE_LOCKS.setdefault((self.fs, self.path), threading.Lock())
 
 
+    def reset(self):
+        self._data = StringIO()
+        self._line_reader = None
+        self.mtime = self.ctime = time.time()
+        self.mode = 0
+        self.lock = self.FILE_LOCKS.setdefault((self.fs, self.path), threading.Lock())
+
+
     def __len__(self):
         pos = self._data.tell()
         self._data.seek(-1,2)
@@ -106,12 +114,13 @@ class MemoryFile(object):
 class MemoryFileProxy(object):
 
     def __init__(self, mem_file, readable):
-        self.mem_file, self.readable = mem_file, readable
+        self.mem_file = mem_file
+        self.readable = readable
 
 
     def read(self, *args, **kwargs):
         if not self.readable:
-            raise IOError(9, "bad file descriptor")
+            raise IOError(errno.EBADF, "bad file descriptor")
         return self.mem_file.read(*args, **kwargs)
 
 
@@ -342,30 +351,44 @@ class MemoryFileSystem(FileSystem):
             self.next_op_callbacks[p](path, func)
 
 
-    def open(self, path, options, mimetype):
+    def _open_for_read(self, path):
+        nd = self._get_node_for_path(self._fs, path)
+        nd.seek(0)
+        return MemoryFileProxy(nd, True)
+
+
+    def _open_for_write(self, path):
         p = self._path(path)
-        current = self._get_node(self._fs, p.split("/")[:-1])
-        readable = False
+        nd = self._get_node(self._fs, p.split("/")[:-1])
         file_to_create = p.split("/")[-1]
 
-        if options is None or "r" in options:
-            f = self._child(current, file_to_create)
-            f.seek(0)
-            readable = True
-
-        elif "w" in options or not current.has(file_to_create):
-            c = self._child(current, file_to_create)
-            if c is not None and c.kind == NodeKind.DIR:
+        if nd.has(file_to_create):
+            cnd = self._child(nd, file_to_create)
+            if cnd is not None and cnd.kind == NodeKind.DIR:
                 raise IOError(errno.EISDIR, "File is directory" )
+            cnd.reset()
+            return MemoryFileProxy(cnd, False)
+        else:
             f = MemoryFile(self, p)
-            self._create_child(current, file_to_create, f)
+            self._create_child(nd, file_to_create, f)
+            return MemoryFileProxy(f, False)
 
+
+    def _open_for_append(self, path):
+        nd = self._get_node_for_path(self._fs, path)
+        nd.seek(len(nd))
+        return MemoryFileProxy(nd, False)
+
+
+    def open(self, path, options, mimetype):
+        if options is None or "r" in options:
+            return self._open_for_read(path)
+        elif "w" in options:
+            return self._open_for_write(path)
         elif "a" in options:
-            f = self._child(current, file_to_create)
-            f.seek(len(f))
-
-        return MemoryFileProxy(f, readable)
-
+            return self._open_for_append(path)
+        else:
+            raise OSError(EINVAL, "The mode flag is not valid")
 
 
     BINARY_MIME_TYPES = ["image/png",
@@ -375,7 +398,7 @@ class MemoryFileSystem(FileSystem):
     def dump(self, outf, no_binary=False):
         def traverse(current, path="memory:///"):
             for name, value in sorted(current.items()):
-                if value.kind != NodeKind.DIR:
+                if value.kind == NodeKind.FILE:
                     value = str(value)
                     if no_binary:
                         mt, _ = mimetypes.guess_type(name)
@@ -385,13 +408,16 @@ class MemoryFileSystem(FileSystem):
                             value = "Binary: %s" % hash.hexdigest()
                     outf.write("--- START %s%s ---\n" % (path, name))
                     outf.write(value)
-                    outf.write("\n--- END %s%s ---\n\n" % (path, name))
+                    outf.write("\n--- END ---\n\n")
+                elif value.kind == NodeKind.LINK:
+                    outf.write("LINK: %s%s -> %s\n" % (path, name, value.target))
                 else:
                     traverse(value,
                              (path[:-1] if path.endswith("/") else path) + "/" + name + "/")
 
+        outf.write("MEMORY DUMP: START\n")
         traverse(self._fs)
-
+        outf.write("MEMORY DUMP: END\n")
 
     def info(self, unc, set_info=None):
         current = self._get_node_for_path(self._fs, unc)
