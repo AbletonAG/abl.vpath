@@ -400,3 +400,7 @@ class MemoryFileSystem(FileSystem):
         if next_op_callback is not self.SENTINEL:
             p = self._path(path)
             self.next_op_callbacks[p] = next_op_callback
+
+
+    def supports_symlinks(self):
+        return False

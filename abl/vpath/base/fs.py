@@ -19,11 +19,10 @@ from decorator import decorator
 import pkg_resources
 
 from .simpleuri import UriParse, uri_from_parts
-from .exceptions import (
-    NoSchemeError,
-    RemoteConnectionTimeout,
-    FileDoesNotExistError
-    )
+from .exceptions import (NoSchemeError,
+                         RemoteConnectionTimeout,
+                         FileDoesNotExistError,
+                         OperationIsNotSupportedOnPlatform)
 
 
 #============================================================================
@@ -665,6 +664,50 @@ class BaseUri(object):
 
 
     @with_connection
+    def islink(self):
+        """
+        islink: 
+
+        @rtype: bool
+        @return: Indicates whether the file this path is pointing to is a
+        symlink.
+
+        On systems which don't support symlinks this return alsways False.
+        """
+        return self.connection.islink(self)
+
+
+    @with_connection
+    def readlink(self):
+        """
+        readlink:
+
+        @rtype: URI
+        @return: the content of the symlink this path is pointing to.
+        Throws an exception if this path is not a symlink (check with
+        islink before)
+
+        On systems which don't support symlinks this will always throw.
+        """
+        return self.connection.readlink(self)
+
+
+    @with_connection
+    def symlink(self, link_name):
+        """
+        symlink:
+
+        @rtype: void
+
+        Creates a symbolic link named link_name to the file this path is
+        pointing to.
+
+        On systems which don't support symlinks this will throw.
+        """
+        return self.connection.symlink(self, link_name)
+
+
+    @with_connection
     def mtime(self):
         """
         mtime:
@@ -1014,6 +1057,29 @@ class FileSystem(object):
 
     def set_exec(self, path, mode):
         raise NotImplementedError
+
+
+    def supports_symlinks(self):
+        raise NotImplementedError
+
+
+    def islink(self, path):
+        if not self.supports_symlinks():
+            return False
+        raise NotImplementedError
+
+
+    def readlink(self, path):
+        if not self.supports_symlinks():
+            raise OperationIsNotSupportedOnPlatform
+        raise NotImplementedError
+
+
+    def symlink(self, target, link_name):
+        if not self.supports_symlinks():
+            raise OperationIsNotSupportedOnPlatform
+        raise NotImplementedError
+
 
     def info(self,  path, set_info=None):
         raise NotImplementedError

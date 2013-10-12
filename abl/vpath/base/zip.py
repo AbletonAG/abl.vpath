@@ -180,6 +180,11 @@ class ZipFileSystem(FileSystem):
         # TODO
         raise NotImplementedError
 
+
+    def supports_symlinks(self):
+        return False
+
+
     def listdir(self, unc):
         if not self._zip_file_path().exists():
             return []

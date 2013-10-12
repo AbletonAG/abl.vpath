@@ -29,3 +29,7 @@ class OptionsError(PathError):
 class RemoteConnectionTimeout(PathError):
     "Remote connection could not be established"
 
+
+class OperationIsNotSupportedOnPlatform(PathError):
+    "This operation is not supported on this platform"
+

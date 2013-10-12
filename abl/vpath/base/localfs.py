@@ -9,9 +9,10 @@ import logging
 import shutil
 import stat
 import subprocess
+import sys
 
-from .fs import FileSystem, BaseUri, denormalize_path
-from .exceptions import FileDoesNotExistError
+from .fs import FileSystem, BaseUri, denormalize_path, URI
+from .exceptions import FileDoesNotExistError, OperationIsNotSupportedOnPlatform
 from .os_abstraction import os
 
 from abl.util import Bunch, LockFile
@@ -149,3 +150,23 @@ class LocalFileSystem(FileSystem):
 
     def copystat(self, source, dest):
         shutil.copystat(source.path, dest.path)
+
+
+    def supports_symlinks(self):
+        return sys.platform != 'win32'
+
+
+    def islink(self, path):
+        return self.supports_symlinks() and os.path.islink(self._path(path))
+
+
+    def readlink(self, path):
+        if not self.supports_symlinks():
+            raise OperationIsNotSupportedOnPlatform
+        return URI(os.readlink(self._path(path)))
+
+
+    def symlink(self, target, link_name):
+        if not self.supports_symlinks():
+            raise OperationIsNotSupportedOnPlatform
+        return os.symlink(self._path(target), self._path(link_name))

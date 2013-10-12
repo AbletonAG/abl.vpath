@@ -12,12 +12,7 @@ from abl.util import LockFileObtainException
 from abl.vpath.base import URI
 from abl.vpath.base.exceptions import FileDoesNotExistError
 from abl.vpath.base.fs import CONNECTION_REGISTRY
-
-def create_file(inpath, name):
-    f = inpath / name
-    with f.open('w') as fs:
-        fs.write('content')
-    return f
+from common import create_file
 
 
 class MemoryFSTests(TestCase):
@@ -395,11 +390,11 @@ class TestMemoryFSCopy(TestCase):
         root.mkdir()
 
         # create a file with execution flag
-        xfile = create_file(root, 'xfile.sh')
+        xfile = create_file(root / 'xfile.sh')
         xfile.set_exec(stat.S_IXUSR)
 
         # create a file without exec flag
-        ofile = create_file(root, 'otherfile.txt')
+        ofile = create_file(root / 'otherfile.txt')
 
         xfile.copystat(ofile)
 
@@ -411,11 +406,11 @@ class TestMemoryFSCopy(TestCase):
         root.mkdir()
 
         # create a file with execution flag
-        xfile = create_file(root, 'xfile.sh')
+        xfile = create_file(root / 'xfile.sh')
         xfile.set_exec(stat.S_IXUSR)
 
         # create a file without exec flag
-        ofile = create_file(root, 'otherfile.txt')
+        ofile = create_file(root / 'otherfile.txt')
 
         ofile.copystat(xfile)
 
@@ -431,11 +426,11 @@ class TestMemoryFSCopy(TestCase):
         bar_path = root / 'bar'
 
         # create a file with execution flag
-        xfile = create_file(foo_path, 'xfile.sh')
+        xfile = create_file(foo_path / 'xfile.sh')
         xfile.set_exec(stat.S_IXUSR)
 
         # create a file without exec flag
-        ofile = create_file(foo_path, 'otherfile.txt')
+        ofile = create_file(foo_path / 'otherfile.txt')
 
         foo_path.copy(bar_path, recursive=True)
 
