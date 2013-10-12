@@ -1,3 +1,7 @@
+#******************************************************************************
+# (C) 2008-2013 Ableton AG
+#******************************************************************************
+
 from __future__ import with_statement
 
 from cStringIO import StringIO
@@ -347,106 +351,3 @@ class TestRemovalOfFilesAndDirs(TestCase):
             outf.write("foobar")
 
         p.remove(recursive=True)
-
-
-class TestMemoryFSExec(TestCase):
-    def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
-
-    def tearDown(self):
-        pass
-
-    def test_exec_flags(self):
-        root = URI("memory:///") / "folder"
-        root.mkdir()
-
-        # create a file with execution flag
-        xfile = root / 'xfile.sh'
-        with xfile.open('w') as fs:
-            fs.write('content')
-
-        xfile.set_exec(stat.S_IXUSR)
-        self.assert_(xfile.isexec())
-        self.assertEqual(xfile.info().mode & stat.S_IXUSR, stat.S_IXUSR)
-
-        # create a file without exec flag
-        ofile = root / 'otherfile.txt'
-        with ofile.open('w') as fs:
-            fs.write('content')
-
-        self.assertEqual(ofile.info().mode & stat.S_IXUSR, 0)
-        self.assert_(not ofile.isexec())
-
-
-class TestMemoryFSCopy(TestCase):
-    def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
-
-    def tearDown(self):
-        pass
-
-    def test_copystat_exec_to_nonexec(self):
-        root = URI("memory:///") / "folder"
-        root.mkdir()
-
-        # create a file with execution flag
-        xfile = create_file(root / 'xfile.sh')
-        xfile.set_exec(stat.S_IXUSR)
-
-        # create a file without exec flag
-        ofile = create_file(root / 'otherfile.txt')
-
-        xfile.copystat(ofile)
-
-        self.assert_(ofile.isexec())
-
-
-    def test_copystat_exec_to_nonexec(self):
-        root = URI("memory:///") / "folder"
-        root.mkdir()
-
-        # create a file with execution flag
-        xfile = create_file(root / 'xfile.sh')
-        xfile.set_exec(stat.S_IXUSR)
-
-        # create a file without exec flag
-        ofile = create_file(root / 'otherfile.txt')
-
-        ofile.copystat(xfile)
-
-        self.assert_(not xfile.isexec())
-
-
-    def test_copy_recursive(self):
-        root = URI("memory:///") / "folder"
-        root.mkdir()
-        foo_path = root / 'foo'
-        foo_path.makedirs()
-
-        bar_path = root / 'bar'
-
-        # create a file with execution flag
-        xfile = create_file(foo_path / 'xfile.sh')
-        xfile.set_exec(stat.S_IXUSR)
-
-        # create a file without exec flag
-        ofile = create_file(foo_path / 'otherfile.txt')
-
-        foo_path.copy(bar_path, recursive=True)
-
-        self.assert_((bar_path / 'xfile.sh').isexec())
-        self.assert_(not (bar_path / 'otherfile.txt').isexec())
-
-
-    def test_copy_empty_dirs_recursive(self):
-        root = URI("memory:///") / "folder"
-        root.mkdir()
-
-        gaz_path = root / 'gaz'
-        gaz_path.makedirs()
-
-        moo_path = root / 'moo'
-
-        gaz_path.copy(moo_path, recursive=True)
-
-        self.assert_((moo_path).isdir())
