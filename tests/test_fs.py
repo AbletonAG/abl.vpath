@@ -204,6 +204,18 @@ class CommonFileSystemTest(TestCase):
         self.assert_('content_dir' in target.listdir())
 
 
+    #------------------------------
+
+    def open_unknown_file_fails(self):
+        """Check that both backends fail with a proper exception when trying to
+        open a path for loading, which does not exist.
+        """
+        root = URI(self.baseurl)
+        notexisting_path = root / 'ma' / 'moo'
+        self.failUnlessRaises(IOError, load_file, notexisting_path)
+        self.failUnlessRaises(IOError, create_file, notexisting_path)
+
+
 class TestLocalFileSystem(CommonFileSystemTest):
     def local_setup(self):
         self.writable = True
@@ -252,6 +264,10 @@ class TestLocalFileSystem(CommonFileSystemTest):
     def test_rename_folder(self):
         super(TestLocalFileSystem, self).rename_folder()
 
+    def test_open_unknown_file_fails(self):
+        super(TestLocalFileSystem, self).open_unknown_file_fails()
+
+
 
 class TestMemoryFileSystem(CommonFileSystemTest):
     def local_setup(self):
@@ -298,6 +314,9 @@ class TestMemoryFileSystem(CommonFileSystemTest):
 
     def test_rename_folder(self):
         super(TestMemoryFileSystem, self).rename_folder()
+
+    def test_open_unknown_file_fails(self):
+        super(TestMemoryFileSystem, self).open_unknown_file_fails()
 
 
 #-------------------------------------------------------------------------------
