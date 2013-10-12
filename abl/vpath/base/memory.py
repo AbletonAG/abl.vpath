@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, with_statement
 
 import mimetypes
 import hashlib
@@ -112,7 +112,6 @@ class MemoryFile(object):
 
 
 class MemoryFileProxy(object):
-
     def __init__(self, mem_file, readable):
         self.mem_file = mem_file
         self.readable = readable
@@ -223,6 +222,21 @@ class MemoryLock(object):
             self.path.remove()
 
 
+class LookupExceptionClass(object):
+    def __init__(self, fs, exc_class):
+        self.fs = fs
+        self.exc_class = exc_class
+        self.prev_exc_class = None
+
+    def __enter__(self):
+        self.prev_exc_class = self.fs.lookup_exc_class
+        self.fs.lookup_exc_class = self.exc_class
+        return self
+
+    def __exit__(self, *args):
+        self.fs.lookup_exc_class = self.prev_exc_class
+
+
 
 class MemoryFileSystem(FileSystem):
 
@@ -231,21 +245,23 @@ class MemoryFileSystem(FileSystem):
     uri = MemoryFileSystemUri
 
     def _initialize(self):
+        self.lookup_exc_class = OSError
         self._fs = MemoryDir()
         self.next_op_callbacks = {}
 
 
-    def _child(self, parent, name, follow_link=True, throw=True):
+    def _child(self, parent, name, follow_link=True, throw=True, linklevel=0):
         if parent.has(name):
             nd = parent.get(name)
-            level = 0
-            if follow_link:
-                while nd.kind == NodeKind.LINK:
+            if nd.kind == NodeKind.LINK:
+                if follow_link:
                     # TODO: supports absolute links only for now
-                    nd = self._get_node_for_path(self._fs, nd.target, throw=throw)
-                    level = level + 1
-                    if level >= 32:
-                        raise OSError(errno.ELOOP, "Too many symbolic links encountered")
+                    if linklevel >= 32:
+                        raise self.lookup_exc_class(errno.ELOOP,
+                                                    "Too many symbolic links encountered")
+                    nd = self._get_node_for_path(self._fs, nd.target, throw=throw,
+                                                 linklevel=linklevel + 1)
+                    assert nd.kind != NodeKind.LINK
             return nd
         return None
 
@@ -256,7 +272,8 @@ class MemoryFileSystem(FileSystem):
         parent.remove(name)
 
 
-    def _get_node_prev(self, base, steps, follow_link=True, throw=True):
+    def _get_node_prev(self, base, steps, follow_link=True, throw=True,
+                       linklevel=0):
         prev = None
         current = base
         for part in steps:
@@ -265,26 +282,30 @@ class MemoryFileSystem(FileSystem):
                 is_last = part == steps[-1]
                 current = self._child(current, part,
                                       follow_link=follow_link if is_last else True,
-                                      throw=throw)
+                                      throw=throw,
+                                      linklevel=linklevel)
             else:
                 if throw:
-                    raise OSError(errno.ENOENT,
-                                  "No such file or directory: %s" % '/'.join(steps))
+                    p = '/'.join(steps)
+                    raise self.lookup_exc_class(errno.ENOENT,
+                                                "No such file or directory: %s" % p)
                 else:
                     return [None, None]
         return [prev, current]
 
 
-    def _get_node(self, base, steps, follow_link=True, throw=True):
-        _, current = self._get_node_prev(base, steps, follow_link=follow_link, throw=throw)
+    def _get_node(self, base, steps, follow_link=True, throw=True, linklevel=0):
+        _, current = self._get_node_prev(base, steps, follow_link=follow_link, throw=throw,
+                                         linklevel=linklevel)
         return current
 
 
-    def _get_node_for_path(self, base, unc, follow_link=True, throw=True):
+    def _get_node_for_path(self, base, unc, follow_link=True, throw=True,
+                           linklevel=0):
         p = self._path(unc)
         if p:
             return self._get_node(base, p.split("/"), follow_link=follow_link,
-                                  throw=throw)
+                                  throw=throw, linklevel=linklevel)
         else:
             return base
 
@@ -299,20 +320,29 @@ class MemoryFileSystem(FileSystem):
 
     def isdir(self, path):
         if self._path(path):
-            nd = self._get_node_for_path(self._fs, path, throw=False)
-            if nd is None:
-                return False
-            return nd.kind == NodeKind.DIR
+            try:
+                nd = self._get_node_for_path(self._fs, path, throw=False)
+                if nd is None:
+                    return False
+                return nd.kind == NodeKind.DIR
+            except OSError, e:
+                if e.errno == errno.ELOOP:
+                    return False
+
         # the root always exists and is always a dir
         return True
 
 
     def isfile(self, path):
         if self._path(path):
-            nd = self._get_node_for_path(self._fs, path, throw=False)
-            if nd is None:
-                return False
-            return nd.kind == NodeKind.FILE
+            try:
+                nd = self._get_node_for_path(self._fs, path, throw=False)
+                if nd is None:
+                    return False
+                return nd.kind == NodeKind.FILE
+            except OSError, e:
+                if e.errno == errno.ELOOP:
+                    return False
         return False
 
 
@@ -338,9 +368,13 @@ class MemoryFileSystem(FileSystem):
 
     def exists(self, path):
         if self._path(path):
-            nd = self._get_node_for_path(self._fs, path, throw=False)
-            if nd is None:
-                return False
+            try:
+                nd = self._get_node_for_path(self._fs, path, throw=False)
+                if nd is None:
+                    return False
+            except OSError, e:
+                if e.errno == errno.ELOOP:
+                    return False
         # the root always exists
         return True
 
@@ -381,14 +415,15 @@ class MemoryFileSystem(FileSystem):
 
 
     def open(self, path, options, mimetype):
-        if options is None or "r" in options:
-            return self._open_for_read(path)
-        elif "w" in options:
-            return self._open_for_write(path)
-        elif "a" in options:
-            return self._open_for_append(path)
-        else:
-            raise OSError(EINVAL, "The mode flag is not valid")
+        with LookupExceptionClass(self, IOError) as lcs:
+            if options is None or "r" in options:
+                return self._open_for_read(path)
+            elif "w" in options:
+                return self._open_for_write(path)
+            elif "a" in options:
+                return self._open_for_append(path)
+            else:
+                raise OSError(EINVAL, "The mode flag is not valid")
 
 
     BINARY_MIME_TYPES = ["image/png",
