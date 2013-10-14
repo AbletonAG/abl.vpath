@@ -24,12 +24,16 @@ def load_file(path):
         return f.read()
 
 
+def is_on_mac():
+    return sys.platform == "darwin"
+
+
 def mac_only(func):
     """decorator to mark test functions as mac only"""
 
     @wraps(func)
     def _decorator(*args, **kwargs):
-        if sys.platform != "darwin":
+        if not is_on_mac():
             return
         func(*args, **kwargs)
 
@@ -46,5 +50,3 @@ def windows_only(func):
         func(*args, **kwargs)
 
     return _decorator
-
-

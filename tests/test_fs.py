@@ -13,13 +13,15 @@ from posixpath import join as ujoin
 from unittest import TestCase
 import logging
 import shutil
-from common import create_file, os_create_file, load_file, mac_only, windows_only
+from common import create_file, os_create_file, load_file, mac_only, is_on_mac
 from abl.vpath.base import *
 from abl.vpath.base.fs import CONNECTION_REGISTRY
 from abl.vpath.base.exceptions import FileDoesNotExistError
 
 
 class CommonFileSystemTest(TestCase):
+    __test__ = False
+
     def setUp(self):
         self.local_setup()
         self.foo_path = URI(self.baseurl) / 'foo'
@@ -32,7 +34,7 @@ class CommonFileSystemTest(TestCase):
         self.local_teardown()
 
 
-    def file(self):
+    def test_file(self):
         path = URI(self.baseurl) / 'testfile.txt'
         create_file(path, content='hallo')
         content = load_file(path)
@@ -51,7 +53,7 @@ class CommonFileSystemTest(TestCase):
         self.assert_(content)
 
 
-    def dir(self):
+    def test_dir(self):
         testdir = URI('testdir')
         testdir.makedirs()
         self.assert_(testdir.exists())
@@ -68,13 +70,13 @@ class CommonFileSystemTest(TestCase):
         self.assert_(testdir.isdir())
 
 
-    def listdir(self):
+    def test_listdir(self):
         path = URI(self.existing_dir)
         dirs = path.listdir()
         self.assert_('foo.txt' in dirs)
 
 
-    def walk(self):
+    def test_walk(self):
         path = URI(self.existing_dir)
         for root, dirs, files in path.walk():
             if path == root:
@@ -82,7 +84,7 @@ class CommonFileSystemTest(TestCase):
                 self.assert_('bar' in dirs)
 
 
-    def relative_walk(self):
+    def test_relative_walk(self):
         path = URI(self.existing_dir)
         for root, relative, dirs, files in path.relative_walk():
             if path == root:
@@ -94,7 +96,7 @@ class CommonFileSystemTest(TestCase):
                 self.assert_(not files)
 
 
-    def copy_and_move_file(self):
+    def test_copy_and_move_file(self):
         single_file = URI(self.non_existing_file)
         target_file = URI(self.baseurl) / 'target_file.txt'
         create_file(single_file)
@@ -116,7 +118,7 @@ class CommonFileSystemTest(TestCase):
         target_file.remove()
 
 
-    def copy_and_move_dir(self):
+    def test_copy_and_move_dir(self):
         folder = URI(self.baseurl) / 'folder'
         folder.makedirs()
 
@@ -156,7 +158,7 @@ class CommonFileSystemTest(TestCase):
         target.remove(recursive=True)
 
 
-    def move_folder_to_subfolder(self):
+    def test_move_folder_to_subfolder(self):
         """Test moving a directory '/some/path/folder' to '/some/path/target'.
         '/some/path/target' does already exist.  It is expected that after
         the move '/some/path/target/folder' exists.
@@ -178,7 +180,7 @@ class CommonFileSystemTest(TestCase):
         self.assert_((target / 'folder' / 'content_dir').isdir())
 
 
-    def rename_folder(self):
+    def test_rename_folder(self):
         """Test moving a directory '/some/path/folder' to '/some/path/target'.
         '/some/path/target' does NOT yet exist.  It is expected that after
         the move '/some/path/target' exists and is actually the former
@@ -200,7 +202,7 @@ class CommonFileSystemTest(TestCase):
 
     #------------------------------
 
-    def open_unknown_file_fails(self):
+    def test_open_unknown_file_fails(self):
         """Check that both backends fail with a proper exception when trying to
         open a path for loading, which does not exist.
         """
@@ -211,6 +213,8 @@ class CommonFileSystemTest(TestCase):
 
 
 class TestLocalFileSystem(CommonFileSystemTest):
+    __test__ = True
+
     def local_setup(self):
         thisdir = os.path.split(os.path.abspath(__file__))[0]
         self.tmpdir = tempfile.mkdtemp('.temp', 'test-local-fs', thisdir)
@@ -229,39 +233,10 @@ class TestLocalFileSystem(CommonFileSystemTest):
         shutil.rmtree(self.tmpdir)
 
 
-    def test_file(self):
-        super(TestLocalFileSystem, self).file()
-
-    def test_dir(self):
-        super(TestLocalFileSystem, self).dir()
-
-    def test_listdir(self):
-        super(TestLocalFileSystem, self).listdir()
-
-    def test_walk(self):
-        super(TestLocalFileSystem, self).walk()
-
-    def test_relative_walk(self):
-        super(TestLocalFileSystem, self).relative_walk()
-
-    def test_copy_and_move_file(self):
-        super(TestLocalFileSystem, self).copy_and_move_file()
-
-    def test_copy_and_move_dir(self):
-        super(TestLocalFileSystem, self).copy_and_move_dir()
-
-    def test_move_folder_to_subfolder(self):
-        super(TestLocalFileSystem, self).move_folder_to_subfolder()
-
-    def test_rename_folder(self):
-        super(TestLocalFileSystem, self).rename_folder()
-
-    def test_open_unknown_file_fails(self):
-        super(TestLocalFileSystem, self).open_unknown_file_fails()
-
-
 
 class TestMemoryFileSystem(CommonFileSystemTest):
+    __test__ = True
+
     def local_setup(self):
         CONNECTION_REGISTRY.cleanup(force=True)
         self.baseurl = "memory:///"
@@ -278,41 +253,12 @@ class TestMemoryFileSystem(CommonFileSystemTest):
         pass
 
 
-    def test_file(self):
-        super(TestMemoryFileSystem, self).file()
-
-    def test_dir(self):
-        super(TestMemoryFileSystem, self).dir()
-
-    def test_listdir(self):
-        super(TestMemoryFileSystem, self).listdir()
-
-    def test_walk(self):
-        super(TestMemoryFileSystem, self).walk()
-
-    def test_relative_walk(self):
-        super(TestMemoryFileSystem, self).relative_walk()
-
-    def test_copy_and_move_file(self):
-        super(TestMemoryFileSystem, self).copy_and_move_file()
-
-    def test_copy_and_move_dir(self):
-        super(TestMemoryFileSystem, self).copy_and_move_dir()
-
-    def test_move_folder_to_subfolder(self):
-        super(TestMemoryFileSystem, self).move_folder_to_subfolder()
-
-    def test_rename_folder(self):
-        super(TestMemoryFileSystem, self).rename_folder()
-
-    def test_open_unknown_file_fails(self):
-        super(TestMemoryFileSystem, self).open_unknown_file_fails()
-
-
 #-------------------------------------------------------------------------------
 
 class CommonFSCopyTest(TestCase):
-    def copystat_exec_to_nonexec(self):
+    __test__ = False
+
+    def test_copystat_exec_to_nonexec(self):
         root = URI(self.baseurl)
 
         # create a file with execution flag
@@ -327,7 +273,7 @@ class CommonFSCopyTest(TestCase):
         self.assert_(ofile.isexec())
 
 
-    def copystat_nonexec_to_exec(self):
+    def test_copystat_nonexec_to_exec(self):
         root = URI(self.baseurl)
 
         # create a file with execution flag
@@ -342,7 +288,7 @@ class CommonFSCopyTest(TestCase):
         self.assert_(not xfile.isexec())
 
 
-    def copy_recursive(self):
+    def test_copy_recursive(self):
         root = URI(self.baseurl)
         foo_path = root / 'foo'
         foo_path.mkdir()
@@ -368,7 +314,7 @@ class CommonFSCopyTest(TestCase):
         self.assert_(not (bar_path / 'nfile.txt').isexec())
 
 
-    def copy_dir_to_file(self):
+    def test_copy_dir_to_file(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -383,7 +329,7 @@ class CommonFSCopyTest(TestCase):
                               moo_path, recursive=True)
 
 
-    def copy_empty_dirs_recursive(self):
+    def test_copy_empty_dirs_recursive(self):
         root = URI(self.baseurl)
         root.makedirs()
 
@@ -398,6 +344,8 @@ class CommonFSCopyTest(TestCase):
 
 
 class TestLocalFSCopy2(CommonFSCopyTest):
+    __test__ = True
+
     def setUp(self):
         thisdir = os.path.split(os.path.abspath(__file__))[0]
         self.tmpdir = tempfile.mkdtemp('.temp', 'test-local-fs', thisdir)
@@ -406,20 +354,10 @@ class TestLocalFSCopy2(CommonFSCopyTest):
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
-    def test_copystat_exec_to_nonexec(self):
-        super(TestLocalFSCopy2, self).copystat_exec_to_nonexec()
-
-    def test_copystat_nonexec_to_exec(self):
-        super(TestLocalFSCopy2, self).copystat_nonexec_to_exec()
-
-    def test_copy_recursive(self):
-        super(TestLocalFSCopy2, self).copy_recursive()
-
-    def test_copy_empty_dirs_recursive(self):
-        super(TestLocalFSCopy2, self).copy_empty_dirs_recursive()
-
 
 class TestMemoryFSCopy2(CommonFSCopyTest):
+    __test__ = True
+
     def setUp(self):
         CONNECTION_REGISTRY.cleanup(force=True)
         self.baseurl = "memory:///"
@@ -427,23 +365,13 @@ class TestMemoryFSCopy2(CommonFSCopyTest):
     def tearDown(self):
         pass
 
-    def test_copystat_exec_to_nonexec(self):
-        super(TestMemoryFSCopy2, self).copystat_exec_to_nonexec()
-
-    def test_copystat_nonexec_to_exec(self):
-        super(TestMemoryFSCopy2, self).copystat_nonexec_to_exec()
-
-    def test_copy_recursive(self):
-        super(TestMemoryFSCopy2, self).copy_recursive()
-
-    def test_copy_empty_dirs_recursive(self):
-        super(TestMemoryFSCopy2, self).copy_empty_dirs_recursive()
-
 
 #-------------------------------------------------------------------------------
 
 class CommonFSExecTest(TestCase):
-    def exec_flags(self):
+    __test__ = False
+
+    def test_exec_flags(self):
         root = URI(self.baseurl)
 
         # create a file with execution flag
@@ -461,6 +389,8 @@ class CommonFSExecTest(TestCase):
 
 
 class TestLocalFSExec(CommonFSExecTest):
+    __test__ = True
+
     def setUp(self):
         thisdir = os.path.split(os.path.abspath(__file__))[0]
         self.tmpdir = tempfile.mkdtemp('.temp', 'test-local-fs', thisdir)
@@ -469,11 +399,10 @@ class TestLocalFSExec(CommonFSExecTest):
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
 
-    def test_exec_flags(self):
-        super(TestLocalFSExec, self).exec_flags()
-
 
 class TestMemoryFSExec(CommonFSExecTest):
+    __test__ = True
+
     def setUp(self):
         CONNECTION_REGISTRY.cleanup(force=True)
         self.baseurl = "memory:///"
@@ -481,14 +410,13 @@ class TestMemoryFSExec(CommonFSExecTest):
     def tearDown(self):
         pass
 
-    def test_exec_flags(self):
-        super(TestMemoryFSExec, self).exec_flags()
-
 
 #-------------------------------------------------------------------------------
 
 class CommonLocalFSSymlinkTest(TestCase):
-    def symlink_dir(self):
+    __test__ = False
+
+    def test_symlink_dir(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -514,7 +442,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.assert_(moo_path / 'gaz.txt')
 
 
-    def symlink_file(self):
+    def test_symlink_file(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -543,7 +471,7 @@ class CommonLocalFSSymlinkTest(TestCase):
 
     #------------------------------
 
-    def symlink_on_unknown_file(self):
+    def test_symlink_on_unknown_file(self):
         """Check that backends fail with a proper exception when trying to
         create a symlink on a path where directory steps do not exist.
         """
@@ -557,7 +485,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.assert_(not notexisting_path.exists())
 
 
-    def open_deadlink_fails(self):
+    def test_open_deadlink_fails(self):
         root = URI(self.baseurl)
 
         notexisting_path = root / 'foo' / 'bar'
@@ -568,7 +496,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.failUnlessRaises(IOError, create_file, tee_path)
 
 
-    def listdir_deadlink_fails(self):
+    def test_listdir_deadlink_fails(self):
         root = URI(self.baseurl)
 
         notexisting_path = root / 'foo' / 'bar'
@@ -578,7 +506,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.failUnlessRaises(OSError, tee_path.listdir)
 
 
-    def isfile_doesnt_fail_on_deadlink(self):
+    def test_isfile_doesnt_fail_on_deadlink(self):
         root = URI(self.baseurl)
 
         notexisting_path = root / 'foo' / 'bar'
@@ -590,7 +518,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.assert_(not tee_path.exists())
 
 
-    def isdir_doesnt_fail_on_deadlink(self):
+    def test_isdir_doesnt_fail_on_deadlink(self):
         root = URI(self.baseurl)
 
         notexisting_path = root / 'foo' / 'bar'
@@ -600,7 +528,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.assert_(not tee_path.isdir())
 
 
-    def exists_doesnt_fail_on_deadlink(self):
+    def test_exists_doesnt_fail_on_deadlink(self):
         root = URI(self.baseurl)
 
         notexisting_path = root / 'foo' / 'bar'
@@ -610,7 +538,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.assert_(not tee_path.exists())
 
 
-    def isexec_fails_on_deadlink(self):
+    def test_isexec_fails_on_deadlink(self):
         root = URI(self.baseurl)
 
         notexisting_path = root / 'foo' / 'bar'
@@ -620,7 +548,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.failUnlessRaises(OSError, tee_path.isexec)
 
 
-    def set_exec_fails_on_deadlink(self):
+    def test_set_exec_fails_on_deadlink(self):
         root = URI(self.baseurl)
 
         notexisting_path = root / 'foo' / 'bar'
@@ -632,6 +560,8 @@ class CommonLocalFSSymlinkTest(TestCase):
 
 
 class TestLocalFSSymlink(CommonLocalFSSymlinkTest):
+    __test__ = is_on_mac()
+
     def setUp(self):
         self.thisdir = os.path.split(os.path.abspath(__file__))[0]
         self.tmpdir = tempfile.mkdtemp('.temp', 'test-local-fs', self.thisdir)
@@ -642,81 +572,12 @@ class TestLocalFSSymlink(CommonLocalFSSymlinkTest):
         shutil.rmtree(self.tmpdir)
 
 
-    @mac_only
-    def test_symlink_dir(self):
-        super(TestLocalFSSymlink, self).symlink_dir()
-
-    @mac_only
-    def test_symlink_file(self):
-        super(TestLocalFSSymlink, self).symlink_file()
-
-    @mac_only
-    def test_symlink_on_unknown_file(self):
-        super(TestLocalFSSymlink, self).symlink_on_unknown_file()
-
-    @mac_only
-    def test_open_deadlink_fails(self):
-        super(TestLocalFSSymlink, self).open_deadlink_fails()
-
-    @mac_only
-    def test_listdir_deadlink_fails(self):
-        super(TestLocalFSSymlink, self).listdir_deadlink_fails()
-
-    @mac_only
-    def test_isfile_doesnt_fail_on_deadlink(self):
-        super(TestLocalFSSymlink, self).isfile_doesnt_fail_on_deadlink()
-
-    @mac_only
-    def test_isdir_doesnt_fail_on_deadlink(self):
-        super(TestLocalFSSymlink, self).isdir_doesnt_fail_on_deadlink()
-
-    @mac_only
-    def test_exists_doesnt_fail_on_deadlink(self):
-        super(TestLocalFSSymlink, self).exists_doesnt_fail_on_deadlink()
-
-    @mac_only
-    def test_isexec_fails_on_deadlink(self):
-        super(TestLocalFSSymlink, self).isexec_fails_on_deadlink()
-
-    @mac_only
-    def test_set_exec_fails_on_deadlink(self):
-        super(TestLocalFSSymlink, self).set_exec_fails_on_deadlink()
-
-
 class TestMemoryFSSymlink(CommonLocalFSSymlinkTest):
+    __test__ = True
+
     def setUp(self):
         CONNECTION_REGISTRY.cleanup(force=True)
         self.baseurl = "memory:///"
 
     def tearDown(self):
         pass
-
-    def test_symlink_dir(self):
-        super(TestMemoryFSSymlink, self).symlink_dir()
-
-    def test_symlink_file(self):
-        super(TestMemoryFSSymlink, self).symlink_file()
-
-    def test_symlink_on_unknown_file(self):
-        super(TestMemoryFSSymlink, self).symlink_on_unknown_file()
-
-    def test_open_deadlink_fails(self):
-        super(TestMemoryFSSymlink, self).open_deadlink_fails()
-
-    def test_listdir_deadlink_fails(self):
-        super(TestMemoryFSSymlink, self).listdir_deadlink_fails()
-
-    def test_isfile_doesnt_fail_on_deadlink(self):
-        super(TestMemoryFSSymlink, self).isfile_doesnt_fail_on_deadlink()
-
-    def test_isdir_doesnt_fail_on_deadlink(self):
-        super(TestMemoryFSSymlink, self).isdir_doesnt_fail_on_deadlink()
-
-    def test_exists_doesnt_fail_on_deadlink(self):
-        super(TestMemoryFSSymlink, self).exists_doesnt_fail_on_deadlink()
-
-    def test_isexec_fails_on_deadlink(self):
-        super(TestMemoryFSSymlink, self).isexec_fails_on_deadlink()
-
-    def test_set_exec_fails_on_deadlink(self):
-        super(TestMemoryFSSymlink, self).set_exec_fails_on_deadlink()

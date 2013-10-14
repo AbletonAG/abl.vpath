@@ -13,7 +13,7 @@ from posixpath import join as ujoin
 from unittest import TestCase
 import logging
 import shutil
-from common import create_file, os_create_file, load_file, mac_only, windows_only
+from common import create_file, os_create_file, load_file, mac_only, is_on_mac
 from abl.vpath.base import *
 from abl.vpath.base.fs import CONNECTION_REGISTRY
 from abl.vpath.base.exceptions import FileDoesNotExistError
@@ -22,7 +22,9 @@ from abl.vpath.base.exceptions import FileDoesNotExistError
 #-------------------------------------------------------------------------------
 
 class CommonLocalFSSymlinkCopyTest(TestCase):
-    def copy_filesymlink_to_file_followlinks(self):
+    __test__ = False
+
+    def test_copy_filesymlink_to_file_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -42,7 +44,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(load_file(moo_path) == 'foobar')
 
 
-    def copy_filesymlink_to_file_preservelinks(self):
+    def test_copy_filesymlink_to_file_preservelinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -62,7 +64,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(load_file(moo_path) == 'foobar')
 
 
-    def copy_filesymlink_to_dir_followlinks(self):
+    def test_copy_filesymlink_to_dir_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -83,7 +85,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(load_file(helloworld_path) == 'foobar')
 
 
-    def copy_filesymlink_to_dir_preservelinks(self):
+    def test_copy_filesymlink_to_dir_preservelinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -104,7 +106,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(load_file(helloworld_path) == 'foobar')
 
 
-    def copy_filesymlink_to_missingfile_followlinks(self):
+    def test_copy_filesymlink_to_missingfile_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -125,7 +127,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(load_file(helloworld_path) == 'foobar')
 
 
-    def copy_filesymlink_to_missingfile_preservelinks(self):
+    def test_copy_filesymlink_to_missingfile_preservelinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -146,7 +148,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(load_file(helloworld_path) == 'foobar')
 
 
-    def copy_filesymlink_to_filesymlink_followlinks(self):
+    def test_copy_filesymlink_to_filesymlink_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -174,7 +176,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_((bar_path / 'gaz.txt').isfile())
 
 
-    def copy_filesymlink_to_filesymlink_preservelinks(self):
+    def test_copy_filesymlink_to_filesymlink_preservelinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -200,7 +202,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(load_file(gaz2_path) == 'foobar2')
 
 
-    def copy_filesymlink_to_dirsymlink_followlinks(self):
+    def test_copy_filesymlink_to_dirsymlink_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -230,7 +232,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_((moo_path / 'helloworld').isfile())
 
 
-    def copy_filesymlink_to_dirsymlink_preservelinks(self):
+    def test_copy_filesymlink_to_dirsymlink_preservelinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -264,7 +266,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
 
     #------------------------------
 
-    def copy_dirsymlink_to_file_followlinks(self):
+    def test_copy_dirsymlink_to_file_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -282,7 +284,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
                               recursive=True, followlinks=True)
 
 
-    def copy_dirsymlink_to_file_preservelinks(self):
+    def test_copy_dirsymlink_to_file_preservelinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -302,7 +304,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(load_file(moo_path / 'gaz.txt') == 'foobar')
 
 
-    def copy_dirsymlink_to_dir_followlinks(self):
+    def test_copy_dirsymlink_to_dir_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -324,7 +326,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_((helloworld_path / 'gaz.txt').isfile())
 
 
-    def copy_dirsymlink_to_dir_preservelinks(self):
+    def test_copy_dirsymlink_to_dir_preservelinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -346,7 +348,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(helloworld_path.readlink() == bar_path)
 
 
-    def copy_dirsymlink_to_missingfile_followlinks(self):
+    def test_copy_dirsymlink_to_missingfile_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -366,7 +368,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_((moo_path / 'gaz.txt').isfile())
 
 
-    def copy_dirsymlink_to_missingfile_preservelinks(self):
+    def test_copy_dirsymlink_to_missingfile_preservelinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -386,7 +388,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(moo_path.readlink() == bar_path)
 
 
-    def copy_dirsymlink_to_filesymlink_followlinks(self):
+    def test_copy_dirsymlink_to_filesymlink_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -408,7 +410,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
                               tee2_path, recursive=True, followlinks=True)
 
 
-    def copy_dirsymlink_to_filesymlink_preservelinks(self):
+    def test_copy_dirsymlink_to_filesymlink_preservelinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -434,7 +436,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_(tee2_path.readlink() == bar_path)
 
 
-    def copy_dirsymlink_to_dirsymlink_followlinks(self):
+    def test_copy_dirsymlink_to_dirsymlink_followlinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -463,7 +465,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assert_((helloworld_path / 'gaz.txt').isfile())
 
 
-    def copy_dirsymlink_to_dirsymlink_preservelinks(self):
+    def test_copy_dirsymlink_to_dirsymlink_preservelinks(self):
         root = URI(self.baseurl)
         bar_path = root / 'foo' / 'bar'
         bar_path.makedirs()
@@ -496,6 +498,8 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
 
 
 class TestLocalFSSymlinkCopy(CommonLocalFSSymlinkCopyTest):
+    __test__ = is_on_mac()
+
     def setUp(self):
         self.thisdir = os.path.split(os.path.abspath(__file__))[0]
         self.tmpdir = tempfile.mkdtemp('.temp', 'test-local-fs', self.thisdir)
@@ -506,153 +510,12 @@ class TestLocalFSSymlinkCopy(CommonLocalFSSymlinkCopyTest):
         shutil.rmtree(self.tmpdir)
 
 
-    @mac_only
-    def test_copy_filesymlink_to_file_followlinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_filesymlink_to_file_followlinks()
-
-    @mac_only
-    def test_copy_filesymlink_to_file_preservelinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_filesymlink_to_file_preservelinks()
-
-    @mac_only
-    def test_copy_filesymlink_to_dir_followlinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_filesymlink_to_dir_followlinks()
-
-    @mac_only
-    def test_copy_filesymlink_to_dir_preservelinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_filesymlink_to_dir_preservelinks()
-
-    @mac_only
-    def test_copy_filesymlink_to_missingfile_followlinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_filesymlink_to_missingfile_followlinks()
-
-    @mac_only
-    def test_copy_filesymlink_to_missingfile_preservelinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_filesymlink_to_missingfile_preservelinks()
-
-    @mac_only
-    def test_copy_filesymlink_to_filesymlink_followlinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_filesymlink_to_filesymlink_followlinks()
-
-    @mac_only
-    def test_copy_filesymlink_to_filesymlink_preservelinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_filesymlink_to_filesymlink_preservelinks()
-
-    @mac_only
-    def test_copy_filesymlink_to_dirsymlink_followlinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_filesymlink_to_dirsymlink_followlinks()
-
-    @mac_only
-    def test_copy_filesymlink_to_dirsymlink_preservelinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_filesymlink_to_dirsymlink_preservelinks()
-
-    @mac_only
-    def test_copy_dirsymlink_to_file_followlinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_dirsymlink_to_file_followlinks()
-
-    @mac_only
-    def test_copy_dirsymlink_to_file_preservelinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_dirsymlink_to_file_preservelinks()
-
-    @mac_only
-    def test_copy_dirsymlink_to_dir_followlinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_dirsymlink_to_dir_followlinks()
-
-    @mac_only
-    def test_copy_dirsymlink_to_dir_preservelinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_dirsymlink_to_dir_preservelinks()
-
-    @mac_only
-    def test_copy_dirsymlink_to_missingfile_followlinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_dirsymlink_to_missingfile_followlinks()
-
-    @mac_only
-    def test_copy_dirsymlink_to_missingfile_preservelinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_dirsymlink_to_missingfile_preservelinks()
-
-    @mac_only
-    def test_copy_dirsymlink_to_filesymlink_followlinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_dirsymlink_to_filesymlink_followlinks()
-
-    @mac_only
-    def test_copy_dirsymlink_to_filesymlink_preservelinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_dirsymlink_to_filesymlink_preservelinks()
-
-    @mac_only
-    def test_copy_dirsymlink_to_dirsymlink_followlinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_dirsymlink_to_dirsymlink_followlinks()
-
-    @mac_only
-    def test_copy_dirsymlink_to_dirsymlink_preservelinks(self):
-        super(TestLocalFSSymlinkCopy, self).copy_dirsymlink_to_dirsymlink_preservelinks()
-
-
 class TestMemoryFSSymlinkCopy(CommonLocalFSSymlinkCopyTest):
+    __test__ = True
+
     def setUp(self):
         CONNECTION_REGISTRY.cleanup(force=True)
         self.baseurl = "memory:///"
 
     def tearDown(self):
         pass
-
-    def test_copy_filesymlink_to_file_followlinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_filesymlink_to_file_followlinks()
-
-    def test_copy_filesymlink_to_file_preservelinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_filesymlink_to_file_preservelinks()
-
-    def test_copy_filesymlink_to_dir_followlinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_filesymlink_to_dir_followlinks()
-
-    def test_copy_filesymlink_to_dir_preservelinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_filesymlink_to_dir_preservelinks()
-
-    def test_copy_filesymlink_to_missingfile_followlinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_filesymlink_to_missingfile_followlinks()
-
-    def test_copy_filesymlink_to_missingfile_preservelinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_filesymlink_to_missingfile_preservelinks()
-
-    def test_copy_filesymlink_to_filesymlink_followlinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_filesymlink_to_filesymlink_followlinks()
-
-    def test_copy_filesymlink_to_filesymlink_preservelinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_filesymlink_to_filesymlink_preservelinks()
-
-    def test_copy_filesymlink_to_dirsymlink_followlinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_filesymlink_to_dirsymlink_followlinks()
-
-    def test_copy_filesymlink_to_dirsymlink_preservelinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_filesymlink_to_dirsymlink_preservelinks()
-
-    def test_copy_dirsymlink_to_file_followlinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_dirsymlink_to_file_followlinks()
-
-    def test_copy_dirsymlink_to_file_preservelinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_dirsymlink_to_file_preservelinks()
-
-    def test_copy_dirsymlink_to_dir_followlinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_dirsymlink_to_dir_followlinks()
-
-    def test_copy_dirsymlink_to_dir_preservelinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_dirsymlink_to_dir_preservelinks()
-
-    def test_copy_dirsymlink_to_missingfile_followlinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_dirsymlink_to_missingfile_followlinks()
-
-    def test_copy_dirsymlink_to_missingfile_preservelinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_dirsymlink_to_missingfile_preservelinks()
-
-    def test_copy_dirsymlink_to_filesymlink_followlinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_dirsymlink_to_filesymlink_followlinks()
-
-    def test_copy_dirsymlink_to_filesymlink_preservelinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_dirsymlink_to_filesymlink_preservelinks()
-
-    def test_copy_dirsymlink_to_dirsymlink_followlinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_dirsymlink_to_dirsymlink_followlinks()
-
-    def test_copy_dirsymlink_to_dirsymlink_preservelinks(self):
-        super(TestMemoryFSSymlinkCopy, self).copy_dirsymlink_to_dirsymlink_preservelinks()
-
-
