@@ -528,7 +528,10 @@ class BaseUri(object):
         located in the same backend, i.e. it is not possible to copy
         permissions etc. from a memory:// to a file:// based path.
         """
-        return self.connection.copy(self, other, recursive, ignore, followlinks)
+        return self.connection.copy(self, other,
+                                    recursive=recursive,
+                                    ignore=ignore,
+                                    followlinks=followlinks)
 
 
     @with_connection
@@ -746,7 +749,7 @@ class BaseUri(object):
 
         root will be an URI object.
         """
-        return self.connection.walk(self, followlinks)
+        return self.connection.walk(self, followlinks=followlinks)
 
 
     @with_connection
@@ -952,7 +955,7 @@ class FileSystem(object):
                 droot.makedirs()
                 spth = source.path
                 spth_len = len(spth) + 1
-                for root, dirs, files in source.walk(followlinks):
+                for root, dirs, files in source.walk(followlinks=followlinks):
                     rpth = root.path
                     tojoin = rpth[spth_len:].strip()
                     if tojoin:
@@ -1049,7 +1052,7 @@ class FileSystem(object):
         for name in dirs:
             path = top / name
             if not path.islink() or followlinks:
-                for x in self.walk(path, topdown, followlinks):
+                for x in self.walk(path, topdown=topdown, followlinks=followlinks):
                     yield x
         if not topdown:
             yield top, dirs, nondirs

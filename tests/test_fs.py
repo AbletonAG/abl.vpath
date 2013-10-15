@@ -200,6 +200,27 @@ class CommonFileSystemTest(TestCase):
         self.assert_('content_dir' in target.listdir())
 
 
+    def test_copy_recursive_with_preservelinks(self):
+        src_path = URI(self.baseurl) / 'folder'
+        base_path = src_path / 'gaz'
+        foo_path = base_path / 'foo'
+        bar_path = foo_path / 'tmp'
+        bar_path.makedirs()
+
+        mee_path = foo_path / 'mee.txt'
+        create_file(mee_path)
+        mee2_path = bar_path / 'mee2.txt'
+        create_file(mee2_path)
+
+        dest_path = URI(self.baseurl) / 'helloworld'
+
+        src_path.copy(dest_path, recursive=True, followlinks=False)
+
+        self.assert_((dest_path / 'gaz' / 'foo' / 'mee.txt').isfile())
+        self.assert_((dest_path / 'gaz' / 'foo' / 'tmp').isdir())
+
+
+
     #------------------------------
 
     def test_open_unknown_file_fails(self):
