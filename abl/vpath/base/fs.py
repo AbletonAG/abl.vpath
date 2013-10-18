@@ -1040,7 +1040,8 @@ class FileSystem(object):
     def walk(self, top, topdown=True, followlinks=True):
         names = self.listdir(top)
 
-        dirs, nondirs = [], []
+        dirs = []
+        nondirs = []
         for name in names:
             if self.isdir(top / name):
                 dirs.append(name)
