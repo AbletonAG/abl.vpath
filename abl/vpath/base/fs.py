@@ -204,18 +204,23 @@ def denormalize_path(path, sep='\\'):
         return path.replace('/', sep)
 
 
-def remove_dir_recursively(connection, path, followlinks):
+def remove_dir_recursively(connection, path):
     for root, dirs, files in connection.walk(path, topdown=False,
-                                             followlinks=followlinks):
+                                             followlinks=False):
         for fname in files:
             connection.removefile(root / fname)
+
         for dname in dirs:
             d = root / dname
-            if connection.islink(d) and not followlinks:
+            if connection.islink(d):
                 connection.removefile(d)
             else:
                 connection.removedir(d)
-    return connection.removedir(path)
+
+    if connection.islink(path):
+        return connection.removefile(path)
+    else:
+        return connection.removedir(path)
 
 
 #============================================================================
@@ -561,7 +566,7 @@ class BaseUri(object):
 
 
     @with_connection
-    def remove(self, recursive=False, followlinks=True):
+    def remove(self, recursive=False):
         """
         remove: shortcut method to remove self.
         if 'self' represents a file, the backends 'removefile' method id used.
@@ -569,23 +574,15 @@ class BaseUri(object):
         the options string contains 'r'. Otherwise, the backends 'removedir'
         method is used.
         """
+        if self.connection.islink(self):
+            return self.connection.removefile(self)
+
         if not self.connection.exists(self):
             raise FileDoesNotExistError(str(self))
 
-        if self.connection.islink(self) and not followlinks:
-            return self.connection.removefile(self)
-
         if self.connection.isdir(self):
             if recursive:
-                if followlinks:
-                    try:
-                        self.connection.rmtree(self)
-                    except NotImplementedError:
-                        return remove_dir_recursively(self.connection, self,
-                                                      followlinks)
-                else:
-                    return remove_dir_recursively(self.connection, self,
-                                                  followlinks)
+                return remove_dir_recursively(self.connection, self)
             else:
                 return self.connection.removedir(self)
         elif self.connection.isfile(self):
@@ -1082,9 +1079,6 @@ class FileSystem(object):
         raise NotImplementedError
 
     def removedir(self, path):
-        raise NotImplementedError
-
-    def rmtree(self, path):
         raise NotImplementedError
 
     def mkdir(self, path):

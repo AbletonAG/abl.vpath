@@ -67,7 +67,12 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.failUnlessRaises(FileDoesNotExistError, tee_path.remove)
+        self.assert_(tee_path.islink())
+
+        tee_path.remove()
+
+        self.assert_(not tee_path.islink())
+        self.assert_(not tee_path.exists())
 
 
     def test_copystat_fails_on_selfpointing_symlink(self):
@@ -153,11 +158,16 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         self.failUnlessRaises(OSError, tee_path.set_exec, stat.S_IXUSR | stat.S_IXGRP)
 
 
-    def test_remove_fails_on_symlink_loop(self):
+    def test_remove_doesnt_fail_on_symlink_loop(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
-        tee_path.symlink(tee_path)
-        self.failUnlessRaises(FileDoesNotExistError, tee_path.remove)
+        tee_path.makedirs()
+        foo_path = tee_path / 'foo'
+        tee_path.symlink(foo_path)
+
+        tee_path.remove(recursive=True)
+
+        self.assert_(not tee_path.exists())
 
 
     def test_copystat_fails_on_symlink_loop(self):
@@ -172,25 +182,34 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         self.failUnlessRaises(OSError, tee_path.copystat, bar_path)
 
 
-    def test_isdir_doesnt_fail_on_symlink_loop(self):
+
+
+
+    def test_filechecks_dont_fail_on_mutual_symlinks(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
-        tee_path.symlink(tee_path)
-        self.assert_(not tee_path.isdir())
+        foo_path = root / 'foo'
+        tee_path.symlink(foo_path)
+        foo_path.symlink(tee_path)
+
+        self.assert_(not foo_path.isdir())
+        self.assert_(not foo_path.isfile())
+        self.assert_(not foo_path.exists())
+        self.assert_(foo_path.islink())
 
 
-    def test_isfile_doesnt_fail_on_symlink_loop(self):
+    def test_remove_doesnt_fail_on_mutual_symlinks(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
-        tee_path.symlink(tee_path)
-        self.assert_(not tee_path.isfile())
+        foo_path = root / 'foo'
 
+        foo_path.symlink(tee_path)
+        tee_path.symlink(foo_path)
 
-    def test_exists_doesnt_fail_on_symlink_loop(self):
-        root = URI(self.baseurl)
-        tee_path = root / 'helloworld'
-        tee_path.symlink(tee_path)
+        tee_path.remove(recursive=True)
+
         self.assert_(not tee_path.exists())
+        self.assert_(foo_path.islink())
 
 
 

@@ -250,11 +250,11 @@ class MemoryFileSystem(FileSystem):
         self.next_op_callbacks = {}
 
 
-    def _child(self, parent, name, follow_link=True, throw=True, linklevel=0):
+    def _child(self, parent, name, resolve_link=True, throw=True, linklevel=0):
         if parent.has(name):
             nd = parent.get(name)
             if nd.kind == NodeKind.LINK:
-                if follow_link:
+                if resolve_link:
                     # TODO: supports absolute links only for now
                     if linklevel >= 32:
                         raise self.lookup_exc_class(errno.ELOOP,
@@ -283,7 +283,7 @@ class MemoryFileSystem(FileSystem):
             if current.has(part):
                 is_last = part == steps[-1]
                 current = self._child(current, part,
-                                      follow_link=follow_link if is_last else True,
+                                      resolve_link=follow_link if is_last else True,
                                       throw=throw,
                                       linklevel=linklevel)
             else:
@@ -487,10 +487,11 @@ class MemoryFileSystem(FileSystem):
 
 
     def removefile(self, path):
-        prev, current = self._get_node_prev(self._fs,
-                                            [x for x in self._path(path).split("/") if x])
-        if prev is not None:
-            self._del_child(prev, path.last())
+        parent, _ = self._get_node_prev(self._fs,
+                                        [x for x in self._path(path).split("/") if x],
+                                        follow_link=False)
+        if parent is not None:
+            self._del_child(parent, path.last())
 
 
     def removedir(self, path):
