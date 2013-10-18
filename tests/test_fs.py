@@ -220,6 +220,21 @@ class CommonFileSystemTest(TestCase):
         self.assert_((dest_path / 'gaz' / 'foo' / 'tmp').isdir())
 
 
+    def test_remove_recursive_with_readonly_file(self):
+        foo_path = URI(self.baseurl) / 'foo'
+        bar_path = foo_path / 'bar'
+        bar_path.makedirs()
+
+        gaz_path = bar_path / 'ghaz.txt'
+        create_file(gaz_path)
+
+        mode = gaz_path.info().mode
+        gaz_path.info(set_info=dict(mode=mode & ~stat.S_IWUSR))
+
+        foo_path.remove(recursive=True)
+
+        self.assert_(not foo_path.exists())
+
 
     #------------------------------
 

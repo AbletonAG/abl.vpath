@@ -75,6 +75,8 @@ class LocalFileSystem(FileSystem):
 
     def removefile(self, unc):
         pth = self._path(unc)
+        if sys.platform == 'win32':
+            os.chmod(pth, stat.S_IWUSR)
         return os.unlink(pth)
 
 
