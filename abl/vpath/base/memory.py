@@ -449,6 +449,7 @@ class MemoryFileSystem(FileSystem):
                 elif value.kind == NodeKind.LINK:
                     outf.write("LINK: %s%s -> %s\n" % (path, name, value.target))
                 else:
+                    outf.write("DIR: %s%s\n" % (path, name))
                     traverse(value,
                              (path[:-1] if path.endswith("/") else path) + "/" + name + "/")
 

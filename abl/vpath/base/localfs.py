@@ -172,3 +172,6 @@ class LocalFileSystem(FileSystem):
         if not self.supports_symlinks():
             raise OperationIsNotSupportedOnPlatform
         return os.symlink(self._path(target), self._path(link_name))
+
+    def dump(self, outf, no_binary=False):
+        pass
