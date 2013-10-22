@@ -750,23 +750,6 @@ class BaseUri(object):
 
 
     @with_connection
-    def relative_walk(self, followlinks=True):
-        """
-        similar to "walk", but give as well the
-        directory part relative to the initial directory to walk.
-        Use like:
-
-        path = URI('/some/dir')
-        for root, relative, dirs, files in path.relative_walk():
-            do_something()
-
-        root will be an URI object.
-        relative is a string like "part" or "sub/part"
-        """
-        return self.connection.relative_walk(self, followlinks=followlinks)
-
-
-    @with_connection
     def listdir(self):
         """
         listdir: list contents of directory self.
@@ -1005,33 +988,6 @@ class FileSystem(object):
         else:
             source.copy(destination, recursive=True)
             source.remove('r')
-
-
-    def relative_walk(self, top, relative="", topdown=True, followlinks=True):
-        names = self.listdir(top)
-
-        dirs, nondirs = [], []
-        for name in names:
-            if self.isdir(top / name):
-                dirs.append(name)
-            else:
-                nondirs.append(name)
-
-        if topdown:
-            yield top, relative, dirs, nondirs
-        for name in dirs:
-            path = top / name
-            if not path.islink() or followlinks:
-                if not relative:
-                    relpart = name
-                else:
-                    relpart = relative + '/%s' % name
-                for x in self.relative_walk(path, relative=relpart,
-                                            topdown=topdown,
-                                            followlinks=followlinks):
-                    yield x
-        if not topdown:
-            yield top, relative, dirs, nondirs
 
 
     def walk(self, top, topdown=True, followlinks=True):
