@@ -735,7 +735,7 @@ class BaseUri(object):
 
 
     @with_connection
-    def walk(self, followlinks=True):
+    def walk(self, topdown=True, followlinks=True):
         """
         walk: walk the filesystem (just like os.walk).
         Use like:
@@ -746,7 +746,7 @@ class BaseUri(object):
 
         root will be an URI object.
         """
-        return self.connection.walk(self, followlinks=followlinks)
+        return self.connection.walk(self, topdown=topdown, followlinks=followlinks)
 
 
     @with_connection

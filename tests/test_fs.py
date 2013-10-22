@@ -76,14 +76,6 @@ class CommonFileSystemTest(TestCase):
         self.assert_('foo.txt' in dirs)
 
 
-    def test_walk(self):
-        path = URI(self.existing_dir)
-        for root, dirs, files in path.walk():
-            if path == root:
-                self.assert_('foo.txt' in files)
-                self.assert_('bar' in dirs)
-
-
     def test_copy_and_move_file(self):
         single_file = URI(self.non_existing_file)
         target_file = URI(self.baseurl) / 'target_file.txt'
