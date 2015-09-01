@@ -507,11 +507,11 @@ class TestLocalFSSymlinkWalk(CommonFileSystemWalkTest):
         shutil.rmtree(self.tmpdir)
 
 
-class TestMemoryFSSymlinkWalk(CommonFileSystemWalkTest):
+class TestMemoryFSSymlinkWalk(CleanupMemoryBeforeTestMixin, CommonFileSystemWalkTest):
     __test__ = True
 
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(TestMemoryFSSymlinkWalk, self).setUp()
         self.baseurl = "memory:///"
 
     def tearDown(self):

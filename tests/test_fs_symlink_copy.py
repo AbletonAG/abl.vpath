@@ -509,11 +509,11 @@ class TestLocalFSSymlinkCopy(CommonLocalFSSymlinkCopyTest):
         shutil.rmtree(self.tmpdir)
 
 
-class TestMemoryFSSymlinkCopy(CommonLocalFSSymlinkCopyTest):
+class TestMemoryFSSymlinkCopy(CleanupMemoryBeforeTestMixin, CommonLocalFSSymlinkCopyTest):
     __test__ = True
 
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(TestMemoryFSSymlinkCopy, self).setUp()
         self.baseurl = "memory:///"
 
     def tearDown(self):

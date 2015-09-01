@@ -226,11 +226,11 @@ class TestLocalFSSymlinkLoop(CommonLocalFSSymlinkLoopTest):
         shutil.rmtree(self.tmpdir)
 
 
-class TestMemoryFSSymlinkLoop(CommonLocalFSSymlinkLoopTest):
+class TestMemoryFSSymlinkLoop(CleanupMemoryBeforeTestMixin, CommonLocalFSSymlinkLoopTest):
     __test__ = True
 
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(TestMemoryFSSymlinkLoop, self).setUp()
         self.baseurl = "memory:///"
 
     def tearDown(self):

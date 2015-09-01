@@ -21,10 +21,12 @@ from .common import (
     CleanupMemoryBeforeTestMixin,
 )
 
-class CommonFileSystemTest(TestCase):
+
+class CommonFileSystemTest(CleanupMemoryBeforeTestMixin, TestCase):
     __test__ = False
 
     def setUp(self):
+        super(CommonFileSystemTest, self).setUp()
         self.local_setup()
         self.foo_path = URI(self.baseurl) / 'foo'
         self.existing_dir = ujoin(self.baseurl, 'foo')
@@ -256,7 +258,6 @@ class TestMemoryFileSystem(CommonFileSystemTest):
     __test__ = True
 
     def local_setup(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
         self.baseurl = "memory:///"
 
         foo_path = URI(self.baseurl) / 'foo'
@@ -373,11 +374,11 @@ class TestLocalFSCopy2(CommonFSCopyTest):
         shutil.rmtree(self.tmpdir)
 
 
-class TestMemoryFSCopy2(CommonFSCopyTest):
+class TestMemoryFSCopy2(CleanupMemoryBeforeTestMixin, CommonFSCopyTest):
     __test__ = True
 
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(TestMemoryFSCopy2, self).setUp()
         self.baseurl = "memory:///"
 
     def tearDown(self):
@@ -418,11 +419,11 @@ class TestLocalFSExec(CommonFSExecTest):
         shutil.rmtree(self.tmpdir)
 
 
-class TestMemoryFSExec(CommonFSExecTest):
+class TestMemoryFSExec(CleanupMemoryBeforeTestMixin, CommonFSExecTest):
     __test__ = True
 
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(TestMemoryFSExec, self).setUp()
         self.baseurl = "memory:///"
 
     def tearDown(self):
@@ -590,11 +591,11 @@ class TestLocalFSSymlink(CommonLocalFSSymlinkTest):
         shutil.rmtree(self.tmpdir)
 
 
-class TestMemoryFSSymlink(CommonLocalFSSymlinkTest):
+class TestMemoryFSSymlink(CleanupMemoryBeforeTestMixin, CommonLocalFSSymlinkTest):
     __test__ = True
 
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(TestMemoryFSSymlink, self).setUp()
         self.baseurl = "memory:///"
 
     def tearDown(self):

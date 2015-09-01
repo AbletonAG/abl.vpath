@@ -148,10 +148,10 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
 
 
 
-class TestRemovalOfFilesAndDirs(TestCase):
+class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
 
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(TestRemovalOfFilesAndDirs, self).setUp()
         self.root_path = URI('memory:///')
 
     def test_first(self):
@@ -258,7 +258,7 @@ class TestRemovalOfFilesAndDirs(TestCase):
         error_dir = self.root_path / "error.dir"
         error_dir.mkdir()
 
-        def next_op_callback(path, func):
+        def next_op_callback(_path, _func):
             raise OSError(13, "Permission denied")
 
 

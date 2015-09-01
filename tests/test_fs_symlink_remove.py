@@ -102,11 +102,11 @@ class TestLocalFSSymlinkRemove(CommonLocalFSSymlinkRemoveTest):
         shutil.rmtree(self.tmpdir)
 
 
-class TestMemoryFSSymlinkRemove(CommonLocalFSSymlinkRemoveTest):
+class TestMemoryFSSymlinkRemove(CleanupMemoryBeforeTestMixin, CommonLocalFSSymlinkRemoveTest):
     __test__ = True
 
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(TestMemoryFSSymlinkRemove, self).setUp()
         self.baseurl = "memory:///"
 
     def tearDown(self):
