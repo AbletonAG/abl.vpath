@@ -6,7 +6,6 @@ from __future__ import with_statement
 
 from cStringIO import StringIO
 import errno
-import os
 import tempfile
 import time
 import stat
@@ -15,13 +14,12 @@ from unittest import TestCase
 from abl.util import LockFileObtainException
 from abl.vpath.base import URI
 from abl.vpath.base.exceptions import FileDoesNotExistError
-from abl.vpath.base.fs import CONNECTION_REGISTRY
-from common import create_file
+from .common import create_file, CleanupMemoryBeforeTestMixin
 
 
-class MemoryFSTests(TestCase):
+class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(MemoryFSTests, self).setUp()
         self.temp_path = URI(tempfile.mktemp())
         self.temp_path.mkdir()
 
@@ -150,10 +148,10 @@ class MemoryFSTests(TestCase):
 
 
 
-class TestRemovalOfFilesAndDirs(TestCase):
+class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
 
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(TestRemovalOfFilesAndDirs, self).setUp()
         self.root_path = URI('memory:///')
 
     def test_first(self):
@@ -260,7 +258,7 @@ class TestRemovalOfFilesAndDirs(TestCase):
         error_dir = self.root_path / "error.dir"
         error_dir.mkdir()
 
-        def next_op_callback(path, func):
+        def next_op_callback(_path, _func):
             raise OSError(13, "Permission denied")
 
 

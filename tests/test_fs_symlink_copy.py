@@ -3,20 +3,19 @@
 #******************************************************************************
 
 from __future__ import with_statement
-import datetime
 import os
-import time
 import tempfile
-import stat
-import sys
-from posixpath import join as ujoin
-from unittest import TestCase
-import logging
 import shutil
-from common import create_file, os_create_file, load_file, mac_only, is_on_mac
+from unittest import TestCase
+
 from abl.vpath.base import *
-from abl.vpath.base.fs import CONNECTION_REGISTRY
-from abl.vpath.base.exceptions import FileDoesNotExistError
+
+from .common import (
+    create_file,
+    load_file,
+    is_on_mac,
+    CleanupMemoryBeforeTestMixin,
+)
 
 
 #-------------------------------------------------------------------------------
@@ -510,11 +509,11 @@ class TestLocalFSSymlinkCopy(CommonLocalFSSymlinkCopyTest):
         shutil.rmtree(self.tmpdir)
 
 
-class TestMemoryFSSymlinkCopy(CommonLocalFSSymlinkCopyTest):
+class TestMemoryFSSymlinkCopy(CleanupMemoryBeforeTestMixin, CommonLocalFSSymlinkCopyTest):
     __test__ = True
 
     def setUp(self):
-        CONNECTION_REGISTRY.cleanup(force=True)
+        super(TestMemoryFSSymlinkCopy, self).setUp()
         self.baseurl = "memory:///"
 
     def tearDown(self):

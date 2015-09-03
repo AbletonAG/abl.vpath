@@ -682,7 +682,7 @@ class BaseUri(object):
     @with_connection
     def islink(self):
         """
-        islink: 
+        islink:
 
         @rtype: bool
         @return: Indicates whether the file this path is pointing to is a
@@ -1016,9 +1016,8 @@ class FileSystem(object):
         # TODO-std: is this working with separators?
         res = []
         for f in path.listdir():
-            f = path / f
-            if fnmatch.fnmatch(self._path(f), pattern):
-                res.append(f)
+            if fnmatch.fnmatch(f, pattern):
+                res.append(path / f)
         return res
 
 

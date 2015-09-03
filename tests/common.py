@@ -6,6 +6,7 @@ from __future__ import with_statement
 import sys
 from functools import wraps
 from abl.vpath.base import *
+from abl.vpath.base.fs import CONNECTION_REGISTRY
 
 
 def os_create_file(some_file, content='content'):
@@ -50,3 +51,9 @@ def windows_only(func):
         func(*args, **kwargs)
 
     return _decorator
+
+
+class CleanupMemoryBeforeTestMixin(object):
+
+    def setUp(self):
+        CONNECTION_REGISTRY.cleanup(force=True)
