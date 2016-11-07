@@ -9,8 +9,7 @@ import threading
 
 from cStringIO import StringIO
 
-from .fs import FileSystem, BaseUri, URI
-from .exceptions import FileDoesNotExistError
+from .fs import FileSystem, BaseUri
 
 from abl.util import Bunch, LockFileObtainException
 
@@ -203,6 +202,7 @@ class MemoryLock(object):
         self.path = path
         self.fail_on_lock = fail_on_lock
         self.cleanup = cleanup
+        self.lock = None
 
 
     def __enter__(self):
@@ -417,7 +417,7 @@ class MemoryFileSystem(FileSystem):
 
 
     def open(self, path, options, mimetype):
-        with LookupExceptionClass(self, IOError) as lcs:
+        with LookupExceptionClass(self, IOError):
             if options is None or "r" in options:
                 return self._open_for_read(path)
             elif "w" in options:
@@ -425,7 +425,7 @@ class MemoryFileSystem(FileSystem):
             elif "a" in options:
                 return self._open_for_append(path)
             else:
-                raise OSError(EINVAL, "The mode flag is not valid")
+                raise OSError(errno.EINVAL, "The mode flag is not valid")
 
 
     BINARY_MIME_TYPES = ["image/png",
@@ -440,9 +440,9 @@ class MemoryFileSystem(FileSystem):
                     if no_binary:
                         mt, _ = mimetypes.guess_type(name)
                         if mt in self.BINARY_MIME_TYPES:
-                            hash = hashlib.md5()
-                            hash.update(value)
-                            value = "Binary: %s" % hash.hexdigest()
+                            hash_ = hashlib.md5()
+                            hash_.update(value)
+                            value = "Binary: %s" % hash_.hexdigest()
                     outf.write("--- START %s%s ---\n" % (path, name))
                     outf.write(value)
                     outf.write("\n--- END ---\n\n")
@@ -495,7 +495,7 @@ class MemoryFileSystem(FileSystem):
 
 
     def removedir(self, path):
-        prev, current = self._get_node_prev(self._fs,
+        prev, _ = self._get_node_prev(self._fs,
                                             [x for x in self._path(path).split("/") if x])
         if prev is not None:
             part = path.last()
