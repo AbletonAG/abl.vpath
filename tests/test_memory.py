@@ -22,15 +22,17 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
         super(MemoryFSTests, self).setUp()
         self.temp_path = URI(tempfile.mktemp())
         self.temp_path.mkdir()
+        self.root = URI("memory:///")
 
 
     def tearDown(self):
         if self.temp_path.isdir():
             self.temp_path.remove(recursive=True)
+        super(MemoryFSTests, self).tearDown()
 
 
     def test_all(self):
-        root = URI("memory:///")
+        root = self.root
         assert root.isdir()
 
         subdir = root / "foo"
@@ -65,13 +67,13 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
 
 
     def test_listdir_empty_root(self):
-        root = URI("memory:///")
+        root = self.root
         files = root.listdir()
         assert not files
 
 
     def test_listdir_empty_dir(self):
-        root = URI("memory:///")
+        root = self.root
         foo = root / 'foo'
         foo.mkdir()
         rootfiles = root.listdir()
@@ -81,7 +83,7 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
 
 
     def test_walk(self):
-        root = URI("memory:///")
+        root = self.root
         foo = root / 'foo'
         foo.mkdir()
         bar = root / 'bar'
@@ -96,7 +98,7 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
 
 
     def test_next(self):
-        root = URI("memory:///")
+        root = self.root
         subdir = root / "foo"
         with subdir.open("w") as outf:
             outf.write("foo\nbar")
@@ -112,7 +114,7 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
                 assert l in ["foo\n", "bar"]
 
     def test_exists_on_root(self):
-        root = URI("memory:///")
+        root = self.root
         assert root.exists()
 
 
@@ -137,7 +139,7 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
 
 
     def test_copy_into_fs(self):
-        root = URI("memory:///")
+        root = self.root
         for item in ["foo", "bar"]:
             with (root/item).open("w") as fd:
                 fd.write(item)
