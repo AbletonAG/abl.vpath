@@ -245,6 +245,7 @@ class MemoryFileSystem(FileSystem):
     uri = MemoryFileSystemUri
 
     def _initialize(self):
+        assert not self.hostname, "The memory schema only allows 'memory:///' as root path"
         self.lookup_exc_class = OSError
         self._fs = MemoryDir()
         self.next_op_callbacks = {}
