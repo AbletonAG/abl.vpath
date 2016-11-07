@@ -14,6 +14,8 @@ from unittest import TestCase
 from abl.util import LockFileObtainException
 from abl.vpath.base import URI
 from abl.vpath.base.exceptions import FileDoesNotExistError
+from abl.vpath.base.fs import CONNECTION_REGISTRY
+
 from .common import create_file, CleanupMemoryBeforeTestMixin
 
 
@@ -148,6 +150,16 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
         self.assertEqual(set(content), set(["foo", "bar"]))
 
 
+    def test_cleanup_removes_lingering_locks(self):
+        lockfile = self.root / "lockfile"
+        with lockfile.open("w") as outf:
+            outf.write(" ")
+
+        lockfile._manipulate(mtime=lockfile.mtime() + 3, lock=True)
+        CONNECTION_REGISTRY.cleanup(force=True)
+
+        with lockfile.lock(fail_on_lock=True):
+            pass
 
 
 class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):

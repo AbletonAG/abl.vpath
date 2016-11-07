@@ -6,6 +6,7 @@ import time
 import errno
 import stat
 import threading
+from collections import defaultdict
 
 from cStringIO import StringIO
 
@@ -23,16 +24,15 @@ class MemoryFile(object):
 
     kind = NodeKind.FILE
 
-    FILE_LOCKS = {}
+    FILE_LOCKS = defaultdict(threading.Lock)
 
-    def __init__(self, fs, path):
+    def __init__(self, path):
         self.path = path
-        self.fs = path
         self._data = StringIO()
         self._line_reader = None
         self.mtime = self.ctime = time.time()
         self.mode = 0
-        self.lock = self.FILE_LOCKS.setdefault((self.fs, self.path), threading.Lock())
+        self.lock = self.FILE_LOCKS[self.path]
 
 
     def reset(self):
@@ -40,7 +40,7 @@ class MemoryFile(object):
         self._line_reader = None
         self.mtime = self.ctime = time.time()
         self.mode = 0
-        self.lock = self.FILE_LOCKS.setdefault((self.fs, self.path), threading.Lock())
+        self.lock = self.FILE_LOCKS[self.path]
 
 
     def __len__(self):
@@ -249,6 +249,7 @@ class MemoryFileSystem(FileSystem):
         self.lookup_exc_class = OSError
         self._fs = MemoryDir()
         self.next_op_callbacks = {}
+        MemoryFile.FILE_LOCKS.clear()
 
 
     def _child(self, parent, name, resolve_link=True, throw=True, linklevel=0):
@@ -406,7 +407,7 @@ class MemoryFileSystem(FileSystem):
             cnd.reset()
             return MemoryFileProxy(cnd, False)
         else:
-            f = MemoryFile(self, p)
+            f = MemoryFile(p)
             self._create_child(nd, file_to_create, f)
             return MemoryFileProxy(f, False)
 
@@ -516,12 +517,13 @@ class MemoryFileSystem(FileSystem):
                     next_op_callback=SENTINEL):
         if lock is not self.SENTINEL and lock:
             p = self._path(path)
-            lock = MemoryFile(self, p).lock
-            assert lock.acquire(), "you tried to double-lock a file, that's currently not supported"
+            lock = MemoryFile(p).lock
+            res = lock.acquire()
+            assert res, "you tried to double-lock a file, that's currently not supported"
 
         if unlock is not self.SENTINEL and unlock:
             p = self._path(path)
-            lock = MemoryFile(self, p).lock
+            lock = MemoryFile(p).lock
             lock.release()
 
         if mtime is not self.SENTINEL:
