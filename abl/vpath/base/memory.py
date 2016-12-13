@@ -6,11 +6,11 @@ import time
 import errno
 import stat
 import threading
+from collections import defaultdict
 
 from cStringIO import StringIO
 
-from .fs import FileSystem, BaseUri, URI
-from .exceptions import FileDoesNotExistError
+from .fs import FileSystem, BaseUri
 
 from abl.util import Bunch, LockFileObtainException
 
@@ -24,16 +24,15 @@ class MemoryFile(object):
 
     kind = NodeKind.FILE
 
-    FILE_LOCKS = {}
+    FILE_LOCKS = defaultdict(threading.Lock)
 
-    def __init__(self, fs, path):
+    def __init__(self, path):
         self.path = path
-        self.fs = path
         self._data = StringIO()
         self._line_reader = None
         self.mtime = self.ctime = time.time()
         self.mode = 0
-        self.lock = self.FILE_LOCKS.setdefault((self.fs, self.path), threading.Lock())
+        self.lock = self.FILE_LOCKS[self.path]
 
 
     def reset(self):
@@ -41,7 +40,7 @@ class MemoryFile(object):
         self._line_reader = None
         self.mtime = self.ctime = time.time()
         self.mode = 0
-        self.lock = self.FILE_LOCKS.setdefault((self.fs, self.path), threading.Lock())
+        self.lock = self.FILE_LOCKS[self.path]
 
 
     def __len__(self):
@@ -203,6 +202,7 @@ class MemoryLock(object):
         self.path = path
         self.fail_on_lock = fail_on_lock
         self.cleanup = cleanup
+        self.lock = None
 
 
     def __enter__(self):
@@ -245,9 +245,11 @@ class MemoryFileSystem(FileSystem):
     uri = MemoryFileSystemUri
 
     def _initialize(self):
+        assert not self.hostname, "The memory schema only allows 'memory:///' as root path"
         self.lookup_exc_class = OSError
         self._fs = MemoryDir()
         self.next_op_callbacks = {}
+        MemoryFile.FILE_LOCKS.clear()
 
 
     def _child(self, parent, name, resolve_link=True, throw=True, linklevel=0):
@@ -405,7 +407,7 @@ class MemoryFileSystem(FileSystem):
             cnd.reset()
             return MemoryFileProxy(cnd, False)
         else:
-            f = MemoryFile(self, p)
+            f = MemoryFile(p)
             self._create_child(nd, file_to_create, f)
             return MemoryFileProxy(f, False)
 
@@ -417,7 +419,7 @@ class MemoryFileSystem(FileSystem):
 
 
     def open(self, path, options, mimetype):
-        with LookupExceptionClass(self, IOError) as lcs:
+        with LookupExceptionClass(self, IOError):
             if options is None or "r" in options:
                 return self._open_for_read(path)
             elif "w" in options:
@@ -425,7 +427,7 @@ class MemoryFileSystem(FileSystem):
             elif "a" in options:
                 return self._open_for_append(path)
             else:
-                raise OSError(EINVAL, "The mode flag is not valid")
+                raise OSError(errno.EINVAL, "The mode flag is not valid")
 
 
     BINARY_MIME_TYPES = ["image/png",
@@ -440,9 +442,9 @@ class MemoryFileSystem(FileSystem):
                     if no_binary:
                         mt, _ = mimetypes.guess_type(name)
                         if mt in self.BINARY_MIME_TYPES:
-                            hash = hashlib.md5()
-                            hash.update(value)
-                            value = "Binary: %s" % hash.hexdigest()
+                            hash_ = hashlib.md5()
+                            hash_.update(value)
+                            value = "Binary: %s" % hash_.hexdigest()
                     outf.write("--- START %s%s ---\n" % (path, name))
                     outf.write(value)
                     outf.write("\n--- END ---\n\n")
@@ -495,7 +497,7 @@ class MemoryFileSystem(FileSystem):
 
 
     def removedir(self, path):
-        prev, current = self._get_node_prev(self._fs,
+        prev, _ = self._get_node_prev(self._fs,
                                             [x for x in self._path(path).split("/") if x])
         if prev is not None:
             part = path.last()
@@ -515,12 +517,13 @@ class MemoryFileSystem(FileSystem):
                     next_op_callback=SENTINEL):
         if lock is not self.SENTINEL and lock:
             p = self._path(path)
-            lock = MemoryFile(self, p).lock
-            assert lock.acquire(), "you tried to double-lock a file, that's currently not supported"
+            lock = MemoryFile(p).lock
+            res = lock.acquire()
+            assert res, "you tried to double-lock a file, that's currently not supported"
 
         if unlock is not self.SENTINEL and unlock:
             p = self._path(path)
-            lock = MemoryFile(self, p).lock
+            lock = MemoryFile(p).lock
             lock.release()
 
         if mtime is not self.SENTINEL:

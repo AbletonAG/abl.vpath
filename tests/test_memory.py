@@ -14,6 +14,8 @@ from unittest import TestCase
 from abl.util import LockFileObtainException
 from abl.vpath.base import URI
 from abl.vpath.base.exceptions import FileDoesNotExistError
+from abl.vpath.base.fs import CONNECTION_REGISTRY
+
 from .common import create_file, CleanupMemoryBeforeTestMixin
 
 
@@ -22,15 +24,17 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
         super(MemoryFSTests, self).setUp()
         self.temp_path = URI(tempfile.mktemp())
         self.temp_path.mkdir()
+        self.root = URI("memory:///")
 
 
     def tearDown(self):
         if self.temp_path.isdir():
             self.temp_path.remove(recursive=True)
+        super(MemoryFSTests, self).tearDown()
 
 
     def test_all(self):
-        root = URI("memory:///")
+        root = self.root
         assert root.isdir()
 
         subdir = root / "foo"
@@ -65,13 +69,13 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
 
 
     def test_listdir_empty_root(self):
-        root = URI("memory:///")
+        root = self.root
         files = root.listdir()
         assert not files
 
 
     def test_listdir_empty_dir(self):
-        root = URI("memory:///")
+        root = self.root
         foo = root / 'foo'
         foo.mkdir()
         rootfiles = root.listdir()
@@ -81,7 +85,7 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
 
 
     def test_walk(self):
-        root = URI("memory:///")
+        root = self.root
         foo = root / 'foo'
         foo.mkdir()
         bar = root / 'bar'
@@ -96,7 +100,7 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
 
 
     def test_next(self):
-        root = URI("memory:///")
+        root = self.root
         subdir = root / "foo"
         with subdir.open("w") as outf:
             outf.write("foo\nbar")
@@ -112,7 +116,7 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
                 assert l in ["foo\n", "bar"]
 
     def test_exists_on_root(self):
-        root = URI("memory:///")
+        root = self.root
         assert root.exists()
 
 
@@ -137,7 +141,7 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
 
 
     def test_copy_into_fs(self):
-        root = URI("memory:///")
+        root = self.root
         for item in ["foo", "bar"]:
             with (root/item).open("w") as fd:
                 fd.write(item)
@@ -146,6 +150,16 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
         self.assertEqual(set(content), set(["foo", "bar"]))
 
 
+    def test_cleanup_removes_lingering_locks(self):
+        lockfile = self.root / "lockfile"
+        with lockfile.open("w") as outf:
+            outf.write(" ")
+
+        lockfile._manipulate(mtime=lockfile.mtime() + 3, lock=True)
+        CONNECTION_REGISTRY.cleanup(force=True)
+
+        with lockfile.lock(fail_on_lock=True):
+            pass
 
 
 class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
