@@ -11,6 +11,7 @@ import stat
 from Queue import Queue
 import re
 import shutil
+import sys
 import threading
 import time
 import traceback
@@ -26,6 +27,18 @@ from .exceptions import (NoSchemeError,
 
 
 #============================================================================
+
+def fstr_to_unicode(fstr):
+    if type(fstr) is str:
+        return fstr.decode(sys.getfilesystemencoding())
+    return fstr
+
+
+def unicode_to_fstr(unistr):
+    if type(unistr) is unicode:
+        return unistr.encode(sys.getfilesystemencoding())
+    return unistr
+
 
 class ConnectionRegistry(object):
     """
@@ -497,6 +510,11 @@ class BaseUri(object):
         @return: URI instance of joined path
         @rtype: URI
         """
+        if type(self.uri) is unicode:
+            args = [fstr_to_unicode(arg) for arg in args]
+        elif type(self.uri) is str:
+            args = [unicode_to_fstr(arg) for arg in args]
+
         sep = self.sep
         if sep != '/':
             args = [x.replace(sep, '/') for x in args]
