@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
+
 #******************************************************************************
-# (C) 2008-2013 Ableton AG
+# (C) 2008-2017 Ableton AG
 #******************************************************************************
 from __future__ import with_statement
 import datetime
@@ -80,8 +82,8 @@ class TestUnicodeURI(TestCase):
 
 
     def test_creation(self):
-        local_path = URI(u'/tmp/this')
-        self.assertEqual(local_path.path.split(os.sep), ['', 'tmp', 'this'])
+        local_path = URI(u'/tmp/thisü')
+        self.assertEqual(local_path.path.split(os.sep), ['', 'tmp', u'thisü'])
         self.assertEqual(local_path.scheme, 'file')
 
 
@@ -91,7 +93,7 @@ class TestUnicodeURI(TestCase):
 
 
     def test_unicode_extra(self):
-        p = URI(self.foo_dir, some_query=u"what's up")
+        p = URI(self.foo_dir, some_query=u"what's üp")
 
 
     def test_copy(self):
@@ -99,6 +101,16 @@ class TestUnicodeURI(TestCase):
         p.mkdir()
         dest = URI(self.bar_dir)
         p.copy(dest, recursive=True)
+
+
+    def test_dont_mix_unicode_and_bytes(self):
+        p = URI(u"Vögel")
+        p2 = p / "no_ünicode"
+        self.assertTrue(type(p2.uri) is unicode)
+
+        p3 = URI("Vögel")
+        p4 = p3 / u"ünicode"
+        self.assertTrue(type(p4.uri) is str)
 
 
 class TestCredentials(TestCase):
