@@ -565,7 +565,10 @@ class BaseUri(object):
         @type other: URI
         @param other: the path to copy the metadata to.
 
-        Will copy file permissions, mtime, atime, etc. to path.
+        Will copy file permissions, mtime, atime, etc. to path. Note:
+        this ALWAYS follows symlinks. Consider using info with
+        followslinks set to False to read and write the stat info of a
+        symlink.
         """
         return self.connection.copystat(self, other)
 
