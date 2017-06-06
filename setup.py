@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="abl.vpath",
-    version="0.8.1",
+    version="0.8.2",
     description="A OO-abstraction of file-systems",
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
