@@ -68,6 +68,28 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
         print out.getvalue()
 
 
+    def test_info_on_symlinks(self):
+        root = self.root
+        a_file = root / "a_file"
+        a_link = root / "a_link"
+        with a_file.open('w') as f:
+            f.write("a" * 800)
+        a_file.symlink(a_link)
+
+        self.assertEqual(a_file.info().size, 800)
+        self.assertEqual(a_link.info().size, 800)
+        self.assertNotEqual(a_link.info(followlinks=False).size, 800)
+
+        orig_info = a_file.info()
+        new_info = a_file.info()
+        new_info.mtime = new_info.mtime + 100
+        a_link.info(new_info, followlinks=False)
+
+        self.assertEqual(a_file.info().mtime, orig_info.mtime)
+        self.assertEqual(a_link.info().mtime, orig_info.mtime)
+        self.assertEqual(a_link.info(followlinks=False).mtime, new_info.mtime)
+
+
     def test_listdir_empty_root(self):
         root = self.root
         files = root.listdir()
