@@ -780,15 +780,19 @@ class BaseUri(object):
 
 
     @with_connection
-    def info(self, set_info=None):
+    def info(self, set_info=None, followlinks=True):
         """
         info: backend info about self (probably not implemented for
-              all backends. The result will be backend specific
+              all backends. The result will be backend specific).
 
+        @param set_info: If not None, this data will be set on self.
+        @param followlinks: If True, symlinks will be followed. If
+            False, the info of the symlink itself will be returned.
+            (Default: True)
         @rtype: Bunch
         @return: backend specific information about self.
         """
-        return self.connection.info(self, set_info=set_info)
+        return self.connection.info(self, set_info=set_info, followlinks=followlinks)
 
 
     @with_connection
@@ -1098,7 +1102,7 @@ class FileSystem(object):
         raise NotImplementedError
 
 
-    def info(self,  path, set_info=None):
+    def info(self,  path, set_info=None, followlinks=True):
         raise NotImplementedError
 
 

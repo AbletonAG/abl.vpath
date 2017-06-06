@@ -41,15 +41,19 @@ class LocalFileSystem(FileSystem):
         pass
 
 
-    def info(self, unc, set_info=None):
+    def info(self, unc, set_info=None, followlinks=True):
         p = self._path(unc)
+
+        use_link_functions = self.islink(unc) and not followlinks
+        stat_func = os.lstat if use_link_functions else os.stat
+        chmod_func = os.lchmod if use_link_functions else os.chmod
 
         if set_info is not None:
             if "mode" in set_info:
-                os.chmod(p, set_info["mode"])
+                chmod_func(p, set_info["mode"])
             return
 
-        stats = os.stat(p)
+        stats = stat_func(p)
         ctime = stats[stat.ST_CTIME]
         mtime = stats[stat.ST_MTIME]
         atime = stats[stat.ST_ATIME]

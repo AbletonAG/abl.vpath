@@ -185,6 +185,11 @@ class MemorySymlink(object):
 
     def __init__(self, target):
         self.target = target
+        self.mtime = self.ctime = time.time()
+        self.mode = 0
+
+    def size(self):
+        return 8
 
 
 class MemoryFileSystemUri(BaseUri):
@@ -459,11 +464,13 @@ class MemoryFileSystem(FileSystem):
         traverse(self._fs)
         outf.write("MEMORY DUMP: END\n")
 
-    def info(self, unc, set_info=None):
-        current = self._get_node_for_path(self._fs, unc)
+    def info(self, unc, set_info=None, followlinks=True):
+        current = self._get_node_for_path(self._fs, unc, follow_link=followlinks)
         if set_info is not None:
             if "mode" in set_info:
                 current.mode = set_info["mode"]
+            if "mtime" in set_info:
+                current.mtime = set_info["mtime"]
             return
 
         return Bunch(mtime=current.mtime,
