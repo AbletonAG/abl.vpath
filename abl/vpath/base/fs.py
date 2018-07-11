@@ -293,8 +293,8 @@ class BaseUri(object):
         if isinstance(uri, BaseUri):
             self.uri = uri.uri
             self.sep = uri.sep
-            self.parse_result = uri.parse_result
-            self.extras = uri.extras
+            self.parse_result = UriParse(uri.uri)
+            self.extras = uri.extras.copy()
         else:
             if uri.startswith('file://'):
                 uri = uri[7:]
@@ -525,6 +525,7 @@ class BaseUri(object):
             )
         parts = self.parse_result.as_list()
         parts[2] = '/'.join(args)
+
         result = self.__class__(
             uri_from_parts(parts),
             sep=sep,
