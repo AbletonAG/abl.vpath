@@ -158,6 +158,8 @@ class UriParse(object):
         netloc = ''
         if self.vpath_connector:
             netloc = '(('+self.vpath_connector+'))'
+        elif self.authority:
+            netloc = self.authority
         else:
             netloc = self.netloc
         return [
