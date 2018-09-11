@@ -1015,7 +1015,7 @@ class FileSystem(object):
 
 
     def walk(self, top, topdown=True, followlinks=True):
-        names = self.listdir(top)
+        names = sorted(self.listdir(top))
 
         dirs = []
         nondirs = []
