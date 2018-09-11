@@ -1,8 +1,6 @@
-from __future__ import with_statement
 
 import atexit
 from collections import defaultdict
-from contextlib import nested
 import fnmatch
 import hashlib
 import os
@@ -32,7 +30,7 @@ def fstr_to_unicode(fstr):
 
 
 def unicode_to_fstr(unistr):
-    if type(unistr) is unicode:
+    if type(unistr) is str:
         return unistr.encode(sys.getfilesystemencoding())
     return unistr
 
@@ -133,7 +131,7 @@ class ConnectionRegistry(object):
         """
         if scheme not in self.schemes:
             raise NoSchemeError(
-                'There is no handler registered for "%s"' % scheme
+                'There is no handler registered for "{}" (available: {})'.format(scheme, list(self.schemes.keys()))
                 )
         key = (
             scheme,
@@ -142,7 +140,7 @@ class ConnectionRegistry(object):
             username,
             password,
             vpath_connector,
-            frozenset(extras.items())
+            frozenset(list(extras.items()))
             )
 
         if not key in self.connections:
@@ -153,12 +151,12 @@ class ConnectionRegistry(object):
     def cleanup(self, force=False):
         import time
         now = time.time()
-        for key, conn in self.connections.items():
+        for key, conn in list(self.connections.items()):
             if ((now - conn.last_used) > self.clean_timeout) or force:
                 try:
                     conn.close()
                 except:
-                    print "### Exception while closing connection %s" % conn
+                    print("### Exception while closing connection %s" % conn)
                     traceback.print_exc()
                 del self.connections[key]
 
@@ -170,6 +168,7 @@ class ConnectionRegistry(object):
         while True:
             now = time.time()
             self.cleanup()
+            now = time.time()
             try:
                 while (time.time() - now) < self.clean_interval:
                     if not self.run_clean_thread:
@@ -407,6 +406,10 @@ class BaseUri(object):
         return self.join(other)
 
 
+    def __truediv__(self, other):
+        return self.join(other)
+
+
     def __add__(self, suffix):
         path = self.uri + suffix
         result = self.__class__(
@@ -508,11 +511,6 @@ class BaseUri(object):
         @return: URI instance of joined path
         @rtype: URI
         """
-        if type(self.uri) is unicode:
-            args = [fstr_to_unicode(arg) for arg in args]
-        elif type(self.uri) is str:
-            args = [unicode_to_fstr(arg) for arg in args]
-
         sep = self.sep
         if sep != '/':
             args = [x.replace(sep, '/') for x in args]
@@ -942,8 +940,9 @@ class FileSystem(object):
             if source.islink() and not followlinks:
                 self._copy_link(source, dest)
             else:
-                with nested(source.open('rb'), dest.open('wb')) as (infs, outfs):
-                    shutil.copyfileobj(infs, outfs, 8192)
+                with source.open('rb') as infs:
+                    with dest.open('wb') as outfs:
+                        shutil.copyfileobj(infs, outfs, 8192)
                 if use_same_backend:
                     self.copystat(source, dest)
         else:
@@ -984,8 +983,9 @@ class FileSystem(object):
                         if srcf.islink() and not followlinks:
                             self._copy_link(srcf, destf)
                         else:
-                            with nested(srcf.open('rb'), destf.open('wb') ) as (infs, outfs):
-                                shutil.copyfileobj(infs, outfs, 8192)
+                            with srcf.open('rb') as infs:
+                                with destf.open('wb') as outfs:
+                                    shutil.copyfileobj(infs, outfs, 8192)
                             if use_same_backend:
                                 self.copystat(srcf, destf)
 
@@ -1137,8 +1137,8 @@ class RevisionedFileSystem(FileSystem):
 for entrypoint in pkg_resources.iter_entry_points('abl.vpath.plugins'):
     try:
         plugin_class = entrypoint.load()
-    except Exception, exp:
-        print "Could not load entrypoint", entrypoint
+    except Exception as exp:
+        print("Could not load entrypoint", entrypoint)
         traceback.print_exc()
         continue
     CONNECTION_REGISTRY.register(plugin_class.scheme, plugin_class)

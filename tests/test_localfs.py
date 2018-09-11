@@ -2,7 +2,6 @@
 # (C) 2008-2013 Ableton AG
 #******************************************************************************
 
-from __future__ import with_statement
 import datetime
 import stat
 import sys
@@ -35,7 +34,7 @@ class TestLocalFSInfo(TestCase):
 
     def test_info_ctime(self):
         p = URI("test.txt")
-        self.assert_(p.info().ctime <= datetime.datetime.now())
+        self.assertTrue(p.info().ctime <= datetime.datetime.now())
         self.assertEqual(p.info().ctime, p.info().mtime)
 
 
@@ -45,10 +44,10 @@ class TestLocalFSInfo(TestCase):
         size = p.info().size
         with p.open('a') as fs:
             fs.write(' again')
-        self.assert_(p.info().mtime >= p.info().ctime)
-        self.assert_( p.info().size > size)
+        self.assertTrue(p.info().mtime >= p.info().ctime)
+        self.assertTrue( p.info().size > size)
         # due to now's millisecond resolution, we must ignore milliseconds
-        self.assert_(p.info().mtime.timetuple()[:6] >= now.timetuple()[:6])
+        self.assertTrue(p.info().mtime.timetuple()[:6] >= now.timetuple()[:6])
 
 
     @mac_only
@@ -66,11 +65,11 @@ class TestLocalFSInfo(TestCase):
         self.assertNotEqual(a_link.info(followlinks=False).size, 800)
 
         orig_info = a_file.info()
-        a_link.info({'mode': 0120700}, followlinks=False)
+        a_link.info({'mode': 0o120700}, followlinks=False)
 
         self.assertEqual(a_file.info().mode, orig_info.mode)
         self.assertEqual(a_link.info().mode, orig_info.mode)
-        self.assertEqual(a_link.info(followlinks=False).mode, 0120700)
+        self.assertEqual(a_link.info(followlinks=False).mode, 0o120700)
 
 
     def test_locking(self):

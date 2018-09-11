@@ -2,7 +2,7 @@
 # (C) 2013 Ableton AG
 #******************************************************************************
 
-from __future__ import with_statement
+
 import os
 import tempfile
 from unittest import TestCase
@@ -79,7 +79,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     def test_walk_bottomup(self):
@@ -100,7 +100,7 @@ class CommonFileSystemWalkTest(TestCase):
             'DIR: gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     #--------------------------------------------------------------------------
@@ -184,7 +184,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     @mac_only
@@ -207,7 +207,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     @mac_only
@@ -235,7 +235,7 @@ class CommonFileSystemWalkTest(TestCase):
             'DIR: gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     @mac_only
@@ -258,7 +258,7 @@ class CommonFileSystemWalkTest(TestCase):
             'DIR: gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     #---------------------------------------------------------------------------
@@ -305,7 +305,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     @mac_only
@@ -328,7 +328,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     @mac_only
@@ -352,7 +352,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     @mac_only
@@ -381,7 +381,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     @mac_only
@@ -405,7 +405,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
 
@@ -435,7 +435,7 @@ class CommonFileSystemWalkTest(TestCase):
             'DIR: gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     @mac_only
@@ -459,7 +459,7 @@ class CommonFileSystemWalkTest(TestCase):
             'DIR: gaz',
             ]
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
 
 
     #--------------------------------------------------------------------------
@@ -473,7 +473,7 @@ class CommonFileSystemWalkTest(TestCase):
             return 'ROOT: .%s' % path.path[len(foo_path.path):].replace('\\', '/')
 
         d_path = foo_path
-        for i in xrange(0, 49):
+        for i in range(0, 49):
             nm = 'f%d' % i
             expected.append('DIR: %s' % nm)
             expected.append(expected_root_str(d_path))
@@ -486,10 +486,10 @@ class CommonFileSystemWalkTest(TestCase):
 
         actual = self._walk(foo_path, topdown=False, followlinks=False)
 
-        self.assert_(expected == actual, str(actual))
+        self.assertTrue(expected == actual, str(actual))
         # expect the right amount of output.  For 64 level with 2 lines per
         # level (1 x ROOT:, 1x DIR:) + 1 for the iinermost ('f63')
-        self.assert_(len(actual) == 99)
+        self.assertTrue(len(actual) == 99)
 
 
 class TestLocalFSSymlinkWalk(CommonFileSystemWalkTest):

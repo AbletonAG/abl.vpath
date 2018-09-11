@@ -2,7 +2,7 @@
 # (C) 2008 Ableton AG
 # Author: Stephan Diehl <stephan.diehl@ableton.com>
 #******************************************************************************
-from __future__ import with_statement, absolute_import
+
 
 import datetime
 import logging

@@ -3,7 +3,7 @@
 # author: Stephan Diehl (std)
 # email: stephan.diehl@ableton.com
 #******************************************************************************
-from __future__ import with_statement
+
 import os
 from unittest import TestCase
 
