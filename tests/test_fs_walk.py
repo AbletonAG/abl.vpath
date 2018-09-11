@@ -79,7 +79,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assertTrue(expected == actual, str(actual))
+        self.assertEqual(expected, actual)
 
 
     def test_walk_bottomup(self):
@@ -100,7 +100,7 @@ class CommonFileSystemWalkTest(TestCase):
             'DIR: gaz',
             ]
 
-        self.assertTrue(expected == actual, str(actual))
+        self.assertEqual(expected, actual)
 
 
     #--------------------------------------------------------------------------
@@ -328,7 +328,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assertTrue(expected == actual, str(actual))
+        self.assertEqual(expected, actual)
 
 
     @mac_only
@@ -352,7 +352,7 @@ class CommonFileSystemWalkTest(TestCase):
             'ROOT: ./gaz',
             ]
 
-        self.assertTrue(expected == actual, str(actual))
+        self.assertEqual(expected, actual)
 
 
     @mac_only

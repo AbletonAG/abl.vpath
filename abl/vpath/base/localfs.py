@@ -3,21 +3,30 @@
 # Author: Stephan Diehl <stephan.diehl@ableton.com>
 #******************************************************************************
 
-
 import datetime
 import logging
+import os
 import shutil
 import stat
 import sys
 
+from functools import partial
+
 from .fs import FileSystem, BaseUri, denormalize_path, URI
 from .exceptions import OperationIsNotSupportedOnPlatform
-from .os_abstraction import os
 
 from abl.util import Bunch, LockFile
 
+
 LOGGER = logging.getLogger(__name__)
-#----------------------------------------------------------------------------
+
+
+def lchmod(filename, mode):
+    if sys.version_info[0] >= 3:
+        return os.chmod(filename, mode, follow_symlinks=True)
+    else:
+        return os.lchmod(filename, mode)
+
 
 class LocalFileSystemUri(BaseUri):
     def __str__(self):
@@ -45,7 +54,7 @@ class LocalFileSystem(FileSystem):
 
         use_link_functions = self.islink(unc) and not followlinks
         stat_func = os.lstat if use_link_functions else os.stat
-        chmod_func = os.lchmod if use_link_functions else os.chmod
+        chmod_func = lchmod if use_link_functions else os.chmod
 
         if set_info is not None:
             if "mode" in set_info:

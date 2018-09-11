@@ -50,8 +50,23 @@ class TestLocalFSInfo(TestCase):
         self.assertTrue(p.info().mtime.timetuple()[:6] >= now.timetuple()[:6])
 
 
-    @mac_only
     def test_info_on_symlinks(self):
+        a_file = URI("test.txt")
+        a_link = URI("test_link")
+        with a_file.open('w') as f:
+            f.write("a" * 800)
+
+        if not a_file.connection.supports_symlinks():
+            return
+
+        self.assertEqual(a_file.info().size, 800)
+        self.assertEqual(a_link.info().size, 800)
+        self.assertNotEqual(a_link.info(followlinks=False).size, 800)
+
+
+    @mac_only
+    def test_set_info_on_symlinks(self):
+        # lchmod is not supported on Linux, only on OSX
         a_file = URI("test.txt")
         a_link = URI("test_link")
         with a_file.open('w') as f:
