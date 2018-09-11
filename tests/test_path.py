@@ -3,7 +3,7 @@
 #******************************************************************************
 # (C) 2008-2017 Ableton AG
 #******************************************************************************
-from __future__ import with_statement
+
 import os
 import shutil
 import tempfile
@@ -32,13 +32,13 @@ class KeepCurrentDir:
 class TestSchemeRe(TestCase):
     def test_file(self):
         m = scheme_re.match("file://something")
-        self.assert_(m is not None)
+        self.assertTrue(m is not None)
         self.assertEqual(m.group(1), 'file')
 
 
     def test_with_plus(self):
         m = scheme_re.match("svn+ssh://something")
-        self.assert_(m is not None)
+        self.assertTrue(m is not None)
         self.assertEqual(m.group(1), 'svn+ssh')
 
 
@@ -79,34 +79,34 @@ class TestUnicodeURI(TestCase):
 
 
     def test_creation(self):
-        local_path = URI(u'/tmp/thisü')
-        self.assertEqual(local_path.path.split(os.sep), ['', 'tmp', u'thisü'])
+        local_path = URI('/tmp/thisü')
+        self.assertEqual(local_path.path.split(os.sep), ['', 'tmp', 'thisü'])
         self.assertEqual(local_path.scheme, 'file')
 
 
     def test_mkdir(self):
-        p = URI(unicode(self.foo_dir))
+        p = URI(str(self.foo_dir))
         p.mkdir()
 
 
     def test_unicode_extra(self):
-        URI(self.foo_dir, some_query=u"what's üp")
+        URI(self.foo_dir, some_query="what's üp")
 
 
     def test_copy(self):
-        p = URI(unicode(self.foo_dir))
+        p = URI(str(self.foo_dir))
         p.mkdir()
         dest = URI(self.bar_dir)
         p.copy(dest, recursive=True)
 
 
     def test_dont_mix_unicode_and_bytes(self):
-        p = URI(u"Vögel")
+        p = URI("Vögel")
         p2 = p / "no_ünicode"
-        self.assertTrue(type(p2.uri) is unicode)
+        self.assertTrue(type(p2.uri) is str)
 
         p3 = URI("Vögel")
-        p4 = p3 / u"ünicode"
+        p4 = p3 / "ünicode"
         self.assertTrue(type(p4.uri) is str)
 
 
@@ -303,12 +303,12 @@ class TestFileSystem(TestCase):
         foo_path = URI(self.baseurl) / 'foo'
         bar_path = URI(foo_path.path + '?arg1=value1')
         foo_2_path = foo_path / 'some_dir'
-        self.assert_(foo_path.get_connection() is foo_2_path.get_connection())
-        self.assert_(bar_path.get_connection() is not foo_path.get_connection())
+        self.assertTrue(foo_path.get_connection() is foo_2_path.get_connection())
+        self.assertTrue(bar_path.get_connection() is not foo_path.get_connection())
 
         foo_path_connection = foo_path.get_connection()
         foo_path.query['arg'] = 'value'
-        self.assert_(foo_path_connection is not foo_path.get_connection())
+        self.assertTrue(foo_path_connection is not foo_path.get_connection())
 
 
 class TestEq(TestCase):

@@ -2,7 +2,7 @@
 # (C) 2013 Ableton AG
 #******************************************************************************
 
-from __future__ import with_statement
+
 import os
 import tempfile
 import stat
@@ -30,49 +30,49 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
 
-        self.assert_(tee_path.islink())
-        self.assert_(tee_path.readlink() == tee_path)
+        self.assertTrue(tee_path.islink())
+        self.assertTrue(tee_path.readlink() == tee_path)
 
 
     def test_listdir_fails_on_selfpointing_symlink(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.failUnlessRaises(OSError, tee_path.listdir)
+        self.assertRaises(OSError, tee_path.listdir)
 
 
     def test_open_fails_on_selfpointing_symlink(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.failUnlessRaises(IOError, load_file, tee_path)
-        self.failUnlessRaises(IOError, create_file, tee_path)
+        self.assertRaises(IOError, load_file, tee_path)
+        self.assertRaises(IOError, create_file, tee_path)
 
 
     def test_isexec_fails_on_selfpointing_symlink(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.failUnlessRaises(OSError, tee_path.isexec)
+        self.assertRaises(OSError, tee_path.isexec)
 
 
     def test_set_exec_fails_on_selfpointing_symlink(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.failUnlessRaises(OSError, tee_path.set_exec, stat.S_IXUSR | stat.S_IXGRP)
+        self.assertRaises(OSError, tee_path.set_exec, stat.S_IXUSR | stat.S_IXGRP)
 
 
     def test_remove_fails_on_selfpointing_symlink(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.assert_(tee_path.islink())
+        self.assertTrue(tee_path.islink())
 
         tee_path.remove()
 
-        self.assert_(not tee_path.islink())
-        self.assert_(not tee_path.exists())
+        self.assertTrue(not tee_path.islink())
+        self.assertTrue(not tee_path.exists())
 
 
     def test_copystat_fails_on_selfpointing_symlink(self):
@@ -83,29 +83,29 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
 
-        self.failUnlessRaises(OSError, bar_path.copystat, tee_path)
-        self.failUnlessRaises(OSError, tee_path.copystat, bar_path)
+        self.assertRaises(OSError, bar_path.copystat, tee_path)
+        self.assertRaises(OSError, tee_path.copystat, bar_path)
 
 
     def test_isdir_doesnt_fail_on_selfpointing_symlink(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.assert_(not tee_path.isdir())
+        self.assertTrue(not tee_path.isdir())
 
 
     def test_isfile_doesnt_fail_on_selfpointing_symlink(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.assert_(not tee_path.isfile())
+        self.assertTrue(not tee_path.isfile())
 
 
     def test_exists_doesnt_fail_on_selfpointing_symlink(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.assert_(not tee_path.exists())
+        self.assertTrue(not tee_path.exists())
 
 
     #------------------------------
@@ -118,8 +118,8 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         tee_path = bar_path / 'tee'
         foo_path.symlink(tee_path)
 
-        self.assert_(tee_path.islink())
-        self.assert_(tee_path.readlink() == foo_path)
+        self.assertTrue(tee_path.islink())
+        self.assertTrue(tee_path.readlink() == foo_path)
 
 
     def test_listdir_doesnt_fail_on_symlink_loop(self):
@@ -133,29 +133,29 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         moo_path = foo_path / 'moo.txt'
         create_file(moo_path)
 
-        self.assert_('moo.txt' in tee_path.listdir())
+        self.assertTrue('moo.txt' in tee_path.listdir())
 
 
     def test_open_fails_on_symlink_loop(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.failUnlessRaises(IOError, load_file, tee_path)
-        self.failUnlessRaises(IOError, create_file, tee_path)
+        self.assertRaises(IOError, load_file, tee_path)
+        self.assertRaises(IOError, create_file, tee_path)
 
 
     def test_isexec_fails_on_symlink_loop(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.failUnlessRaises(OSError, tee_path.isexec)
+        self.assertRaises(OSError, tee_path.isexec)
 
 
     def test_set_exec_fails_on_symlink_loop(self):
         root = URI(self.baseurl)
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
-        self.failUnlessRaises(OSError, tee_path.set_exec, stat.S_IXUSR | stat.S_IXGRP)
+        self.assertRaises(OSError, tee_path.set_exec, stat.S_IXUSR | stat.S_IXGRP)
 
 
     def test_remove_doesnt_fail_on_symlink_loop(self):
@@ -167,7 +167,7 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
 
         tee_path.remove(recursive=True)
 
-        self.assert_(not tee_path.exists())
+        self.assertTrue(not tee_path.exists())
 
 
     def test_copystat_fails_on_symlink_loop(self):
@@ -178,8 +178,8 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         tee_path = root / 'helloworld'
         tee_path.symlink(tee_path)
 
-        self.failUnlessRaises(OSError, bar_path.copystat, tee_path)
-        self.failUnlessRaises(OSError, tee_path.copystat, bar_path)
+        self.assertRaises(OSError, bar_path.copystat, tee_path)
+        self.assertRaises(OSError, tee_path.copystat, bar_path)
 
 
 
@@ -192,10 +192,10 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         tee_path.symlink(foo_path)
         foo_path.symlink(tee_path)
 
-        self.assert_(not foo_path.isdir())
-        self.assert_(not foo_path.isfile())
-        self.assert_(not foo_path.exists())
-        self.assert_(foo_path.islink())
+        self.assertTrue(not foo_path.isdir())
+        self.assertTrue(not foo_path.isfile())
+        self.assertTrue(not foo_path.exists())
+        self.assertTrue(foo_path.islink())
 
 
     def test_remove_doesnt_fail_on_mutual_symlinks(self):
@@ -208,8 +208,8 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
 
         tee_path.remove(recursive=True)
 
-        self.assert_(not tee_path.exists())
-        self.assert_(foo_path.islink())
+        self.assertTrue(not tee_path.exists())
+        self.assertTrue(foo_path.islink())
 
 
 

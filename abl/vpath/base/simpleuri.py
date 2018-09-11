@@ -5,9 +5,11 @@
 simpleuri.py contains the UriParse class, which replaces pythons
 urlparse module for non http urls
 """
-from __future__ import with_statement, absolute_import
 
-from urllib import urlencode, unquote_plus
+try:
+    from urllib.parse import urlencode, unquote_plus
+except ImportError: # Python 2
+    from urllib.parse import urlencode, unquote_plus
 
 from .uriparse import urisplit, split_authority
 
@@ -111,7 +113,7 @@ class UriParse(object):
 
     def __str__(self):
         if self.query:
-            qup = ['%s=%s' % (key, value) for key, value in self.query.items()]
+            qup = ['%s=%s' % (key, value) for key, value in list(self.query.items())]
             rest = '?'+('&'.join(qup))
         else:
             rest = ''

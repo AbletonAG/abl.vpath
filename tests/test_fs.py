@@ -2,7 +2,7 @@
 # (C) 2013 Ableton AG
 #******************************************************************************
 
-from __future__ import with_statement
+
 import os
 import tempfile
 import stat
@@ -43,40 +43,40 @@ class CommonFileSystemTest(CleanupMemoryBeforeTestMixin, TestCase):
         content = load_file(path)
 
         self.assertEqual(content, 'hallo')
-        self.assert_(path.exists())
-        self.assert_(path.isfile())
+        self.assertTrue(path.exists())
+        self.assertTrue(path.isfile())
         path.remove()
-        self.assert_(not path.exists())
+        self.assertTrue(not path.exists())
 
         path = URI(self.existing_file)
-        self.assert_(path.exists())
-        self.assert_(path.isfile())
+        self.assertTrue(path.exists())
+        self.assertTrue(path.isfile())
 
         content = load_file(path)
-        self.assert_(content)
+        self.assertTrue(content)
 
 
     def test_dir(self):
         testdir = URI('testdir')
         testdir.makedirs()
-        self.assert_(testdir.exists())
-        self.assert_(testdir.isdir())
-        self.assert_(not testdir.isfile())
+        self.assertTrue(testdir.exists())
+        self.assertTrue(testdir.isdir())
+        self.assertTrue(not testdir.isfile())
         testfile = URI('testdir/somefile')
         create_file(testfile, content='test')
         testdir.remove(recursive=True)
-        self.assert_(not testdir.exists())
-        self.assert_(not testfile.exists())
+        self.assertTrue(not testdir.exists())
+        self.assertTrue(not testfile.exists())
 
         testdir = URI(self.existing_dir)
-        self.assert_(testdir.exists())
-        self.assert_(testdir.isdir())
+        self.assertTrue(testdir.exists())
+        self.assertTrue(testdir.isdir())
 
 
     def test_listdir(self):
         path = URI(self.existing_dir)
         dirs = path.listdir()
-        self.assert_('foo.txt' in dirs)
+        self.assertTrue('foo.txt' in dirs)
 
 
     def test_copy_and_move_file(self):
@@ -85,17 +85,17 @@ class CommonFileSystemTest(CleanupMemoryBeforeTestMixin, TestCase):
         create_file(single_file)
 
         single_file.copy(target_file)
-        self.assert_(target_file.exists())
-        self.assert_(target_file.isfile())
+        self.assertTrue(target_file.exists())
+        self.assertTrue(target_file.isfile())
         self.assertEqual(load_file(target_file), 'content')
 
         target_file.remove()
-        self.assert_(not target_file.exists())
+        self.assertTrue(not target_file.exists())
         single_file.move(target_file)
 
-        self.assert_(not single_file.exists())
-        self.assert_(target_file.exists())
-        self.assert_(target_file.isfile())
+        self.assertTrue(not single_file.exists())
+        self.assertTrue(target_file.exists())
+        self.assertTrue(target_file.isfile())
 
         self.assertEqual(load_file(target_file), 'content')
         target_file.remove()
@@ -105,39 +105,39 @@ class CommonFileSystemTest(CleanupMemoryBeforeTestMixin, TestCase):
         folder = URI(self.baseurl) / 'folder'
         folder.makedirs()
 
-        self.assert_(folder.isdir())
+        self.assertTrue(folder.isdir())
         afile = folder / 'afile.txt'
         create_file(afile)
 
         target = URI(self.baseurl) / 'target'
-        self.assert_(not target.exists())
+        self.assertTrue(not target.exists())
         folder.copy(target, recursive=True)
-        self.assert_(target.exists())
+        self.assertTrue(target.exists())
 
         target_file = target / 'afile.txt'
-        self.assert_(target_file.exists())
+        self.assertTrue(target_file.exists())
         self.assertEqual(load_file(target_file), 'content')
 
         target.remove(recursive=True)
-        self.assert_(not target.exists())
+        self.assertTrue(not target.exists())
         target.makedirs()
         folder.copy(target, recursive=True)
 
         newtarget = target / 'folder'
-        self.assert_(newtarget.exists())
-        self.assert_(newtarget.isdir())
+        self.assertTrue(newtarget.exists())
+        self.assertTrue(newtarget.isdir())
 
         newtarget_file = newtarget / 'afile.txt'
-        self.assert_(newtarget_file.exists())
-        self.assert_(newtarget_file.isfile())
+        self.assertTrue(newtarget_file.exists())
+        self.assertTrue(newtarget_file.isfile())
         target.remove(recursive=True)
 
         folder.move(target)
-        self.assert_(not folder.exists())
-        self.assert_(target.exists())
-        self.assert_(target.isdir())
-        self.assert_(target_file.exists())
-        self.assert_(target_file.isfile())
+        self.assertTrue(not folder.exists())
+        self.assertTrue(target.exists())
+        self.assertTrue(target.isdir())
+        self.assertTrue(target_file.exists())
+        self.assertTrue(target_file.isfile())
         target.remove(recursive=True)
 
 
@@ -156,11 +156,11 @@ class CommonFileSystemTest(CleanupMemoryBeforeTestMixin, TestCase):
 
         folder.move(target)
 
-        self.assert_(not folder.exists())
-        self.assert_(target.exists())
-        self.assert_('folder' in target.listdir())
-        self.assert_((target / 'folder').isdir())
-        self.assert_((target / 'folder' / 'content_dir').isdir())
+        self.assertTrue(not folder.exists())
+        self.assertTrue(target.exists())
+        self.assertTrue('folder' in target.listdir())
+        self.assertTrue((target / 'folder').isdir())
+        self.assertTrue((target / 'folder' / 'content_dir').isdir())
 
 
     def test_rename_folder(self):
@@ -178,9 +178,9 @@ class CommonFileSystemTest(CleanupMemoryBeforeTestMixin, TestCase):
         target = self.foo_path / 'target'
         folder.move(target)
 
-        self.assert_(not folder.exists())
-        self.assert_(target.isdir())
-        self.assert_('content_dir' in target.listdir())
+        self.assertTrue(not folder.exists())
+        self.assertTrue(target.isdir())
+        self.assertTrue('content_dir' in target.listdir())
 
 
     def test_copy_recursive_with_preservelinks(self):
@@ -199,8 +199,8 @@ class CommonFileSystemTest(CleanupMemoryBeforeTestMixin, TestCase):
 
         src_path.copy(dest_path, recursive=True, followlinks=False)
 
-        self.assert_((dest_path / 'gaz' / 'foo' / 'mee.txt').isfile())
-        self.assert_((dest_path / 'gaz' / 'foo' / 'tmp').isdir())
+        self.assertTrue((dest_path / 'gaz' / 'foo' / 'mee.txt').isfile())
+        self.assertTrue((dest_path / 'gaz' / 'foo' / 'tmp').isdir())
 
 
     def test_remove_recursive_with_readonly_file(self):
@@ -216,7 +216,7 @@ class CommonFileSystemTest(CleanupMemoryBeforeTestMixin, TestCase):
 
         foo_path.remove(recursive=True)
 
-        self.assert_(not foo_path.exists())
+        self.assertTrue(not foo_path.exists())
 
 
     #------------------------------
@@ -227,8 +227,8 @@ class CommonFileSystemTest(CleanupMemoryBeforeTestMixin, TestCase):
         """
         root = URI(self.baseurl)
         notexisting_path = root / 'ma' / 'moo'
-        self.failUnlessRaises(IOError, load_file, notexisting_path)
-        self.failUnlessRaises(IOError, create_file, notexisting_path)
+        self.assertRaises(IOError, load_file, notexisting_path)
+        self.assertRaises(IOError, create_file, notexisting_path)
 
 
 class TestLocalFileSystem(CommonFileSystemTest):
@@ -288,7 +288,7 @@ class CommonFSCopyTest(TestCase):
 
         xfile.copystat(ofile)
 
-        self.assert_(ofile.isexec())
+        self.assertTrue(ofile.isexec())
 
 
     def test_copystat_nonexec_to_exec(self):
@@ -303,7 +303,7 @@ class CommonFSCopyTest(TestCase):
 
         ofile.copystat(xfile)
 
-        self.assert_(not xfile.isexec())
+        self.assertTrue(not xfile.isexec())
 
 
     def test_copy_recursive(self):
@@ -326,10 +326,10 @@ class CommonFSCopyTest(TestCase):
 
         foo_path.copy(bar_path, recursive=True)
 
-        self.assert_((bar_path / 'xfile.exe').isexec())
-        self.assert_((bar_path / 'zfile.exe').isexec())
-        self.assert_(not (bar_path / 'otherfile.txt').isexec())
-        self.assert_(not (bar_path / 'nfile.txt').isexec())
+        self.assertTrue((bar_path / 'xfile.exe').isexec())
+        self.assertTrue((bar_path / 'zfile.exe').isexec())
+        self.assertTrue(not (bar_path / 'otherfile.txt').isexec())
+        self.assertTrue(not (bar_path / 'nfile.txt').isexec())
 
 
     def test_copy_dir_to_file(self):
@@ -343,7 +343,7 @@ class CommonFSCopyTest(TestCase):
         create_file(moo_path, content='moomoo')
 
         # can't copy dir on (existing) file
-        self.failUnlessRaises(OSError, bar_path.copy,
+        self.assertRaises(OSError, bar_path.copy,
                               moo_path, recursive=True)
 
 
@@ -358,7 +358,7 @@ class CommonFSCopyTest(TestCase):
 
         gaz_path.copy(moo_path, recursive=True)
 
-        self.assert_((moo_path).isdir())
+        self.assertTrue((moo_path).isdir())
 
 
 class TestLocalFSCopy2(CommonFSCopyTest):
@@ -396,14 +396,14 @@ class CommonFSExecTest(TestCase):
         xfile = create_file(root / 'xfile.exe')
 
         xfile.set_exec(stat.S_IXUSR)
-        self.assert_(xfile.isexec())
+        self.assertTrue(xfile.isexec())
         self.assertEqual(xfile.info().mode & stat.S_IXUSR, stat.S_IXUSR)
 
         # create a file without exec flag
         ofile = create_file(root / 'otherfile.txt')
 
         self.assertEqual(ofile.info().mode & stat.S_IXUSR, 0)
-        self.assert_(not ofile.isexec())
+        self.assertTrue(not ofile.isexec())
 
 
 class TestLocalFSExec(CommonFSExecTest):
@@ -443,21 +443,21 @@ class CommonLocalFSSymlinkTest(TestCase):
 
         moo_path = root / 'moo'
 
-        self.assert_(not moo_path.exists())
-        self.assert_(not moo_path.islink())
+        self.assertTrue(not moo_path.exists())
+        self.assertTrue(not moo_path.islink())
 
         bar_path.symlink(moo_path)
 
-        self.assert_(moo_path.exists())
-        self.assert_(moo_path.islink())
+        self.assertTrue(moo_path.exists())
+        self.assertTrue(moo_path.islink())
         # a symlink to a dir is a dir
-        self.assert_(moo_path.isdir())
+        self.assertTrue(moo_path.isdir())
 
         link = moo_path.readlink()
-        self.assert_(link == bar_path)
+        self.assertTrue(link == bar_path)
 
         # check that gaz.txt is accessible through the symlink
-        self.assert_(moo_path / 'gaz.txt')
+        self.assertTrue(moo_path / 'gaz.txt')
 
 
     def test_symlink_file(self):
@@ -470,21 +470,21 @@ class CommonLocalFSSymlinkTest(TestCase):
 
         tee_path = root / 'helloworld'
 
-        self.assert_(not tee_path.exists())
-        self.assert_(not tee_path.islink())
+        self.assertTrue(not tee_path.exists())
+        self.assertTrue(not tee_path.islink())
 
         gaz_path.symlink(tee_path)
 
-        self.assert_(tee_path.exists())
-        self.assert_(tee_path.islink())
+        self.assertTrue(tee_path.exists())
+        self.assertTrue(tee_path.islink())
         # a symlink to a file is a file
-        self.assert_(tee_path.isfile())
+        self.assertTrue(tee_path.isfile())
 
         link = tee_path.readlink()
-        self.assert_(link == gaz_path)
+        self.assertTrue(link == gaz_path)
 
         # check that gaz.txt is accessible through the symlink
-        self.assert_(load_file(tee_path) == 'foobar')
+        self.assertTrue(load_file(tee_path) == 'foobar')
 
 
     #------------------------------
@@ -498,9 +498,9 @@ class CommonLocalFSSymlinkTest(TestCase):
         tee_path = root / 'helloworld'
         notexisting_path.symlink(tee_path)
 
-        self.assert_(tee_path.islink())
-        self.assert_(tee_path.readlink() == notexisting_path)
-        self.assert_(not notexisting_path.exists())
+        self.assertTrue(tee_path.islink())
+        self.assertTrue(tee_path.readlink() == notexisting_path)
+        self.assertTrue(not notexisting_path.exists())
 
 
     def test_open_deadlink_fails(self):
@@ -510,8 +510,8 @@ class CommonLocalFSSymlinkTest(TestCase):
         tee_path = root / 'helloworld'
         notexisting_path.symlink(tee_path)
 
-        self.failUnlessRaises(IOError, load_file, tee_path)
-        self.failUnlessRaises(IOError, create_file, tee_path)
+        self.assertRaises(IOError, load_file, tee_path)
+        self.assertRaises(IOError, create_file, tee_path)
 
 
     def test_listdir_deadlink_fails(self):
@@ -521,7 +521,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         tee_path = root / 'helloworld'
         notexisting_path.symlink(tee_path)
 
-        self.failUnlessRaises(OSError, tee_path.listdir)
+        self.assertRaises(OSError, tee_path.listdir)
 
 
     def test_isfile_doesnt_fail_on_deadlink(self):
@@ -531,9 +531,9 @@ class CommonLocalFSSymlinkTest(TestCase):
         tee_path = root / 'helloworld'
         notexisting_path.symlink(tee_path)
 
-        self.assert_(not tee_path.isfile())
-        self.assert_(not tee_path.isdir())
-        self.assert_(not tee_path.exists())
+        self.assertTrue(not tee_path.isfile())
+        self.assertTrue(not tee_path.isdir())
+        self.assertTrue(not tee_path.exists())
 
 
     def test_isdir_doesnt_fail_on_deadlink(self):
@@ -543,7 +543,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         tee_path = root / 'helloworld'
         notexisting_path.symlink(tee_path)
 
-        self.assert_(not tee_path.isdir())
+        self.assertTrue(not tee_path.isdir())
 
 
     def test_exists_doesnt_fail_on_deadlink(self):
@@ -553,7 +553,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         tee_path = root / 'helloworld'
         notexisting_path.symlink(tee_path)
 
-        self.assert_(not tee_path.exists())
+        self.assertTrue(not tee_path.exists())
 
 
     def test_isexec_fails_on_deadlink(self):
@@ -563,7 +563,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         tee_path = root / 'helloworld'
         notexisting_path.symlink(tee_path)
 
-        self.failUnlessRaises(OSError, tee_path.isexec)
+        self.assertRaises(OSError, tee_path.isexec)
 
 
     def test_set_exec_fails_on_deadlink(self):
@@ -573,7 +573,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         tee_path = root / 'helloworld'
         notexisting_path.symlink(tee_path)
 
-        self.failUnlessRaises(OSError, tee_path.set_exec,
+        self.assertRaises(OSError, tee_path.set_exec,
                               stat.S_IXUSR | stat.S_IXGRP)
 
 

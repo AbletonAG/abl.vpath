@@ -2,7 +2,7 @@
 # (C) 2013 Ableton AG
 #******************************************************************************
 
-from __future__ import with_statement
+
 import os
 import tempfile
 from unittest import TestCase
@@ -50,12 +50,12 @@ class CommonLocalFSSymlinkRemoveTest(TestCase):
 
         foo_path.remove(recursive=True)
 
-        self.assert_(not foo_path.isdir())
+        self.assertTrue(not foo_path.isdir())
 
         # followlinks: the pointed to files should not been deleted
-        self.assert_(humpty_path.isfile())
-        self.assert_(mam_path.isdir())
-        self.assert_(raz_path.isdir())
+        self.assertTrue(humpty_path.isfile())
+        self.assertTrue(mam_path.isdir())
+        self.assertTrue(raz_path.isdir())
 
 
     def test_remove_symlink_to_file(self):
@@ -68,7 +68,7 @@ class CommonLocalFSSymlinkRemoveTest(TestCase):
 
         foo_path.remove()
 
-        self.assert_(humpty_path.isfile())
+        self.assertTrue(humpty_path.isfile())
 
 
     def test_remove_symlink_to_looped_symlink(self):
@@ -81,7 +81,7 @@ class CommonLocalFSSymlinkRemoveTest(TestCase):
 
         foo_path.remove()
 
-        self.assert_(humpty_path.islink())
+        self.assertTrue(humpty_path.islink())
 
 
 

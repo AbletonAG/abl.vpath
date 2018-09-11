@@ -2,7 +2,7 @@
 # (C) 2013 Ableton AG
 #******************************************************************************
 
-from __future__ import with_statement
+
 import sys
 from functools import wraps
 from abl.vpath.base.fs import CONNECTION_REGISTRY

@@ -52,6 +52,7 @@ Author: Paul Jiminez (?)
 License: ?, see bugs.python.org/issue1462525, so it's probably usable
 """
 
+
 import re
 
 def urisplit(uri):
@@ -86,13 +87,14 @@ def urisplit(uri):
     return (scheme, authority, path, query, fragment)
 
 
-def uriunsplit((scheme, authority, path, query, fragment)):
+def uriunsplit(uri):
     """
        Reverse of urisplit()
 
        >>> uriunsplit(('scheme','authority','path','query','fragment'))
        "scheme://authority/path?query#fragment"
     """
+    (scheme, authority, path, query, fragment) = uri
     result = ''
     if scheme:
         result += scheme + ':'
@@ -132,7 +134,7 @@ def split_authority(authority):
     return (user, passwd, host, port)
 
 
-def join_authority((user, passwd, host, port)):
+def join_authority(authority):
     """
        Reverse of split_authority()
 
@@ -140,6 +142,7 @@ def join_authority((user, passwd, host, port)):
        "user:password@host:port"
 
     """
+    (user, passwd, host, port) = authority
     result = ''
     if user:
         result += user
@@ -150,6 +153,7 @@ def join_authority((user, passwd, host, port)):
     if port:
         result += ':' + port
     return result
+
 
 class URLParser:
     """Internal Basic URL parsing class.
@@ -299,7 +303,6 @@ class URIParser(object):
         is no value for that part in the supplied URI.
 
         The return value is a tuple of scheme-dependent length.
-
         """
         return tuple([self.scheme_of(uri)] + list(self.parser_for(uri)(defaults).parse(uri)))
 
@@ -408,14 +411,14 @@ def _test():
     }
     failures = 0
     for url in parsetests:
-        print ("url: %s : " % url),
+        print(("url: %s : " % url), end=' ')
         result = URIParser().parse(url)
         if result == parsetests[url]:
-            print "passed"
+            print("passed")
         else:
-            print "Failed."
-            print "       got:  %s" % repr(result)
-            print "  expected:  %s" % repr(parsetests[url])
+            print("Failed.")
+            print("       got:  %s" % repr(result))
+            print("  expected:  %s" % repr(parsetests[url]))
             failures += 1
 
     base = "http://a/b/c/d;p?q"
@@ -468,19 +471,19 @@ def _test():
 
     for relref in jointests:
         result = urljoin(base, relref)
-        print ("%s + %s = %s : " % (repr(base), repr(relref), repr(result))),
+        print(("%s + %s = %s : " % (repr(base), repr(relref), repr(result))), end=' ')
         if result == jointests[relref]:
-            print "passed"
+            print("passed")
         elif result + '/' == jointests[relref]:
             # unclear whether this is the same or not
             # fixable by fixing the use of posixpath.normpath above
-            print "passed"
+            print("passed")
         else:
-            print "Failed.\n  expected: %s " % repr(jointests[relref])
+            print("Failed.\n  expected: %s " % repr(jointests[relref]))
             failures += 1
 
-    print ("%d Tests finished." % (len(parsetests)+len(jointests))),
-    print "%d failures." % failures
+    print(("%d Tests finished." % (len(parsetests)+len(jointests))), end=' ')
+    print("%d failures." % failures)
     sys.exit(failures)
 
 if __name__ == '__main__':

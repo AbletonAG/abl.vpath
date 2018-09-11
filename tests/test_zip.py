@@ -1,4 +1,4 @@
-from __future__ import with_statement
+
 from unittest import TestCase
 
 from abl.vpath.base import URI
@@ -39,7 +39,7 @@ class TestHelper(TestCase):
         self.assertEqual(content_item(path1, path2), '')
 
     def test_compare_unequal(self):
-        self.assert_(not compare_parts([1,2],[3,4]))
+        self.assertTrue(not compare_parts([1,2],[3,4]))
 
     def test_compare_ISDIR(self):
         self.assertEqual(compare_parts([1,2],[1,2,3]), ISDIR)
@@ -119,20 +119,20 @@ class TestReadingZip(ZipTestCase):
         p = URI('zip://((memory:///file.zip))/foo.txt')
         with p.open('w') as fd:
             fd.write('foo')
-        self.assert_(p.exists())
+        self.assertTrue(p.exists())
 
     def test_isfile(self):
         p = URI('zip://((memory:///file.zip))/foo.txt')
         with p.open('w') as fd:
             fd.write('foo')
-        self.assert_(p.isfile())
+        self.assertTrue(p.isfile())
 
     def test_isdir(self):
         dir_path = URI('zip://((memory:///file.zip))/somedir')
         p = dir_path / 'foo.txt'
         with p.open('w') as fd:
             fd.write('foo')
-        self.assert_(dir_path.isdir())
+        self.assertTrue(dir_path.isdir())
 
     def test_path(self):
         dir_path = URI('zip://((memory:///file.zip))/somedir')

@@ -2,9 +2,9 @@
 # (C) 2008-2013 Ableton AG
 #******************************************************************************
 
-from __future__ import with_statement
 
-from cStringIO import StringIO
+
+from io import StringIO
 import errno
 import tempfile
 import time
@@ -65,7 +65,7 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
         connection = subdir.connection
         out = StringIO()
         connection.dump(out)
-        print out.getvalue()
+        print((out.getvalue()))
 
 
     def test_info_on_symlinks(self):
@@ -128,9 +128,9 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
             outf.write("foo\nbar")
 
         with subdir.open() as inf:
-            content = inf.next()
+            content = next(inf)
             assert content == "foo\n"
-            content = inf.next()
+            content = next(inf)
             assert content == "bar"
 
         with subdir.open() as inf:
@@ -156,7 +156,7 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
         try:
             with d.open("w") as outf:
                 outf.write("foo")
-        except IOError, e:
+        except IOError as e:
             self.assertEqual(e.errno, errno.EISDIR)
         else:
             assert False, "You shouldn't be able to ovewrite a directory like this"
@@ -195,12 +195,12 @@ class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
 
     def test_removedir(self):
         dir_path = self.root_path / 'foo'
-        self.assert_(not dir_path.exists())
+        self.assertTrue(not dir_path.exists())
         dir_path.mkdir()
-        self.assert_(dir_path.exists())
-        self.assert_(dir_path.isdir())
+        self.assertTrue(dir_path.exists())
+        self.assertTrue(dir_path.isdir())
         dir_path.remove()
-        self.assert_(not dir_path.exists())
+        self.assertTrue(not dir_path.exists())
 
     def test_remove_not_existing_dir(self):
         dir_path = self.root_path / 'foo'
@@ -208,12 +208,12 @@ class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
 
     def test_removefile(self):
         file_path = self.root_path / 'foo.txt'
-        self.assert_(not file_path.exists())
+        self.assertTrue(not file_path.exists())
         with file_path.open('w') as fd:
             fd.write('bar')
-        self.assert_(file_path.isfile())
+        self.assertTrue(file_path.isfile())
         file_path.remove()
-        self.assert_(not file_path.exists())
+        self.assertTrue(not file_path.exists())
 
 
     def test_removefile_not_existing(self):
@@ -227,11 +227,11 @@ class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
         dir_path.mkdir()
         with file_path.open('w') as fd:
             fd.write('info')
-        self.assert_(dir_path.exists())
-        self.assert_(file_path.exists())
+        self.assertTrue(dir_path.exists())
+        self.assertTrue(file_path.exists())
         dir_path.remove(recursive=True)
-        self.assert_(not dir_path.exists())
-        self.assert_(not file_path.exists())
+        self.assertTrue(not dir_path.exists())
+        self.assertTrue(not file_path.exists())
 
 
     def test_locking(self):
@@ -303,7 +303,7 @@ class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
             clone = URI(error)
             try:
                 clone.remove()
-            except OSError, e:
+            except OSError as e:
                 self.assertEqual(e.errno, 13)
             else:
                 assert False, "Shouldn't be here"
@@ -313,7 +313,7 @@ class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
     def test_reading_from_write_only_files_not_working(self):
         p = self.root_path / "test.txt"
         with p.open("w") as outf:
-            self.failUnlessRaises(IOError, outf.read)
+            self.assertRaises(IOError, outf.read)
 
 
 
@@ -342,7 +342,7 @@ class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
     def test_double_dir_creation_fails(self):
         a = self.root_path / "a"
         a.mkdir()
-        self.failUnlessRaises(OSError, a.mkdir)
+        self.assertRaises(OSError, a.mkdir)
 
 
     def test_setting_mode(self):

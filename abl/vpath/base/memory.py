@@ -1,4 +1,4 @@
-from __future__ import absolute_import, with_statement
+
 
 import mimetypes
 import hashlib
@@ -8,7 +8,7 @@ import stat
 import threading
 from collections import defaultdict
 
-from cStringIO import StringIO
+from io import StringIO
 
 from .fs import FileSystem, BaseUri
 
@@ -94,7 +94,7 @@ class MemoryFile(object):
             yield line
 
 
-    def next(self):
+    def __next__(self):
         line = self.readline()
         if line:
             return line
@@ -153,11 +153,11 @@ class MemoryDir(object):
 
 
     def items(self):
-        return self._files.items()
+        return list(self._files.items())
 
 
     def keys(self):
-        return self._files.keys()
+        return list(self._files.keys())
 
 
     def has(self, name):
@@ -334,7 +334,7 @@ class MemoryFileSystem(FileSystem):
                 if nd is None:
                     return False
                 return nd.kind == NodeKind.DIR
-            except OSError, e:
+            except OSError as e:
                 if e.errno == errno.ELOOP:
                     return False
 
@@ -349,7 +349,7 @@ class MemoryFileSystem(FileSystem):
                 if nd is None:
                     return False
                 return nd.kind == NodeKind.FILE
-            except OSError, e:
+            except OSError as e:
                 if e.errno == errno.ELOOP:
                     return False
         return False
@@ -381,7 +381,7 @@ class MemoryFileSystem(FileSystem):
                 nd = self._get_node_for_path(self._fs, path, throw=False)
                 if nd is None:
                     return False
-            except OSError, e:
+            except OSError as e:
                 if e.errno == errno.ELOOP:
                     return False
         # the root always exists

@@ -2,9 +2,9 @@
 # (C) 2010 Ableton AG
 # Author: Stephan Diehl <stephan.diehl@ableton.com>
 #******************************************************************************
-from __future__ import with_statement, absolute_import
 
-from StringIO import StringIO
+
+from io import StringIO
 
 from .fs import FileSystem, BaseUri, URI
 from .exceptions import FileDoesNotExistError
