@@ -8,7 +8,7 @@ import tempfile
 import shutil
 from unittest import TestCase
 
-from abl.vpath.base import *
+from abl.vpath.base import URI
 
 from .common import (
     create_file,

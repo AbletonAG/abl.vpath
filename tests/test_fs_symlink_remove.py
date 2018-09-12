@@ -7,13 +7,10 @@ import os
 import tempfile
 from unittest import TestCase
 import shutil
-from abl.vpath.base import *
+from abl.vpath.base import URI
 
 from .common import (
     create_file,
-    os_create_file,
-    load_file,
-    mac_only,
     is_on_mac,
     CleanupMemoryBeforeTestMixin,
 )

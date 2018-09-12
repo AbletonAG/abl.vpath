@@ -8,11 +8,10 @@ import datetime
 import logging
 import shutil
 import stat
-import subprocess
 import sys
 
 from .fs import FileSystem, BaseUri, denormalize_path, URI
-from .exceptions import FileDoesNotExistError, OperationIsNotSupportedOnPlatform
+from .exceptions import OperationIsNotSupportedOnPlatform
 from .os_abstraction import os
 
 from abl.util import Bunch, LockFile

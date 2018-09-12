@@ -7,12 +7,10 @@ import os
 import tempfile
 from unittest import TestCase
 import shutil
-from abl.vpath.base import *
+from abl.vpath.base import URI
 
 from .common import (
     create_file,
-    os_create_file,
-    is_on_mac,
     mac_only,
     CleanupMemoryBeforeTestMixin,
 )
@@ -334,7 +332,7 @@ class CommonFileSystemWalkTest(TestCase):
 
 
     @mac_only
-    def test_walk_topdown_dont_follow_symlinks_wont_break_on_loop(self):
+    def test_walk_topdown_dont_follow_symlinks_wont_break_on_loop_file(self):
         foo_path = self._setup_hierarchy_with_symlink(withloop='file')
 
         actual = self._walk(foo_path, topdown=True, followlinks=False)

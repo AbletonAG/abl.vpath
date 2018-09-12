@@ -4,16 +4,13 @@
 # (C) 2008-2017 Ableton AG
 #******************************************************************************
 from __future__ import with_statement
-import datetime
 import os
-import stat
-from posixpath import join as ujoin
 import shutil
 import tempfile
 from unittest import TestCase
 
 
-from abl.vpath.base import *
+from abl.vpath.base import URI
 from abl.vpath.base.fs import scheme_re
 
 
@@ -93,7 +90,7 @@ class TestUnicodeURI(TestCase):
 
 
     def test_unicode_extra(self):
-        p = URI(self.foo_dir, some_query=u"what's üp")
+        URI(self.foo_dir, some_query=u"what's üp")
 
 
     def test_copy(self):

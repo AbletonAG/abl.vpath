@@ -6,11 +6,9 @@ from __future__ import with_statement, absolute_import
 
 from StringIO import StringIO
 
-from .fs import FileSystem, BaseUri, denormalize_path, URI
+from .fs import FileSystem, BaseUri, URI
 from .exceptions import FileDoesNotExistError
 from . import zipfile26 as zipfile
-
-from abl.util import Bunch
 
 
 class WriteStatement(object):
@@ -138,7 +136,6 @@ class ZipFileSystem(FileSystem):
         self.open_zip(options)
         if options is None:
             options = 'r'
-        path_string = self._path(unc)
         if 'r' in options:
             return self._open_for_reading(unc, options)
         elif 'w' in options:

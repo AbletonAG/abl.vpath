@@ -34,12 +34,12 @@ Usage:
 
     # quick-n-dirty
     try:
-        pieces = URIParser({'custom':CustomSchemeHandler}).parse(url, 
-	    ('user','pass','host','port','path'))
+        pieces = URIParser({'custom':CustomSchemeHandler}).parse(url,
+            ('user','pass','host','port','path'))
     except UnknownSchemeError:
         print 'unknown scheme'
 
-    # if you're trying to parse something with a standard URI scheme 
+    # if you're trying to parse something with a standard URI scheme
     # (http for instance), with no default values
     url = "http://user:pass@host:port/path"
     try:
@@ -94,15 +94,15 @@ def uriunsplit((scheme, authority, path, query, fragment)):
        "scheme://authority/path?query#fragment"
     """
     result = ''
-    if scheme: 
+    if scheme:
         result += scheme + ':'
-    if authority: 
+    if authority:
         result += '//' + authority
     if path:
         result += path
-    if query: 
+    if query:
         result += '?' + query
-    if fragment: 
+    if fragment:
         result += '#' + fragment
     return result
 
@@ -110,7 +110,7 @@ def uriunsplit((scheme, authority, path, query, fragment)):
 def split_authority(authority):
     """
        Basic authority parser that splits authority into component parts
-       
+
        >>> split_authority("user:password@host:port")
        ('user', 'password', 'host', 'port')
 
@@ -143,9 +143,9 @@ def join_authority((user, passwd, host, port)):
     result = ''
     if user:
         result += user
-	if passwd:
-	    result += ':' + passwd
-	result += '@'
+        if passwd:
+            result += ':' + passwd
+        result += '@'
     result += host
     if port:
         result += ':' + port
@@ -161,41 +161,41 @@ class URLParser:
        instantiate it - let URIParser do that for you.
     """
 
-    # user, password, host, port, path, query, fragment 
+    # user, password, host, port, path, query, fragment
     _defaults = (None, None, None, None, None, None, None)
 
     def __init__(self, defaults=None):
         if defaults:
             self._defaults = defaults
-	dlist = list(self._defaults)
-	for d in range(len(self._defaults)):
-	    if dlist[d]: 
-	        dlist[d] = str(dlist[d])
-	self._defaults = dlist
+        dlist = list(self._defaults)
+        for d in range(len(self._defaults)):
+            if dlist[d]:
+                dlist[d] = str(dlist[d])
+        self._defaults = dlist
 
     def parse(self, urlinfo):
         scheme, authority, path, query, frag = urisplit(urlinfo)
-	user, passwd, host, port = split_authority(authority)
-	duser, dpasswd, dhost, dport, dpath, dquery, dfrag = self._defaults
-	if user is None: 
-	    user = duser
-	if passwd is None: 
-	    passwd = dpasswd
-	if host is None: 
-	    host = dhost
-	if port is None: 
-	    port = dport
-	if path == '': 
-	    path = dpath
-        if query is None: 
-	    query = dquery
-        if frag is None: 
-	    frag = self._defaults[6]
+        user, passwd, host, port = split_authority(authority)
+        duser, dpasswd, dhost, dport, dpath, dquery, dfrag = self._defaults
+        if user is None:
+            user = duser
+        if passwd is None:
+            passwd = dpasswd
+        if host is None:
+            host = dhost
+        if port is None:
+            port = dport
+        if path == '':
+            path = dpath
+        if query is None:
+            query = dquery
+        if frag is None:
+            frag = self._defaults[6]
         return (user, passwd, host, port, path, query, frag)
 
     def unparse(self, pieces):
-        authority = unparse_authority(pieces[:4])
-	return unparse_uri(('', authority, pieces[4], pieces[5], pieces[6]))
+        authority = join_authority(pieces[:4])
+        return uriunsplit(('', authority, pieces[4], pieces[5], pieces[6]))
 
 class HttpURLParser(URLParser):
     """Internal class to hold the defaults of HTTP URLs"""
@@ -244,17 +244,17 @@ class MailtoURIParser(URLParser):
        format: mailto:user@host?query#frag
 
     """
-    # user, host, query, fragment 
+    # user, host, query, fragment
     _defaults = (None, None, None, None)
 
     def parse(self, urlinfo):
         scheme, authority, path, query, frag = urisplit(urlinfo)
-	user, host = path.split('@', 1)
-	return (user, host, query, frag)
+        user, host = path.split('@', 1)
+        return (user, host, query, frag)
 
     def unparse(self, pieces):
         path = pieces[0] + '@' + pieces[1]
-	return unparse_uri(('', None, path, pieces[2], pieces[3]))
+        return uriunsplit(('', None, path, pieces[2], pieces[3]))
 
 
 class URIParser(object):
@@ -275,44 +275,44 @@ class URIParser(object):
                'file': FileURLParser,
                'telnet': TelnetURLParser,
                'mailto': MailtoURIParser,
-	      }
+              }
 
     def __init__(self, schemes=Schemes, extra={}):
         """Create a new URIParser
 
-	schemes is the full set of schemes to consider.  It defaults to URIParser.Schemes,
-	which is the full set of parsers on hand.
+        schemes is the full set of schemes to consider.  It defaults to URIParser.Schemes,
+        which is the full set of parsers on hand.
 
-	extra is a dictionary of schemename:parserclass that is added to the list of
-	known parsers.
+        extra is a dictionary of schemename:parserclass that is added to the list of
+        known parsers.
 
-	"""
+        """
         self._parsers = {}
         self._parsers.update(schemes)
         self._parsers.update(extra)
 
     def parse(self, uri, defaults=None):
-        """Parse the URI.  
-	
-	uri is the uri to parse.
-	defaults is a scheme-dependent list of values to use if there
-	is no value for that part in the supplied URI.
+        """Parse the URI.
 
-	The return value is a tuple of scheme-dependent length.
+        uri is the uri to parse.
+        defaults is a scheme-dependent list of values to use if there
+        is no value for that part in the supplied URI.
 
-	"""
+        The return value is a tuple of scheme-dependent length.
+
+        """
         return tuple([self.scheme_of(uri)] + list(self.parser_for(uri)(defaults).parse(uri)))
 
     def unparse(self, pieces, defaults=None):
         """Join the parts of a URI back together to form a valid URI.
 
         pieces is a tuble of URI pieces.  The scheme must be in pieces[0] so that
-	the rest of the pieces can be interpreted.
-	
-	"""
+        the rest of the pieces can be interpreted.
+
+        """
         return self.parser_for(pieces[0])(defaults).unparse(pieces)
 
-    # these work on any URI 
+    # these work on any URI
     def scheme_of(self, uri):
         """Return the scheme of any URI."""
         return uri.split(':')[0]
@@ -323,10 +323,10 @@ class URIParser(object):
 
     def parser_for(self, uri):
         """Return the Parser object used to parse a particular URI.
-	
-	Parser objects are required to have only 'parse' and 'unparse' methods.
 
-	"""
+        Parser objects are required to have only 'parse' and 'unparse' methods.
+
+        """
         return self._parsers.get(self.scheme_of(uri), DefaultURIParser)
 
 def _dirname(p):
@@ -345,7 +345,7 @@ def _pathjoin(a,b):
 
 def urljoin(base, url):
     """Join a base URL and a (possiby relative) URL.
-   
+
     base - base url
     url - a (possibly relative) URL to join to the base URL
 
@@ -367,7 +367,7 @@ def urljoin(base, url):
         bquery, bfragment = uquery, ufragment
     elif ufragment is not None:
         bfragment = ufragment
-    return uriunsplit((bscheme, bauthority, bpath, bquery, bfragment)) 
+    return uriunsplit((bscheme, bauthority, bpath, bquery, bfragment))
 
 
 
@@ -376,8 +376,8 @@ def _test():
     parsetests = {
         # Simple tests
         'http://user:pass@host:8080/path?query=result#fragment':
-            ('http', 'user', 'pass', 'host', '8080', '/path', 
-	        'query=result', 'fragment'),
+            ('http', 'user', 'pass', 'host', '8080', '/path',
+                'query=result', 'fragment'),
         'http://user@host:8080/path?query=result#fragment':
             ('http', 'user', None,'host','8080', '/path', 'query=result', 'fragment'),
         'http://host:8080/path?query=result#fragment':
@@ -395,15 +395,15 @@ def _test():
         'http:///path':
             ('http', None, None, None, '80', '/path', None, None),
         # torture tests
-        'http://user:pass@host:port/path?que:ry/res@ult#fr@g:me/n?t': 
-            ('http', 'user', 'pass', 'host', 'port', '/path', 
-	        'que:ry/res@ult', 'fr@g:me/n?t'),
-        'http://user:pass@host:port/path#fr@g:me/n?t': 
+        'http://user:pass@host:port/path?que:ry/res@ult#fr@g:me/n?t':
+            ('http', 'user', 'pass', 'host', 'port', '/path',
+                'que:ry/res@ult', 'fr@g:me/n?t'),
+        'http://user:pass@host:port/path#fr@g:me/n?t':
             ('http', 'user', 'pass', 'host', 'port', '/path', None, 'fr@g:me/n?t'),
-        'http://user:pass@host:port?que:ry/res@ult#fr@g:me/n?t': 
-            ('http', 'user', 'pass', 'host', 'port', '/', 
-	        'que:ry/res@ult', 'fr@g:me/n?t'),
-        'http://user:pass@host:port#fr@g:me/n?t': 
+        'http://user:pass@host:port?que:ry/res@ult#fr@g:me/n?t':
+            ('http', 'user', 'pass', 'host', 'port', '/',
+                'que:ry/res@ult', 'fr@g:me/n?t'),
+        'http://user:pass@host:port#fr@g:me/n?t':
             ('http', 'user', 'pass', 'host', 'port', '/', None, 'fr@g:me/n?t'),
     }
     failures = 0
@@ -414,12 +414,12 @@ def _test():
             print "passed"
         else:
             print "Failed."
-	    print "       got:  %s" % repr(result)
-	    print "  expected:  %s" % repr(parsetests[url])
+            print "       got:  %s" % repr(result)
+            print "  expected:  %s" % repr(parsetests[url])
             failures += 1
 
     base = "http://a/b/c/d;p?q"
-    jointests = {     
+    jointests = {
         # Normal Examples from STD 66 Section 5.4.1
         "g:h"           :  "g:h",
         "g"             :  "http://a/b/c/g",
@@ -463,28 +463,25 @@ def _test():
         "g?y/../x"      :  "http://a/b/c/g?y/../x",
         "g#s/./x"       :  "http://a/b/c/g#s/./x",
         "g#s/../x"      :  "http://a/b/c/g#s/../x",
-        "http:g"        :  "http://a/b/c/g" 
+        "http:g"        :  "http://a/b/c/g"
     }
 
     for relref in jointests:
         result = urljoin(base, relref)
         print ("%s + %s = %s : " % (repr(base), repr(relref), repr(result))),
         if result == jointests[relref]:
-            print "passed" 
-	elif result + '/' == jointests[relref]:
-	    # unclear whether this is the same or not
-	    # fixable by fixing the use of posixpath.normpath above
-	    print "passed"
+            print "passed"
+        elif result + '/' == jointests[relref]:
+            # unclear whether this is the same or not
+            # fixable by fixing the use of posixpath.normpath above
+            print "passed"
         else:
             print "Failed.\n  expected: %s " % repr(jointests[relref])
-	    failures += 1
-    
+            failures += 1
+
     print ("%d Tests finished." % (len(parsetests)+len(jointests))),
     print "%d failures." % failures
     sys.exit(failures)
 
 if __name__ == '__main__':
     _test()
-
-
- 	  	 
