@@ -496,6 +496,8 @@ class ZipExtFile:
 
         return nextline
 
+    next = __next__ # Python 2 iterator interface
+
     def close(self):
         self.closed = True
 
