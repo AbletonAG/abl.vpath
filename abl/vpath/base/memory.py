@@ -1,14 +1,15 @@
-
+from __future__ import unicode_literals
 
 import mimetypes
 import hashlib
 import time
 import errno
 import stat
+import sys
 import threading
 from collections import defaultdict
 
-from io import StringIO
+from io import BytesIO
 
 from .fs import FileSystem, BaseUri
 
@@ -28,7 +29,7 @@ class MemoryFile(object):
 
     def __init__(self, path):
         self.path = path
-        self._data = StringIO()
+        self._data = BytesIO()
         self._line_reader = None
         self.mtime = self.ctime = time.time()
         self.mode = 0
@@ -36,7 +37,7 @@ class MemoryFile(object):
 
 
     def reset(self):
-        self._data = StringIO()
+        self._data = BytesIO()
         self._line_reader = None
         self.mtime = self.ctime = time.time()
         self.mode = 0
@@ -76,8 +77,16 @@ class MemoryFile(object):
         return self._data.flush()
 
 
-    def __str__(self):
+    def __unicode__(self):
+        return self._data.getvalue().decode('utf-8')
+
+
+    def __bytes__(self):
         return self._data.getvalue()
+
+
+    def __str__(self):
+        return str(self._data.getvalue())
 
 
     def close(self):
@@ -111,15 +120,29 @@ class MemoryFile(object):
 
 
 class MemoryFileProxy(object):
-    def __init__(self, mem_file, readable):
+
+    def __init__(self, mem_file, readable, binary=False):
         self.mem_file = mem_file
         self.readable = readable
+        self.binary = binary
+
+
+    def encode(self, data):
+        return data if self.binary else data.encode('utf-8')
+
+
+    def decode(self, data):
+        return data if self.binary else data.decode('utf-8')
 
 
     def read(self, *args, **kwargs):
         if not self.readable:
             raise IOError(errno.EBADF, "bad file descriptor")
-        return self.mem_file.read(*args, **kwargs)
+        return self.decode(self.mem_file.read(*args, **kwargs))
+
+
+    def write(self, data, *args, **kwargs):
+        return self.mem_file.write(self.encode(data), *args, **kwargs)
 
 
     def __getattr__(self, name):
@@ -135,7 +158,23 @@ class MemoryFileProxy(object):
 
 
     def __iter__(self):
-        return self.mem_file
+        return self
+
+
+    def __next__(self):
+        return self.decode(self.mem_file.__next__())
+
+
+    next = __next__ # Python 2 iterator interface
+
+
+    def readline(self):
+        return self.decode(self.mem_file.readline())
+
+
+    def readlines(self):
+        for line in self.mem_file.readlines():
+            yield self.decode(line)
 
 
 class MemoryDir(object):
@@ -394,13 +433,13 @@ class MemoryFileSystem(FileSystem):
             self.next_op_callbacks[p](path, func)
 
 
-    def _open_for_read(self, path):
+    def _open_for_read(self, path, binary=False):
         nd = self._get_node_for_path(self._fs, path)
         nd.seek(0)
-        return MemoryFileProxy(nd, True)
+        return MemoryFileProxy(nd, True, binary=binary)
 
 
-    def _open_for_write(self, path):
+    def _open_for_write(self, path, binary=False):
         p = self._path(path)
         nd = self._get_node(self._fs, p.split("/")[:-1])
         file_to_create = p.split("/")[-1]
@@ -410,27 +449,28 @@ class MemoryFileSystem(FileSystem):
             if cnd is not None and cnd.kind == NodeKind.DIR:
                 raise IOError(errno.EISDIR, "File is directory" )
             cnd.reset()
-            return MemoryFileProxy(cnd, False)
+            return MemoryFileProxy(cnd, False, binary=binary)
         else:
             f = MemoryFile(p)
             self._create_child(nd, file_to_create, f)
-            return MemoryFileProxy(f, False)
+            return MemoryFileProxy(f, False, binary=binary)
 
 
-    def _open_for_append(self, path):
+    def _open_for_append(self, path, binary=False):
         nd = self._get_node_for_path(self._fs, path)
         nd.seek(len(nd))
-        return MemoryFileProxy(nd, False)
+        return MemoryFileProxy(nd, False, binary=binary)
 
 
     def open(self, path, options, mimetype):
         with LookupExceptionClass(self, IOError):
+            binary = (options and "b" in options)
             if options is None or "r" in options:
-                return self._open_for_read(path)
+                return self._open_for_read(path, binary=binary)
             elif "w" in options:
-                return self._open_for_write(path)
+                return self._open_for_write(path, binary=binary)
             elif "a" in options:
-                return self._open_for_append(path)
+                return self._open_for_append(path, binary=binary)
             else:
                 raise OSError(errno.EINVAL, "The mode flag is not valid")
 
@@ -443,15 +483,15 @@ class MemoryFileSystem(FileSystem):
         def traverse(current, path="memory:///"):
             for name, value in sorted(current.items()):
                 if value.kind == NodeKind.FILE:
-                    value = str(value)
                     if no_binary:
                         mt, _ = mimetypes.guess_type(name)
                         if mt in self.BINARY_MIME_TYPES:
                             hash_ = hashlib.md5()
                             hash_.update(value)
                             value = "Binary: %s" % hash_.hexdigest()
+                    proxy = MemoryFileProxy(value, readable=True, binary=False)
                     outf.write("--- START %s%s ---\n" % (path, name))
-                    outf.write(value)
+                    outf.write(proxy.read())
                     outf.write("\n--- END ---\n\n")
                 elif value.kind == NodeKind.LINK:
                     outf.write("LINK: %s%s -> %s\n" % (path, name, value.target))

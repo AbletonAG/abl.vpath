@@ -52,6 +52,8 @@ Author: Paul Jiminez (?)
 License: ?, see bugs.python.org/issue1462525, so it's probably usable
 """
 
+from __future__ import print_function
+
 
 import re
 

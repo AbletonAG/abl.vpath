@@ -1,6 +1,8 @@
 """
 Read and write ZIP files.
 """
+from __future__ import print_function
+
 import struct, os, time, sys, shutil
 import binascii, io
 
@@ -13,6 +15,7 @@ except ImportError:
 
 __all__ = ["BadZipfile", "error", "ZIP_STORED", "ZIP_DEFLATED", "is_zipfile",
            "ZipInfo", "ZipFile", "PyZipFile", "LargeZipFile" ]
+
 
 class BadZipfile(Exception):
     pass
@@ -375,9 +378,8 @@ class ZipInfo (object):
                     idx += 1
 
                 if self.header_offset == 0xffffffff:
-                    old = self.header_offset
                     self.header_offset = counts[idx]
-                    idx+=1
+                    idx += 1
 
             extra = extra[ln+4:]
 
@@ -1192,8 +1194,8 @@ class ZipFile:
             # check for valid comment length
             if len(self.comment) >= ZIP_MAX_COMMENT:
                 if self.debug > 0:
-                    msg = 'Archive comment is too long; truncating to %d bytes' \
-                          % ZIP_MAX_COMMENT
+                    print('Archive comment is too long; truncating to %d bytes' \
+                          % ZIP_MAX_COMMENT)
                 self.comment = self.comment[:ZIP_MAX_COMMENT]
 
             endrec = struct.pack(structEndArchive, stringEndArchive,
