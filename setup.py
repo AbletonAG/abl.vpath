@@ -1,5 +1,3 @@
-import os
-import sys
 from setuptools import setup, find_packages
 
 setup(
@@ -9,20 +7,24 @@ setup(
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
     license="MIT",
-    url='http://hg.ableton.com/abl.vpath',
+    url='https://github.com/AbletonAG/abl.vpath',
     install_requires=[
         "decorator",
         "abl.util",
         ],
     packages=find_packages(exclude=['ez_setup', 'tests']),
-    #namespace_packages = ['abl', 'abl.vpath'],
-    # TODO-std: add the classifiers
     classifiers = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Filesystems',
     ],
