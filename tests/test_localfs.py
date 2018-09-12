@@ -8,6 +8,7 @@ import stat
 import sys
 from unittest import TestCase
 from abl.vpath.base import URI
+from .common import mac_only
 
 
 #-------------------------------------------------------------------------------
@@ -50,6 +51,7 @@ class TestLocalFSInfo(TestCase):
         self.assert_(p.info().mtime.timetuple()[:6] >= now.timetuple()[:6])
 
 
+    @mac_only
     def test_info_on_symlinks(self):
         a_file = URI("test.txt")
         a_link = URI("test_link")
