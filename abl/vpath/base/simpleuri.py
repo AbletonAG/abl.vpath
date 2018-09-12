@@ -9,7 +9,7 @@ urlparse module for non http urls
 try:
     from urllib.parse import urlencode, unquote_plus
 except ImportError: # Python 2
-    from urllib.parse import urlencode, unquote_plus
+    from urllib import urlencode, unquote_plus
 
 from .uriparse import urisplit, split_authority
 

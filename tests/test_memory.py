@@ -20,6 +20,7 @@ from .common import create_file, CleanupMemoryBeforeTestMixin
 
 
 class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
+
     def setUp(self):
         super(MemoryFSTests, self).setUp()
         self.temp_path = URI(tempfile.mktemp())
@@ -66,6 +67,22 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
         out = StringIO()
         connection.dump(out)
         print((out.getvalue()))
+
+
+    def test_write_text_read_binary(self):
+        test_file = self.root / 'foo'
+        with test_file.open('w') as text_proxy:
+            text_proxy.write("spam & eggs")
+        with test_file.open('rb') as binary_proxy:
+            self.assertEqual(binary_proxy.read(), b"spam & eggs")
+
+
+    def test_write_binary_read_text(self):
+        test_file = self.root / 'foo'
+        with test_file.open('wb') as binary_proxy:
+            binary_proxy.write(b"spam & eggs")
+        with test_file.open('r') as text_proxy:
+            self.assertEqual(text_proxy.read(), "spam & eggs")
 
 
     def test_info_on_symlinks(self):
@@ -129,13 +146,13 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
 
         with subdir.open() as inf:
             content = next(inf)
-            assert content == "foo\n"
+            self.assertEqual(content, "foo\n")
             content = next(inf)
-            assert content == "bar"
+            self.assertEqual(content, "bar")
 
         with subdir.open() as inf:
-            for l in inf:
-                assert l in ["foo\n", "bar"]
+            for line in inf:
+                self.assertIn(line, ["foo\n", "bar"])
 
     def test_exists_on_root(self):
         root = self.root
@@ -165,8 +182,8 @@ class MemoryFSTests(CleanupMemoryBeforeTestMixin, TestCase):
     def test_copy_into_fs(self):
         root = self.root
         for item in ["foo", "bar"]:
-            with (root/item).open("w") as fd:
-                fd.write(item)
+            with (root/item).open("wb") as fd:
+                fd.write(item.encode('utf-8'))
         root.copy(self.temp_path, recursive=True)
         content = self.temp_path.listdir()
         self.assertEqual(set(content), set(["foo", "bar"]))
@@ -276,7 +293,6 @@ class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
         finally:
             mfile.lock.release()
 
-
         with p.open("w") as outf:
             outf.write("foo")
 
@@ -289,14 +305,13 @@ class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
         error_file = self.root_path / "error"
 
         with error_file.open("wb") as outf:
-            outf.write("foobarbaz")
+            outf.write(b"foobarbaz")
 
         error_dir = self.root_path / "error.dir"
         error_dir.mkdir()
 
         def next_op_callback(_path, _func):
             raise OSError(13, "Permission denied")
-
 
         for error in (error_file, error_dir):
             error._manipulate(next_op_callback=next_op_callback)
@@ -307,7 +322,6 @@ class TestRemovalOfFilesAndDirs(CleanupMemoryBeforeTestMixin, TestCase):
                 self.assertEqual(e.errno, 13)
             else:
                 assert False, "Shouldn't be here"
-
 
 
     def test_reading_from_write_only_files_not_working(self):
