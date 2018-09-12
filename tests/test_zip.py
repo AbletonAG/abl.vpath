@@ -1,8 +1,7 @@
-
 from unittest import TestCase
+from zipfile import ZipFile
 
 from abl.vpath.base import URI
-from abl.vpath.base import zipfile26 as zipfile
 
 from abl.vpath.base.zip import compare_parts, ISDIR, ISFILE, content_item
 from abl.vpath.base.fs import CONNECTION_REGISTRY
@@ -92,7 +91,7 @@ class TestReadingZip(ZipTestCase):
         self.zip_path = URI('memory:///file.zip')
         zip_handle = self.zip_path.open('wb')
         try:
-            self.fp_zip = zipfile.ZipFile(zip_handle, 'w')
+            self.fp_zip = ZipFile(zip_handle, 'w')
             self.fp_zip.writestr('/foo.txt', 'bar')
             self.fp_zip.close()
         finally:
@@ -169,7 +168,7 @@ class TestAdvancedZip(ZipTestCase):
         self.zip_path = URI('memory:///file.zip')
         zip_handle = self.zip_path.open('wb')
         try:
-            self.fp_zip = zipfile.ZipFile(zip_handle, 'w')
+            self.fp_zip = ZipFile(zip_handle, 'w')
             self.fp_zip.writestr('/dir1/foo.txt', 'bar')
             self.fp_zip.writestr('/dir1/bar.txt', 'bar')
             self.fp_zip.writestr('/bar.txt', 'bar')
