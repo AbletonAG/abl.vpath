@@ -4,16 +4,10 @@
 
 from __future__ import with_statement
 import datetime
-import os
-import time
-import tempfile
 import stat
 import sys
 from unittest import TestCase
-from abl.vpath.base import *
-import logging
-import shutil
-from common import create_file, load_file, mac_only, windows_only
+from abl.vpath.base import URI
 
 
 #-------------------------------------------------------------------------------

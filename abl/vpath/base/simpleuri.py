@@ -7,8 +7,6 @@ urlparse module for non http urls
 """
 from __future__ import with_statement, absolute_import
 
-import re
-from urlparse import urlparse
 from urllib import urlencode, unquote_plus
 
 from .uriparse import urisplit, split_authority
@@ -120,7 +118,7 @@ class UriParse(object):
         if self.fragment:
             rest += '#%s' % self.fragment
         if (
-            (self.scheme.startswith('http') and self.hostname) or 
+            (self.scheme.startswith('http') and self.hostname) or
             not self.scheme.startswith('http')
             ):
             parts = [self.scheme, '://']

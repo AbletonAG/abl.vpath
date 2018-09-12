@@ -4,7 +4,7 @@
 
 import unittest
 
-from abl.vpath.base.uriparse import URIParser, urisplit
+from abl.vpath.base.uriparse import urisplit
 
 class TestURIParser(unittest.TestCase):
 

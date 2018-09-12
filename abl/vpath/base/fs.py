@@ -1,6 +1,5 @@
 from __future__ import with_statement
 
-
 import atexit
 from collections import defaultdict
 from contextlib import nested
@@ -8,7 +7,6 @@ import fnmatch
 import hashlib
 import os
 import stat
-from Queue import Queue
 import re
 import shutil
 import sys
@@ -21,7 +19,6 @@ import pkg_resources
 
 from .simpleuri import UriParse, uri_from_parts
 from .exceptions import (NoSchemeError,
-                         RemoteConnectionTimeout,
                          FileDoesNotExistError,
                          OperationIsNotSupportedOnPlatform)
 
@@ -171,6 +168,7 @@ class ConnectionRegistry(object):
         cleaner: method to be run in a thread to check for stale connections.
         """
         while True:
+            now = time.time()
             self.cleanup()
             try:
                 while (time.time() - now) < self.clean_interval:

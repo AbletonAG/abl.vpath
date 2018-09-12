@@ -10,8 +10,7 @@ from posixpath import join as ujoin
 from unittest import TestCase
 import shutil
 
-from abl.vpath.base import *
-from abl.vpath.base.exceptions import FileDoesNotExistError
+from abl.vpath.base import URI
 
 from .common import (
     create_file,
@@ -322,8 +321,8 @@ class CommonFSCopyTest(TestCase):
         zfile.set_exec(stat.S_IXUSR)
 
         # create a file without exec flag
-        ofile = create_file(foo_path / 'otherfile.txt')
-        nfile = create_file(foo_path / 'nfile.txt')
+        create_file(foo_path / 'otherfile.txt')
+        create_file(foo_path / 'nfile.txt')
 
         foo_path.copy(bar_path, recursive=True)
 

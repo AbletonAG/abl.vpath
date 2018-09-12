@@ -5,7 +5,6 @@
 from __future__ import with_statement
 import sys
 from functools import wraps
-from abl.vpath.base import *
 from abl.vpath.base.fs import CONNECTION_REGISTRY
 
 

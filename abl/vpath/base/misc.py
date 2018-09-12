@@ -8,7 +8,6 @@
 # Helper Classes
 
 import os
-import traceback
 
 class TempFileHandle(object):
     """
