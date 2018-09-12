@@ -40,7 +40,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         tee_path.copy(moo_path, followlinks=True)
 
         self.assertTrue(not moo_path.islink())
-        self.assertTrue(load_file(moo_path) == 'foobar')
+        self.assertEqual(load_file(moo_path), 'foobar')
 
 
     def test_copy_filesymlink_to_file_preservelinks(self):
@@ -60,7 +60,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         tee_path.copy(moo_path, followlinks=False)
 
         self.assertTrue(moo_path.islink())
-        self.assertTrue(load_file(moo_path) == 'foobar')
+        self.assertEqual(load_file(moo_path), 'foobar')
 
 
     def test_copy_filesymlink_to_dir_followlinks(self):
@@ -81,7 +81,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
 
         helloworld_path = moo_path / 'helloworld'
         self.assertTrue(not helloworld_path.islink())
-        self.assertTrue(load_file(helloworld_path) == 'foobar')
+        self.assertEqual(load_file(helloworld_path), 'foobar')
 
 
     def test_copy_filesymlink_to_dir_preservelinks(self):
@@ -102,7 +102,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
 
         helloworld_path = moo_path / 'helloworld'
         self.assertTrue(helloworld_path.islink())
-        self.assertTrue(load_file(helloworld_path) == 'foobar')
+        self.assertEqual(load_file(helloworld_path), 'foobar')
 
 
     def test_copy_filesymlink_to_missingfile_followlinks(self):
@@ -123,7 +123,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         tee_path.copy(helloworld_path, followlinks=True)
 
         self.assertTrue(not helloworld_path.islink())
-        self.assertTrue(load_file(helloworld_path) == 'foobar')
+        self.assertEqual(load_file(helloworld_path), 'foobar')
 
 
     def test_copy_filesymlink_to_missingfile_preservelinks(self):
@@ -144,7 +144,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         tee_path.copy(helloworld_path, followlinks=False)
 
         self.assertTrue(helloworld_path.islink())
-        self.assertTrue(load_file(helloworld_path) == 'foobar')
+        self.assertEqual(load_file(helloworld_path), 'foobar')
 
 
     def test_copy_filesymlink_to_filesymlink_followlinks(self):
@@ -169,8 +169,8 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         # when following links copying to a symlink->file modifies the
         # referenced file!
         self.assertTrue(tee2_path.islink())
-        self.assertTrue(load_file(tee2_path) == 'foobar')
-        self.assertTrue(load_file(gaz2_path) == 'foobar')
+        self.assertEqual(load_file(tee2_path), 'foobar')
+        self.assertEqual(load_file(gaz2_path), 'foobar')
         self.assertTrue((bar_path / 'gaz2.txt').isfile())
         self.assertTrue((bar_path / 'gaz.txt').isfile())
 
@@ -195,10 +195,10 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         tee_path.copy(tee2_path, followlinks=False)
 
         self.assertTrue(tee2_path.islink())
-        self.assertTrue(load_file(tee2_path) == 'foobar')
-        self.assertTrue(tee2_path.readlink() == gaz_path)
+        self.assertEqual(load_file(tee2_path), 'foobar')
+        self.assertEqual(tee2_path.readlink(), gaz_path)
         # when preserving links, we don't touch the original file!
-        self.assertTrue(load_file(gaz2_path) == 'foobar2')
+        self.assertEqual(load_file(gaz2_path), 'foobar2')
 
 
     def test_copy_filesymlink_to_dirsymlink_followlinks(self):
@@ -227,7 +227,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
 
         self.assertTrue(not helloworld_path.islink())
         self.assertTrue(helloworld_path.isfile())
-        self.assertTrue(load_file(helloworld_path) == 'foobar')
+        self.assertEqual(load_file(helloworld_path), 'foobar')
         self.assertTrue((moo_path / 'helloworld').isfile())
 
 
@@ -257,10 +257,10 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
 
         self.assertTrue(helloworld_path.islink())
         self.assertTrue(helloworld_path.isfile())
-        self.assertTrue(load_file(helloworld_path) == 'foobar')
+        self.assertEqual(load_file(helloworld_path), 'foobar')
         self.assertTrue((moo_path / 'helloworld').islink())
         self.assertTrue((moo_path / 'helloworld').isfile())
-        self.assertTrue(helloworld_path.readlink() == gaz_path)
+        self.assertEqual(helloworld_path.readlink(), gaz_path)
 
 
     #------------------------------
@@ -300,7 +300,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
 
         self.assertTrue(moo_path.islink())
         self.assertTrue(moo_path.isdir())
-        self.assertTrue(load_file(moo_path / 'gaz.txt') == 'foobar')
+        self.assertEqual(load_file(moo_path / 'gaz.txt'), 'foobar')
 
 
     def test_copy_dirsymlink_to_dir_followlinks(self):
@@ -344,7 +344,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         helloworld_path = moo_path / 'helloworld'
         self.assertTrue(helloworld_path.islink())
         self.assertTrue(helloworld_path.isdir())
-        self.assertTrue(helloworld_path.readlink() == bar_path)
+        self.assertEqual(helloworld_path.readlink(), bar_path)
 
 
     def test_copy_dirsymlink_to_missingfile_followlinks(self):
@@ -384,7 +384,7 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
 
         self.assertTrue(moo_path.islink())
         self.assertTrue(moo_path.isdir())
-        self.assertTrue(moo_path.readlink() == bar_path)
+        self.assertEqual(moo_path.readlink(), bar_path)
 
 
     def test_copy_dirsymlink_to_filesymlink_followlinks(self):
@@ -431,8 +431,8 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
 
         self.assertTrue(tee2_path.islink())
         self.assertTrue(tee2_path.isdir())
-        self.assertTrue(tee2_path.readlink() == tee_path.readlink())
-        self.assertTrue(tee2_path.readlink() == bar_path)
+        self.assertEqual(tee2_path.readlink(), tee_path.readlink())
+        self.assertEqual(tee2_path.readlink(), bar_path)
 
 
     def test_copy_dirsymlink_to_dirsymlink_followlinks(self):
@@ -491,8 +491,8 @@ class CommonLocalFSSymlinkCopyTest(TestCase):
         self.assertTrue(helloworld_path.islink())
         self.assertTrue(helloworld_path.isdir())
         self.assertTrue((helloworld_path / 'gaz.txt').isfile())
-        self.assertTrue(helloworld_path.readlink() == bar_path)
-        self.assertTrue(helloworld_path.readlink() == tee_path.readlink())
+        self.assertEqual(helloworld_path.readlink(), bar_path)
+        self.assertEqual(helloworld_path.readlink(), tee_path.readlink())
 
 
 

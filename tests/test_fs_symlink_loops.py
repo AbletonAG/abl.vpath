@@ -31,7 +31,7 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         tee_path.symlink(tee_path)
 
         self.assertTrue(tee_path.islink())
-        self.assertTrue(tee_path.readlink() == tee_path)
+        self.assertEqual(tee_path.readlink(), tee_path)
 
 
     def test_listdir_fails_on_selfpointing_symlink(self):
@@ -119,7 +119,7 @@ class CommonLocalFSSymlinkLoopTest(TestCase):
         foo_path.symlink(tee_path)
 
         self.assertTrue(tee_path.islink())
-        self.assertTrue(tee_path.readlink() == foo_path)
+        self.assertEqual(tee_path.readlink(), foo_path)
 
 
     def test_listdir_doesnt_fail_on_symlink_loop(self):

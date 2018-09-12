@@ -454,7 +454,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.assertTrue(moo_path.isdir())
 
         link = moo_path.readlink()
-        self.assertTrue(link == bar_path)
+        self.assertEqual(link, bar_path)
 
         # check that gaz.txt is accessible through the symlink
         self.assertTrue(moo_path / 'gaz.txt')
@@ -481,10 +481,10 @@ class CommonLocalFSSymlinkTest(TestCase):
         self.assertTrue(tee_path.isfile())
 
         link = tee_path.readlink()
-        self.assertTrue(link == gaz_path)
+        self.assertEqual(link, gaz_path)
 
         # check that gaz.txt is accessible through the symlink
-        self.assertTrue(load_file(tee_path) == 'foobar')
+        self.assertEqual(load_file(tee_path), 'foobar')
 
 
     #------------------------------
@@ -499,7 +499,7 @@ class CommonLocalFSSymlinkTest(TestCase):
         notexisting_path.symlink(tee_path)
 
         self.assertTrue(tee_path.islink())
-        self.assertTrue(tee_path.readlink() == notexisting_path)
+        self.assertEqual(tee_path.readlink(), notexisting_path)
         self.assertTrue(not notexisting_path.exists())
 
 
