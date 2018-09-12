@@ -73,7 +73,7 @@ class LocalFileSystem(FileSystem):
             return open(self._path(unc))
 
     def listdir(self, unc):
-        return os.listdir(self._path(unc))
+        return sorted(os.listdir(self._path(unc)))
 
 
     def removefile(self, unc):
