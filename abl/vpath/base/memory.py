@@ -111,6 +111,9 @@ class MemoryFile(object):
             raise StopIteration
 
 
+    next = __next__ # Python 2 iterator interface
+
+
     def __iter__(self):
         return self
 
@@ -162,7 +165,7 @@ class MemoryFileProxy(object):
 
 
     def __next__(self):
-        return self.decode(self.mem_file.__next__())
+        return self.decode(next(self.mem_file))
 
 
     next = __next__ # Python 2 iterator interface
