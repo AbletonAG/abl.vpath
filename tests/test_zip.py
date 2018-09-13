@@ -65,23 +65,23 @@ class TestWritingZip(ZipTestCase):
 
     def test_write_file_to_non_existing_zip(self):
         foo = URI('zip://((%s))/foo.txt' % self.zip_uri)
-        with foo.open('w') as fd:
-            fd.write('bar')
+        with foo.open('wb') as fd:
+            fd.write(b'bar')
 
 
     def test_write_file_to_non_existing_zip_2(self):
         foo = URI('zip://((%s))/deeper/foo.txt' % self.zip_uri)
-        with foo.open('w') as fd:
-            fd.write('bar')
+        with foo.open('wb') as fd:
+            fd.write(b'bar')
 
 
     def test_write_two_files(self):
         foo = URI('zip://((%s))/foo.txt' % self.zip_uri)
-        with foo.open('w') as fd:
-            fd.write('bar')
+        with foo.open('wb') as fd:
+            fd.write(b'bar')
         bar = URI('zip://((%s))/bar.txt' % self.zip_uri)
-        with bar.open('w') as fd:
-            fd.write('foo')
+        with bar.open('wb') as fd:
+            fd.write(b'foo')
 
 
 class TestReadingZip(ZipTestCase):
@@ -104,33 +104,33 @@ class TestReadingZip(ZipTestCase):
 
     def test_read_a_file(self):
         p = URI('zip://((memory:///file.zip))/foo.txt')
-        with p.open() as fd:
-            self.assertEqual(fd.read(), 'bar')
+        with p.open('rb') as fd:
+            self.assertEqual(fd.read(), b'bar')
 
     def test_write_a_file(self):
         p = URI('zip://((memory:///file.zip))/bar.txt')
-        with p.open('w') as fd:
-            fd.write('foo')
+        with p.open('wb') as fd:
+            fd.write(b'foo')
         with p.open() as fd:
-            self.assertEqual(fd.read(), 'foo')
+            self.assertEqual(fd.read(), b'foo')
 
     def test_exists(self):
         p = URI('zip://((memory:///file.zip))/foo.txt')
-        with p.open('w') as fd:
-            fd.write('foo')
+        with p.open('wb') as fd:
+            fd.write(b'foo')
         self.assertTrue(p.exists())
 
     def test_isfile(self):
         p = URI('zip://((memory:///file.zip))/foo.txt')
-        with p.open('w') as fd:
-            fd.write('foo')
+        with p.open('wb') as fd:
+            fd.write(b'foo')
         self.assertTrue(p.isfile())
 
     def test_isdir(self):
         dir_path = URI('zip://((memory:///file.zip))/somedir')
         p = dir_path / 'foo.txt'
-        with p.open('w') as fd:
-            fd.write('foo')
+        with p.open('wb') as fd:
+            fd.write(b'foo')
         self.assertTrue(dir_path.isdir())
 
     def test_path(self):
@@ -152,12 +152,12 @@ class TestListDir(ZipTestCase):
         base_path = URI('zip://((%s))/' % self.zip_path.uri)
         self.assertEqual(base_path.listdir(), [])
         p1 = URI('zip://((%s))/foo.txt' % self.zip_path.uri)
-        with p1.open('w') as fd:
-            fd.write('foo')
+        with p1.open('wb') as fd:
+            fd.write(b'foo')
         self.assertEqual(base_path.listdir(), ['foo.txt'])
         p2 = URI('zip://((%s))/dir/foo.txt' % self.zip_path.uri)
         with p2.open('w') as fd:
-            fd.write('foo')
+            fd.write(b'foo')
         self.assertEqual(set(base_path.listdir()), set(['foo.txt', 'dir']))
 
 
