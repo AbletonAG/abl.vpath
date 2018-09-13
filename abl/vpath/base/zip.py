@@ -3,7 +3,7 @@
 # Author: Stephan Diehl <stephan.diehl@ableton.com>
 #******************************************************************************
 
-from io import StringIO
+from io import BytesIO
 from zipfile import ZipFile
 
 from .fs import FileSystem, BaseUri, URI
@@ -14,7 +14,7 @@ class WriteStatement(object):
     def __init__(self, path_string, zip_backend):
         self.path_string = path_string
         self.zip_backend = zip_backend
-        self.byte_buffer = StringIO()
+        self.byte_buffer = BytesIO()
 
 
     def __enter__(self):
