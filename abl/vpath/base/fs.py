@@ -1,4 +1,3 @@
-
 import atexit
 from collections import defaultdict
 import fnmatch
@@ -7,7 +6,6 @@ import os
 import stat
 import re
 import shutil
-import sys
 import threading
 import time
 import traceback
@@ -19,20 +17,6 @@ from .simpleuri import UriParse, uri_from_parts
 from .exceptions import (NoSchemeError,
                          FileDoesNotExistError,
                          OperationIsNotSupportedOnPlatform)
-
-
-#============================================================================
-
-def fstr_to_unicode(fstr):
-    if type(fstr) is str:
-        return fstr.decode(sys.getfilesystemencoding())
-    return fstr
-
-
-def unicode_to_fstr(unistr):
-    if type(unistr) is str:
-        return unistr.encode(sys.getfilesystemencoding())
-    return unistr
 
 
 class ConnectionRegistry(object):
@@ -140,7 +124,7 @@ class ConnectionRegistry(object):
             username,
             password,
             vpath_connector,
-            frozenset(list(extras.items()))
+            frozenset(extras.items())
             )
 
         if not key in self.connections:
@@ -149,7 +133,6 @@ class ConnectionRegistry(object):
 
 
     def cleanup(self, force=False):
-        import time
         now = time.time()
         for key, conn in list(self.connections.items()):
             if ((now - conn.last_used) > self.clean_timeout) or force:
@@ -166,7 +149,6 @@ class ConnectionRegistry(object):
         cleaner: method to be run in a thread to check for stale connections.
         """
         while True:
-            now = time.time()
             self.cleanup()
             now = time.time()
             try:
@@ -940,9 +922,8 @@ class FileSystem(object):
             if source.islink() and not followlinks:
                 self._copy_link(source, dest)
             else:
-                with source.open('rb') as infs:
-                    with dest.open('wb') as outfs:
-                        shutil.copyfileobj(infs, outfs, 8192)
+                with source.open('rb') as infs, dest.open('wb') as outfs:
+                    shutil.copyfileobj(infs, outfs, 8192)
                 if use_same_backend:
                     self.copystat(source, dest)
         else:
@@ -983,9 +964,8 @@ class FileSystem(object):
                         if srcf.islink() and not followlinks:
                             self._copy_link(srcf, destf)
                         else:
-                            with srcf.open('rb') as infs:
-                                with destf.open('wb') as outfs:
-                                    shutil.copyfileobj(infs, outfs, 8192)
+                            with srcf.open('rb') as infs, destf.open('wb') as outfs:
+                                shutil.copyfileobj(infs, outfs, 8192)
                             if use_same_backend:
                                 self.copystat(srcf, destf)
 
