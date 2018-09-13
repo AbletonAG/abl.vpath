@@ -189,5 +189,3 @@ class TestAdvancedZip(ZipTestCase):
         self.assertEqual(rlist,
                          [(root, ['dir1'], ['bar.txt']),
                           ((root / 'dir1'), [], ['bar.txt', 'foo.txt'])])
-
-
