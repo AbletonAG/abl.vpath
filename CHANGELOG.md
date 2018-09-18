@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Memory files are always stored as binary streams and are encoded/decoded
   based on the mode (r, rb, w, wb)
 - Switch to Python's standard zipfile libary
+
+### Removed
+
 - Python 2.5, 2.6 support
 
 ## 0.8 - 2015-09-03
