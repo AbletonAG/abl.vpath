@@ -77,6 +77,14 @@ class MemoryFile(object):
         return self._data.flush()
 
 
+    def truncate(self, pos=None):
+        return self._data.truncate(pos)
+
+
+    def seekable(self):
+        return self._data.seekable()
+
+
     def __unicode__(self):
         return self._data.getvalue().decode('utf-8')
 

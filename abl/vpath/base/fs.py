@@ -172,7 +172,7 @@ class ConnectionRegistry(object):
         """
         self.run_clean_thread = False
         self.cleanup(True)
-        if self.cleaner_thread.isAlive():
+        if self.cleaner_thread.is_alive():
             self.cleaner_thread.join()
 
 

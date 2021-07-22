@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="abl.vpath",
-    version="0.9",
+    version="0.10",
     description="A OO-abstraction of file-systems",
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
@@ -13,7 +13,7 @@ setup(
         "abl.util",
         ],
     packages=find_packages(exclude=['ez_setup', 'tests']),
-    classifiers = [
+    classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
@@ -25,6 +25,8 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: System :: Filesystems',
     ],
