@@ -1,9 +1,17 @@
 from setuptools import setup, find_packages
 
+# Add README as description
+from os import path
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(
     name="abl.vpath",
     version="0.10",
     description="A OO-abstraction of file-systems",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author="Stephan Diehl",
     author_email="stephan.diehl@ableton.com",
     license="MIT",
