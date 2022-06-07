@@ -335,10 +335,12 @@ class BaseUri(object):
     @property
     def path(self):
         path = self.parse_result.path
-        if path.startswith('/.'):
-            return path[1:]
-        else:
-            return path
+        parsed_path = path[1:] if path.startswith("/.") else path
+
+        if os.name == "nt" and self.scheme == "file":
+            parsed_path = os.path.normpath(re.sub(r"^/([a-zA-Z])/", r"\1:/", parsed_path))
+
+        return parsed_path
 
 
     @property
