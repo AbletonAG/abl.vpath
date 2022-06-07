@@ -151,7 +151,7 @@ class LocalFileSystem(FileSystem):
 
 
     def lock(self, path, fail_on_lock, cleanup):
-        return LockFile(str(path), fail_on_lock=fail_on_lock, cleanup=cleanup)
+        return LockFile(self._path(path), fail_on_lock=fail_on_lock, cleanup=cleanup)
 
 
     def mtime(self, path):
