@@ -69,6 +69,10 @@ class MemoryFile(object):
         self._data.seek(to, whence)
 
 
+    def seekable(self):
+        return self._data.seekable()
+
+
     def tell(self):
         return self._data.tell()
 
