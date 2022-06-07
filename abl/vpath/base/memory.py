@@ -143,8 +143,8 @@ class MemoryFileProxy(object):
 
 
     def encode(self, data):
-        return data if self.binary else data.encode('utf-8')
 
+        return data if self.binary or isinstance(data, bytes) else data.encode("utf-8")
 
     def decode(self, data):
         return data if self.binary else data.decode('utf-8')
