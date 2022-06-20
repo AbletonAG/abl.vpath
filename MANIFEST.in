@@ -1,2 +1,4 @@
 include CHANGELOG.md
 include LICENSE
+include versioneer.py
+include abl/vpath/base/_version.py

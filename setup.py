@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+import versioneer
 
 # Add README as description
 from os import path
@@ -8,7 +9,8 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="abl.vpath",
-    version="0.12",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description="A OO-abstraction of file-systems",
     long_description=long_description,
     long_description_content_type='text/markdown',
