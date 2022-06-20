@@ -8,7 +8,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="abl.vpath",
-    version="0.10",
+    version="0.12",
     description="A OO-abstraction of file-systems",
     long_description=long_description,
     long_description_content_type='text/markdown',
