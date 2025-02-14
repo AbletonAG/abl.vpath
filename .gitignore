@@ -1,2 +1,12 @@
 *.pyc
 /abl.vpath.egg-info
+
+# setuptools-scm
+abl/vpath/_version.py
+
+# Distribution / packaging
+dist/
+build/
+
+# macOS
+.DS_Store

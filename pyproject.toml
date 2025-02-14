@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "abl.vpath"
+dynamic = ["version"]
+description = "A OO-abstraction of file-systems"
+authors = [
+    { name = "The Ableton Web Team", email = "webteam@ableton.com" }
+]
+urls = { "GitHub" = "https://github.com/AbletonAG/abl.vpath" }
+license = { text = "MIT" }
+dependencies = [
+    "decorator",
+    "abl.util",
+]
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
+include = ["abl*"]
+exclude = ["tests"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+dev = ["pytest", "pylint"]
+
+[project.entry-points."abl.vpath.plugins"]
+localfilefs = "abl.vpath.base.localfs:LocalFileSystem"
+memoryfs = "abl.vpath.base.memory:MemoryFileSystem"
+zipfs = "abl.vpath.base.zip:ZipFileSystem"
+
+[tool.setuptools_scm]
+version_file = "abl/vpath/_version.py"
