@@ -2,6 +2,7 @@ import atexit
 from collections import defaultdict
 import fnmatch
 import hashlib
+from importlib.metadata import entry_points
 import os
 import stat
 import re
@@ -11,8 +12,6 @@ import time
 import traceback
 
 from decorator import decorator
-import pkg_resources
-
 from .simpleuri import UriParse, uri_from_parts
 from .exceptions import (NoSchemeError,
                          FileDoesNotExistError,
@@ -1116,7 +1115,7 @@ class RevisionedFileSystem(FileSystem):
         raise NotImplementedError
 
 
-for entrypoint in pkg_resources.iter_entry_points('abl.vpath.plugins'):
+for entrypoint in entry_points().get('abl.vpath.plugins') or []:
     try:
         plugin_class = entrypoint.load()
     except Exception as exp:
