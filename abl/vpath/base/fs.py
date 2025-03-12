@@ -1115,7 +1115,16 @@ class RevisionedFileSystem(FileSystem):
         raise NotImplementedError
 
 
-for entrypoint in entry_points().get('abl.vpath.plugins') or []:
+entry_points = entry_points()
+try:
+    # Python versions prior to 3.10 return a simple dictonary of entry points
+    selected_entry_points = entry_points.get('abl.vpath.plugins', [])
+except AttributeError:
+    # Python 3.10 returns a dedicated selection interface
+    # Python 3.12 removed the old dictionary interface
+    selected_entry_points = entry_points.select(group='abl.vpath.plugins')
+
+for entrypoint in selected_entry_points:
     try:
         plugin_class = entrypoint.load()
     except Exception as exp:
