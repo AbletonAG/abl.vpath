@@ -1115,7 +1115,7 @@ class RevisionedFileSystem(FileSystem):
         raise NotImplementedError
 
 
-for entrypoint in entry_points(group='abl.vpath.plugins'):
+for entrypoint in entry_points().select(group='abl.vpath.plugins'):
     try:
         plugin_class = entrypoint.load()
     except Exception as exp:
