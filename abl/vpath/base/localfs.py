@@ -23,7 +23,7 @@ LOGGER = logging.getLogger(__name__)
 
 def lchmod(filename, mode):
     if sys.version_info[0] >= 3:
-        return os.chmod(filename, mode, follow_symlinks=True)
+        return os.chmod(filename, mode, follow_symlinks=False)
     else:
         return os.lchmod(filename, mode)
 
