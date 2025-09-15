@@ -147,10 +147,10 @@ class TestURI(TestCase):
         self.assertEqual(local_path.scheme, 'file')
 
         path = URI('localpath', sep='/')
-        self.assertEqual(path.path, './localpath', path.path)
+        self.assertEqual(path.path, 'localpath', path.path)
 
         path = URI('trailing/slash/', sep='/')
-        self.assertEqual(path.path, './trailing/slash/')
+        self.assertEqual(path.path, 'trailing/slash/')
 
 
     def test_split(self):

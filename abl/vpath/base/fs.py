@@ -333,13 +333,22 @@ class BaseUri(object):
 
     @property
     def path(self):
-        path = self.parse_result.path
-        parsed_path = path[1:] if path.startswith("/.") else path
+        def clean_path(p):
+            match p:
+                case x if x.startswith("/."):
+                    return x[1:]
+                case x if x.startswith("./"):
+                    return x[2:]
+                case _:
+                    return p
 
+        path = clean_path(self.parse_result.path)
+
+        # Restore : after drive letter on Windows
         if os.name == "nt" and self.scheme == "file":
-            parsed_path = os.path.normpath(re.sub(r"^/([a-zA-Z])/", r"\1:/", parsed_path))
+            return os.path.normpath(re.sub(r"^/([a-zA-Z])/", r"\1:/", path))
 
-        return parsed_path
+        return path
 
 
     @property
