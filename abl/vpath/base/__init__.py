@@ -27,6 +27,3 @@ import logging
 from abl.util import NullHandler
 
 logging.getLogger("abl.vpath").addHandler(NullHandler())
-
-from . import _version
-__version__ = _version.get_versions()['version']
