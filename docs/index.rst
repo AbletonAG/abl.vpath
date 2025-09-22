@@ -1,18 +1,18 @@
-.. abl.vpath documentation master file, created by
-   sphinx-quickstart on Mon Jul  4 16:29:39 2011.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+====================
+abl.vpath documentation
+====================
 
-=======================
-Documentation abl.vpath
-=======================
-
-Contents:
+abl.vpath wraps filesystem paths in rich ``URI`` objects and discovers the
+appropriate backend connector at runtime. Use it to manipulate local folders,
+exercise the in-memory filesystem in unit tests, or explore entries in a ZIP
+archive with a consistent, high-level API.
 
 .. toctree::
    :maxdepth: 2
 
+   getting_started
    module
+   extending
 
 Indices and tables
 ==================
@@ -20,4 +20,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

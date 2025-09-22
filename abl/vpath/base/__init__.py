@@ -1,22 +1,39 @@
 """
-the abl.vpath module provides a file system abstraction layer
-for local files, remote files accessed via ssh, (http, ftp) and subversion.
+``abl.vpath`` provides an extensible abstraction over one or more file
+systems.  Paths are represented as URI objects that expose a familiar API
+inspired by :mod:`os.path`, while adapters ("connectors") translate each
+operation into calls against a concrete backend.
 
-An URI object represents a path. It will initialized with an uri string.
-For example URI('/tmp/some/dir') represents a local file '/tmp/some/dir'
-and is the same as URI('file:///tmp/some/dir').
-A remote file accessed via ssh could look like URI('ssh://host:/remote/path').
+Core concepts
+-------------
+* :class:`~abl.vpath.base.fs.URI` and
+  :class:`~abl.vpath.base.fs.RevisionedUri` wrap filesystem paths and provide
+  helpers such as :meth:`exists`, :meth:`open`, and the ``/`` operator for
+  joining paths.
+* :class:`~abl.vpath.base.fs.FileSystem` defines the contract that backends
+  must implement so that URI instances can talk to the underlying storage.
+* :class:`~abl.vpath.base.misc.WorkingDirectory` temporarily switches the
+  process' working directory while code interacts with a URI.
 
-Additional info that can't be encoded in the uri can be given as
-keyword arguments.
-Example: URI('ssh://host:/path', key_filename='/local/path/to/key')
+Usage example::
 
-Any supported scheme has a backend.
+    from abl.vpath.base import URI, WorkingDirectory
 
-Currently supported are:
-  * file
-  * svn
-  * ssh
+    project_root = URI('file:///tmp/my-project')
+    (project_root / 'data').makedirs()
+    with (project_root / 'README.txt').open('w') as handle:
+        handle.write('hello from vpath\n')
+
+    with WorkingDirectory(project_root):
+        print(URI('file://./README.txt').open().read())
+
+Connectors are discovered via the ``abl.vpath.plugins`` entry point group.
+This package ships with handlers for:
+
+* ``file`` – local POSIX and Windows file systems (:class:`LocalFileSystem`)
+* ``memory`` – an in-memory filesystem useful for tests (:class:`MemoryFileSystem`)
+* ``zip`` – transparent access to members inside ZIP archives
+  (:class:`ZipFileSystem`)
 """
 
 from .fs import URI, FileSystem, BaseUri, RevisionedFileSystem, RevisionedUri
