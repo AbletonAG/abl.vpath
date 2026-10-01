@@ -68,7 +68,7 @@ class ConnectionRegistry(object):
         self.clean_interval = clean_interval
         self.clean_timeout = clean_timeout
         self.cleaner_thread = threading.Thread(target=self.cleaner)
-        self.cleaner_thread.setDaemon(True)
+        self.cleaner_thread.daemon = True
         self.cleaner_thread.start()
         self.creation_locks = defaultdict(threading.Lock)
 
@@ -609,11 +609,13 @@ class BaseUri(object):
 
 
     @with_connection
-    def makedirs(self):
+    def makedirs(self, exist_ok=False):
         """
         makedirs: recursivly create directory if it doesn't exist yet.
+        If `exist_ok` is True, no `FileExistsError` is raised if
+        the directory already exists.
         """
-        return self.connection.makedirs(self)
+        return self.connection.makedirs(self, exist_ok=exist_ok)
 
 
     @with_connection
@@ -946,7 +948,7 @@ class FileSystem(object):
             if source.islink() and not followlinks:
                 self._copy_link(source, droot)
             else:
-                droot.makedirs()
+                droot.makedirs(exist_ok=True)
                 spth = source.path
                 spth_len = len(spth) + 1
                 for root, dirs, files in source.walk(followlinks=followlinks):
@@ -966,7 +968,7 @@ class FileSystem(object):
                         if srcp.islink() and not followlinks:
                             self._copy_link(srcp, ddir)
                         else:
-                            ddir.makedirs()
+                            ddir.makedirs(exist_ok=True)
 
                     for fname in files:
                         srcf = root / fname
@@ -980,14 +982,26 @@ class FileSystem(object):
                                 self.copystat(srcf, destf)
 
 
-    def makedirs(self, path):
+    def makedirs(self, path, exist_ok=False):
         if path.isdir():
             return path
         pth, tail = path.split()
         if not pth.isdir():
-            self.makedirs(pth)
+            try:
+                self.makedirs(pth, exist_ok=exist_ok)
+            except FileExistsError:
+                if exist_ok:
+                    return path
+                else:
+                    raise
         if tail:
-            return path.mkdir()
+            try:
+                return path.mkdir()
+            except FileExistsError:
+                if exist_ok:
+                    return path
+                else:
+                    raise
         else:
             return path
 
