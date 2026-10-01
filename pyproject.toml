@@ -25,7 +25,7 @@ exclude = ["tests"]
 
 [project.optional-dependencies]
 test = ["pytest"]
-dev = ["pytest", "pylint"]
+dev = ["pytest", "pylint", "build"]
 
 [project.entry-points."abl.vpath.plugins"]
 localfilefs = "abl.vpath.base.localfs:LocalFileSystem"
