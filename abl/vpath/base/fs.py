@@ -1,5 +1,6 @@
 import atexit
 from collections import defaultdict
+import errno
 import fnmatch
 import hashlib
 from importlib.metadata import entry_points
@@ -984,21 +985,21 @@ class FileSystem(object):
 
     def makedirs(self, path, exist_ok=False):
         if path.isdir():
-            return path
+            if exist_ok:
+                return path
+            raise FileExistsError(errno.EEXIST, "File exists: %r" % str(path))
         pth, tail = path.split()
-        if not pth.isdir():
+        if tail and not pth.isdir():
             try:
-                self.makedirs(pth, exist_ok=exist_ok)
+                self.makedirs(pth, exist_ok=True)
             except FileExistsError:
-                if exist_ok:
-                    return path
-                else:
+                if not pth.isdir():
                     raise
         if tail:
             try:
                 return path.mkdir()
             except FileExistsError:
-                if exist_ok:
+                if exist_ok and path.isdir():
                     return path
                 else:
                     raise

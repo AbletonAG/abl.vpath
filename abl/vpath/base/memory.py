@@ -425,7 +425,7 @@ class MemoryFileSystem(FileSystem):
             nd = self._get_node(self._fs, p.split("/")[:-1])
             dir_to_create = p.split("/")[-1]
             if nd.has(dir_to_create):
-                raise OSError(errno.EEXIST, "File exists: %r" % str(path))
+                raise FileExistsError(errno.EEXIST, "File exists: %r" % str(path))
             self._create_child(nd, dir_to_create, MemoryDir())
 
 
@@ -617,7 +617,7 @@ class MemoryFileSystem(FileSystem):
             nd = self._get_node(self._fs, p.split("/")[:-1])
             file_to_create = p.split("/")[-1]
             if nd.has(file_to_create):
-                raise OSError(errno.EEXIST, "File exists: %r" % str(link_name))
+                raise FileExistsError(errno.EEXIST, "File exists: %r" % str(link_name))
             self._create_child(nd, file_to_create, MemorySymlink(target))
 
 
