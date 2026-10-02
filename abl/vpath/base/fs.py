@@ -984,27 +984,38 @@ class FileSystem(object):
 
 
     def makedirs(self, path, exist_ok=False):
+        """
+        the 'exist_ok' option only works on the outer
+        leave of the given path. Any intermediate
+        directories will be created if they don't
+        exist or not created, if they already exist
+        disregarding the  'exist_ok' setting.
+        """
+
+        # normalize the path by removing any trailing slashes
+        # we need to remove a trailing slash in cases like 'a/b/',
+        # but not 'memory:///'
+
+        unipath = path.unipath
+        if len(unipath) > 1 and unipath[-1] == '/':
+            path = URI(path.uri[:-1])
+
         if path.isdir():
             if exist_ok:
                 return path
             raise FileExistsError(errno.EEXIST, "File exists: %r" % str(path))
-        pth, tail = path.split()
-        if tail and not pth.isdir():
-            try:
-                self.makedirs(pth, exist_ok=True)
-            except FileExistsError:
-                if not pth.isdir():
-                    raise
-        if tail:
-            try:
-                return path.mkdir()
-            except FileExistsError:
-                if exist_ok and path.isdir():
-                    return path
-                else:
-                    raise
-        else:
-            return path
+
+        # due to the normalization, 'tail' is not empty, or the path is '/'
+        pth, _ = path.split()
+        if not pth.isdir():
+            self.makedirs(pth, exist_ok=True)
+        try:
+            return path.mkdir()
+        except FileExistsError:
+            if exist_ok and path.isdir():
+                return path
+            else:
+                raise
 
 
     def move(self, source, destination):
