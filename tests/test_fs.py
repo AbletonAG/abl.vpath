@@ -206,7 +206,7 @@ class CommonFileSystemTest(CleanupMemoryBeforeTestMixin, TestCase):
     def test_remove_recursive_with_readonly_file(self):
         foo_path = URI(self.baseurl) / 'foo'
         bar_path = foo_path / 'bar'
-        bar_path.makedirs()
+        bar_path.makedirs(exist_ok=True)
 
         gaz_path = bar_path / 'ghaz.txt'
         create_file(gaz_path)
@@ -349,7 +349,7 @@ class CommonFSCopyTest(TestCase):
 
     def test_copy_empty_dirs_recursive(self):
         root = URI(self.baseurl)
-        root.makedirs()
+        root.makedirs(exist_ok=True)
 
         gaz_path = root / 'gaz'
         gaz_path.makedirs()
