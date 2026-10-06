@@ -1,5 +1,6 @@
 import atexit
 from collections import defaultdict
+import errno
 import fnmatch
 import hashlib
 from importlib.metadata import entry_points
@@ -68,7 +69,7 @@ class ConnectionRegistry(object):
         self.clean_interval = clean_interval
         self.clean_timeout = clean_timeout
         self.cleaner_thread = threading.Thread(target=self.cleaner)
-        self.cleaner_thread.setDaemon(True)
+        self.cleaner_thread.daemon = True
         self.cleaner_thread.start()
         self.creation_locks = defaultdict(threading.Lock)
 
@@ -609,11 +610,13 @@ class BaseUri(object):
 
 
     @with_connection
-    def makedirs(self):
+    def makedirs(self, exist_ok=False):
         """
         makedirs: recursivly create directory if it doesn't exist yet.
+        If `exist_ok` is True, no `FileExistsError` is raised if
+        the directory already exists.
         """
-        return self.connection.makedirs(self)
+        return self.connection.makedirs(self, exist_ok=exist_ok)
 
 
     @with_connection
@@ -946,7 +949,7 @@ class FileSystem(object):
             if source.islink() and not followlinks:
                 self._copy_link(source, droot)
             else:
-                droot.makedirs()
+                droot.makedirs(exist_ok=True)
                 spth = source.path
                 spth_len = len(spth) + 1
                 for root, dirs, files in source.walk(followlinks=followlinks):
@@ -966,7 +969,7 @@ class FileSystem(object):
                         if srcp.islink() and not followlinks:
                             self._copy_link(srcp, ddir)
                         else:
-                            ddir.makedirs()
+                            ddir.makedirs(exist_ok=True)
 
                     for fname in files:
                         srcf = root / fname
@@ -980,16 +983,39 @@ class FileSystem(object):
                                 self.copystat(srcf, destf)
 
 
-    def makedirs(self, path):
+    def makedirs(self, path, exist_ok=False):
+        """
+        the 'exist_ok' option only works on the outer
+        leave of the given path. Any intermediate
+        directories will be created if they don't
+        exist or not created, if they already exist
+        disregarding the  'exist_ok' setting.
+        """
+
+        # normalize the path by removing any trailing slashes
+        # we need to remove a trailing slash in cases like 'a/b/',
+        # but not 'memory:///'
+
+        unipath = path.unipath
+        if len(unipath) > 1 and unipath[-1] == '/':
+            path = URI(path.uri[:-1])
+
         if path.isdir():
-            return path
-        pth, tail = path.split()
+            if exist_ok:
+                return path
+            raise FileExistsError(errno.EEXIST, "File exists: %r" % str(path))
+
+        # due to the normalization, 'tail' is not empty, or the path is '/'
+        pth, _ = path.split()
         if not pth.isdir():
-            self.makedirs(pth)
-        if tail:
+            self.makedirs(pth, exist_ok=True)
+        try:
             return path.mkdir()
-        else:
-            return path
+        except FileExistsError:
+            if exist_ok and path.isdir():
+                return path
+            else:
+                raise
 
 
     def move(self, source, destination):

@@ -104,6 +104,12 @@ class LocalFileSystem(FileSystem):
             return os.mkdir(path)
 
 
+    def makedirs(self, unc, exist_ok=False):
+        path = self._path(unc)
+        if path:
+            return os.makedirs(path, exist_ok=exist_ok)
+
+
     def exists(self, unc):
         return os.path.exists(self._path(unc))
 

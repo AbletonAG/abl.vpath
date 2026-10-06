@@ -30,6 +30,9 @@ class TestLocalFSInfo(TestCase):
         l = URI("test_link")
         if l.islink():
             l.remove()
+        d = URI("testdir")
+        if d.exists():
+            d.remove()
 
 
     def test_info_ctime(self):
@@ -109,4 +112,23 @@ class TestLocalFSInfo(TestCase):
             self.assertEqual(
                 p.info().mode,
                 new_mode,
-                )
+            )
+
+    def test_makedirs(self):
+        p = URI('testdir')
+        self.assertFalse(p.exists())
+        p.makedirs()
+        self.assertTrue(p.exists())
+        self.assertRaises(FileExistsError, p.makedirs)
+
+    def test_makedirs_with_existing_dir(self):
+        p = URI('testdir')
+        p.makedirs()
+        p.makedirs(exist_ok=True)
+
+
+
+
+
+if __name__ == '__main__':
+    unittest.main()
